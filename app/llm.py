@@ -730,9 +730,6 @@ class LLM:
             Exception: For unexpected errors
         """
         try:
-            # Apply rate limiting before making the API call
-            await self.rate_limiter.acquire()
-
             # Validate tool_choice
             if tool_choice not in TOOL_CHOICE_VALUES:
                 raise ValueError(f"Invalid tool_choice: {tool_choice}")
