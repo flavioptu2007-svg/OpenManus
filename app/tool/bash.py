@@ -6,10 +6,32 @@ from app.exceptions import ToolError
 from app.tool.base import BaseTool, CLIResult
 
 
+# Commands that are blocked for security reasons to prevent accidental or malicious damage
+BLOCKED_COMMANDS = [
+    "rm -rf /",
+    "rm -rf ~",
+    "mkfs.",
+    "dd if=",
+    ":(){ ",
+    ":(){",
+    "fork bomb",
+    "chmod -R 777 /",
+    "chmod 777 /",
+    "> /dev/sda",
+    ">/dev/sda",
+    "reboot",
+    "poweroff",
+    "shutdown now",
+    "init 0",
+    "init 6",
+    "halt",
+]
+
 _BASH_DESCRIPTION = """Execute a bash command in the terminal.
 * Long running commands: For commands that may run indefinitely, it should be run in the background and the output should be redirected to a file, e.g. command = `python3 app.py > server.log 2>&1 &`.
 * Interactive: If a bash command returns exit code `-1`, this means the process is not yet finished. The assistant must then send a second call to terminal with an empty `command` (which will retrieve any additional logs), or it can send additional text (set `command` to the text) to STDIN of the running process, or it can send command=`ctrl+c` to interrupt the process.
 * Timeout: If a command execution result says "Command timed out. Sending SIGINT to the process", the assistant should retry running the command in the background.
+* Security: Destructive system commands (rm -rf /, dd, mkfs, etc.) are automatically blocked.
 """
 
 
@@ -131,6 +153,17 @@ class Bash(BaseTool):
 
     _session: Optional[_BashSession] = None
 
+    @staticmethod
+    def _check_blocked_commands(command: str) -> None:
+        """Check if the command contains blocked destructive patterns."""
+        cmd_lower = command.lower().strip()
+        for blocked in BLOCKED_COMMANDS:
+            if blocked in cmd_lower:
+                raise ToolError(
+                    f"Command blocked for security reasons: contains '{blocked}'. "
+                    f"Destructive system commands are not allowed."
+                )
+
     async def execute(
         self, command: str | None = None, restart: bool = False, **kwargs
     ) -> CLIResult:
@@ -147,6 +180,8 @@ class Bash(BaseTool):
             await self._session.start()
 
         if command is not None:
+            # Security check: block destructive commands
+            self._check_blocked_commands(command)
             return await self._session.run(command)
 
         raise ToolError("no command provided.")

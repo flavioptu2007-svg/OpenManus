@@ -135,7 +135,9 @@ class ToolCallAgent(ReActAgent):
                 raise ValueError(TOOL_CALL_REQUIRED)
 
             # Return last message content if no tool calls
-            return self.messages[-1].content or "No content or commands to execute"
+            if self.messages:
+                return self.messages[-1].content or "No content or commands to execute"
+            return "No content or commands to execute"
 
         results = []
         for command in self.tool_calls:

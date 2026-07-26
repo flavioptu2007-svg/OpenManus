@@ -1,4 +1,6 @@
+import asyncio
 import math
+import time
 from typing import Dict, List, Optional, Union
 
 import tiktoken
@@ -40,6 +42,54 @@ MULTIMODAL_MODELS = [
     "claude-3-sonnet-20240229",
     "claude-3-haiku-20240307",
 ]
+
+
+class RateLimiter:
+    """Simple rate limiter to prevent excessive API calls.
+
+    Uses asyncio.Lock to ensure async safety across concurrent coroutines.
+    Uses time.monotonic() which is immune to system clock changes.
+    """
+
+    def __init__(self, max_calls: int = 60, period_seconds: int = 60):
+        """
+        Args:
+            max_calls: Maximum number of API calls allowed within the period.
+            period_seconds: Time window in seconds.
+        """
+        self.max_calls = max_calls
+        self.period = period_seconds
+        self._calls: list[float] = []
+        self._lock = asyncio.Lock()
+
+    async def acquire(self) -> None:
+        """Wait until a slot is available, then record the call.
+
+        Async-safe via asyncio.Lock (not reentrant — no nested acquisition).
+        """
+        async with self._lock:
+            now = time.monotonic()
+            cutoff = now - self.period
+            # Remove expired entries
+            self._calls = [t for t in self._calls if t > cutoff]
+
+            if len(self._calls) >= self.max_calls:
+                # Calculate wait time until the oldest entry expires
+                oldest = self._calls[0]
+                wait = oldest + self.period - now
+                if wait > 0:
+                    logger.warning(
+                        f"Rate limit reached ({self.max_calls} calls per "
+                        f"{self.period}s). Waiting {wait:.1f}s..."
+                    )
+                    # Hold the lock during sleep (asyncio.Lock is not reentrant,
+                    # and the wait is typically a few seconds at most)
+                    await asyncio.sleep(wait)
+                    # Re-check after waiting
+                    cutoff = time.monotonic() - self.period
+                    self._calls = [t for t in self._calls if t > cutoff]
+
+            self._calls.append(time.monotonic())
 
 
 class TokenCounter:
@@ -225,6 +275,7 @@ class LLM:
                 self.client = AsyncOpenAI(api_key=self.api_key, base_url=self.base_url)
 
             self.token_counter = TokenCounter(self.tokenizer)
+            self.rate_limiter = RateLimiter()
 
     def count_tokens(self, text: str) -> int:
         """Calculate the number of tokens in a text"""
@@ -416,6 +467,9 @@ class LLM:
                     temperature if temperature is not None else self.temperature
                 )
 
+            # Apply rate limiting just before the API call (after token validation)
+            await self.rate_limiter.acquire()
+
             if not stream:
                 # Non-streaming request
                 response = await self.client.chat.completions.create(
@@ -589,6 +643,9 @@ class LLM:
                 )
 
             # Handle non-streaming request
+            # Apply rate limiting just before the API call (after token validation)
+            await self.rate_limiter.acquire()
+
             if not stream:
                 response = await self.client.chat.completions.create(**params)
 
@@ -673,6 +730,9 @@ class LLM:
             Exception: For unexpected errors
         """
         try:
+            # Apply rate limiting before making the API call
+            await self.rate_limiter.acquire()
+
             # Validate tool_choice
             if tool_choice not in TOOL_CHOICE_VALUES:
                 raise ValueError(f"Invalid tool_choice: {tool_choice}")
@@ -727,6 +787,9 @@ class LLM:
                 params["temperature"] = (
                     temperature if temperature is not None else self.temperature
                 )
+
+            # Apply rate limiting just before the API call (after token validation)
+            await self.rate_limiter.acquire()
 
             params["stream"] = False  # Always use non-streaming for tool requests
             response: ChatCompletion = await self.client.chat.completions.create(

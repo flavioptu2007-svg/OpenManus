@@ -1,10 +1,16 @@
 import json
+import os
 import threading
 import tomllib
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from dotenv import load_dotenv
+from pydantic import BaseModel, Field, field_validator
+
+
+# Load environment variables from .env file (must be called before any config access)
+load_dotenv()
 
 
 def get_project_root() -> Path:
@@ -19,7 +25,10 @@ WORKSPACE_ROOT = PROJECT_ROOT / "workspace"
 class LLMSettings(BaseModel):
     model: str = Field(..., description="Model name")
     base_url: str = Field(..., description="API base URL")
-    api_key: str = Field(..., description="API key")
+    api_key: str = Field(
+        default_factory=lambda: os.environ.get("LLM_API_KEY", ""),
+        description="API key (override via LLM_API_KEY env var)",
+    )
     max_tokens: int = Field(4096, description="Maximum number of tokens per request")
     max_input_tokens: Optional[int] = Field(
         None,
@@ -32,8 +41,11 @@ class LLMSettings(BaseModel):
 
 class ProxySettings(BaseModel):
     server: str = Field(None, description="Proxy server address")
-    username: Optional[str] = Field(None, description="Proxy username")
-    password: Optional[str] = Field(None, description="Proxy password")
+    username: Optional[str] = Field(None, description="Proxy username (override via PROXY_USERNAME env var)")
+    password: Optional[str] = Field(
+        default_factory=lambda: os.environ.get("PROXY_PASSWORD", None),
+        description="Proxy password (override via PROXY_PASSWORD env var)",
+    )
 
 
 class SearchSettings(BaseModel):
@@ -67,9 +79,9 @@ class RunflowSettings(BaseModel):
 
 
 class BrowserSettings(BaseModel):
-    headless: bool = Field(False, description="Whether to run browser in headless mode")
+    headless: bool = Field(True, description="Whether to run browser in headless mode (safer: enabled by default)")
     disable_security: bool = Field(
-        True, description="Disable browser security features"
+        False, description="Disable browser security features (safer: disabled by default)"
     )
     extra_chromium_args: List[str] = Field(
         default_factory=list, description="Extra arguments to pass to the browser"
@@ -106,7 +118,7 @@ class SandboxSettings(BaseModel):
 
 
 class DaytonaSettings(BaseModel):
-    daytona_api_key: str
+    daytona_api_key: str = Field("", description="API key for Daytona (leave empty to disable)")
     daytona_server_url: Optional[str] = Field(
         "https://app.daytona.io/api", description=""
     )
@@ -116,12 +128,20 @@ class DaytonaSettings(BaseModel):
         "/usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf",
         description="",
     )
-    # sandbox_id: Optional[str] = Field(
-    #     None, description="ID of the daytona sandbox to use, if any"
-    # )
     VNC_password: Optional[str] = Field(
-        "123456", description="VNC password for the vnc service in sandbox"
+        default_factory=lambda: os.environ.get("VNC_PASSWORD"),
+        description="VNC password for the vnc service in sandbox (REQUIRED - set via VNC_PASSWORD env var)",
     )
+
+    @field_validator("VNC_password")
+    @classmethod
+    def validate_vnc_password(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and len(v) < 8:
+            raise ValueError(
+                "VNC password must be at least 8 characters. "
+                "Set a strong password via the VNC_PASSWORD environment variable."
+            )
+        return v
 
 
 class MCPServerConfig(BaseModel):
