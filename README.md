@@ -74,7 +74,7 @@ cd OpenManus
 uv venv --python 3.12
 source .venv/bin/activate  # On Unix/macOS
 # Or on Windows:
-# .venv\Scripts\activate
+# .venv\\Scripts\\activate
 ```
 
 4. Install dependencies:
@@ -116,6 +116,8 @@ base_url = "https://api.openai.com/v1"
 api_key = "sk-..."  # Replace with your actual API key
 ```
 
+> **Security Note:** API keys can also be set via environment variables (e.g., `LLM_API_KEY`, `VNC_PASSWORD`, `PROXY_PASSWORD`). See `.env.example` for all available options. Environment variables override config.toml values.
+
 ## Quick Start
 
 One line for run OpenManus:
@@ -147,6 +149,346 @@ Currently, besides the general OpenManus Agent, we have also integrated the Data
 use_data_analysis_agent = true     # Disabled by default, change to true to activate
 ```
 In addition, you need to install the relevant dependencies to ensure the agent runs properly: [Detailed Installation Guide](app/tool/chart_visualization/README.md##Installation)
+
+---
+
+## 🏗️ Architecture
+
+OpenManus follows a **layered, modular architecture** with clear separation of concerns:
+
+```mermaid
+graph TB
+    subgraph Entry["Entry Points"]
+        main["main.py<br/>(Manus Agent CLI)"]
+        flow["run_flow.py<br/>(Planning Flow CLI)"]
+        mcp_cli["run_mcp.py<br/>(MCP Server CLI)"]
+        mcp_server["run_mcp_server.py<br/>(MCP Standalone)"]
+    end
+
+    subgraph Flows["Flow Layer"]
+        BaseFlow --> PlanningFlow
+        FlowFactory --> PlanningFlow
+    end
+
+    subgraph Agents["Agent Layer"]
+        BaseAgent --> ReActAgent
+        ReActAgent --> ToolCallAgent
+        ToolCallAgent --> Manus
+        ToolCallAgent --> DataAnalysis
+        ToolCallAgent --> SWEAgent
+        ToolCallAgent --> SandboxManus
+        ReActAgent --> MCPAgent
+        ToolCallAgent --> BrowserAgent
+    end
+
+    subgraph Tools["Tool Layer"]
+        ToolCollection --> BaseTool
+        BaseTool --> PythonExecute
+        BaseTool --> BrowserUseTool
+        BaseTool --> Bash
+        BaseTool --> StrReplaceEditor
+        BaseTool --> Terminate
+        BaseTool --> WebSearch
+        BaseTool --> Crawl4aiTool
+        BaseTool --> AskHuman
+        BaseTool --> PlanningTool
+        BaseTool --> CreateChatCompletion
+        MCPClients --> MCPClientTool
+    end
+
+    subgraph Infrastructure["Infrastructure"]
+        LLM["LLM Service<br/>(OpenAI / Azure / Bedrock / Ollama)"]
+        MCP["MCP Server<br/>(FastMCP)"]
+        Sandbox["Sandbox<br/>(Docker Local / Daytona)"]
+        Config["Configuration<br/>(config.toml + .env)"]
+        Browser["Browser Automation<br/>(Playwright)"]
+    end
+
+    subgraph SandboxLayer["Sandbox Tools"]
+        sb_browser["SBBrowserUseTool"]
+        sb_files["SBFilesTool"]
+        sb_shell["SBShellTool"]
+        sb_vision["SBVisionTool"]
+    end
+
+    %% Connections
+    main --> Manus
+    flow --> PlanningFlow
+    PlanningFlow --> Manus
+    PlanningFlow --> DataAnalysis
+    mcp_cli --> MCPAgent
+    MCPAgent --> MCP
+
+    Manus --> LLM
+    Manus --> ToolCollection
+    Manus --> MCPClients
+    ToolCallAgent --> LLM
+
+    PythonExecute --> Sandbox
+    Bash --> Sandbox
+    BrowserUseTool --> Browser
+    MCPClientTool --> MCP
+
+    SandboxManus --> SandboxLayer
+    SandboxLayer --> Sandbox
+
+    LLM --> Config
+    Sandbox --> Config
+    MCP --> Config
+
+    style Entry fill:#e1f5fe,stroke:#01579b
+    style Flows fill:#f3e5f5,stroke:#4a148c
+    style Agents fill:#e8f5e9,stroke:#1b5e20
+    style Tools fill:#fff3e0,stroke:#e65100
+    style Infrastructure fill:#fce4ec,stroke:#b71c1c
+    style SandboxLayer fill:#fbe9e7,stroke:#bf360c
+```
+
+### 🧬 Component Hierarchy
+
+```
+BaseAgent (abstract)
+ └── ReActAgent (think → act loop)
+      ├── ToolCallAgent (tool/function calling)
+      │    ├── Manus (general-purpose with MCP)
+      │    ├── DataAnalysis (data visualization)
+      │    ├── SWEAgent (software engineering)
+      │    ├── SandboxManus (sandbox-isolated)
+      │    └── BrowserAgent (browser-specific)
+      └── MCPAgent (MCP protocol agent)
+```
+
+### 📁 Project Structure
+
+```
+OpenManus/
+├── main.py                    # Entry point: Manus agent CLI
+├── run_flow.py                # Multi-agent planning flow
+├── run_mcp.py                 # MCP agent runner
+├── run_mcp_server.py          # Standalone MCP server
+├── sandbox_main.py            # Sandbox agent runner
+│
+├── app/
+│   ├── agent/                 # Agent implementations
+│   │   ├── base.py            #   BaseAgent (ABC)
+│   │   ├── react.py           #   ReActAgent (think→act)
+│   │   ├── toolcall.py        #   ToolCallAgent
+│   │   ├── manus.py           #   Manus (flagship agent)
+│   │   ├── browser.py         #   BrowserAgent
+│   │   ├── data_analysis.py   #   DataAnalysisAgent
+│   │   ├── swe.py             #   SWEAgent
+│   │   ├── mcp.py             #   MCPAgent
+│   │   └── sandbox_agent.py   #   SandboxManus
+│   │
+│   ├── tool/                  # Tool implementations
+│   │   ├── base.py            #   BaseTool (ABC)
+│   │   ├── tool_collection.py #   ToolCollection
+│   │   ├── python_execute.py  #   Isolated code execution
+│   │   ├── bash.py            #   Terminal with blocklist
+│   │   ├── browser_use_tool.py#   Browser automation
+│   │   ├── str_replace_editor.py# File editing
+│   │   ├── mcp.py             #   MCP client tools
+│   │   ├── web_search.py      #   Multi-engine search
+│   │   ├── crawl4ai.py        #   Web crawling
+│   │   ├── terminate.py       #   Termination tool
+│   │   ├── planning.py        #   Planning tool
+│   │   └── sandbox/           #   Sandbox-specific tools
+│   │
+│   ├── flow/                  # Orchestration flows
+│   │   ├── base.py            #   BaseFlow
+│   │   ├── flow_factory.py    #   FlowFactory
+│   │   └── planning.py        #   PlanningFlow (step exec)
+│   │
+│   ├── mcp/                   # MCP protocol server
+│   │   └── server.py          #   FastMCP-based server
+│   │
+│   ├── daytona/               # Daytona sandbox client
+│   │   ├── client.py          #   Shared init (lazy)
+│   │   ├── sandbox.py         #   CRUD operations
+│   │   └── tool_base.py       #   SandboxToolsBase
+│   │
+│   ├── sandbox/               # Local Docker sandbox
+│   │   ├── client.py          #   LocalSandboxClient
+│   │   └── core/              #   Manager, terminal
+│   │
+│   ├── prompt/                # System prompts
+│   ├── config.py              # Singleton config loader
+│   ├── llm.py                 # LLM service + rate limiter
+│   ├── schema.py              # Data models
+│   ├── logger.py              # Logging
+│   └── exceptions.py          # Custom exceptions
+│
+├── config/
+│   ├── config.example.toml    # Config template
+│   └── mcp.example.json       # MCP server config
+│
+├── tests/                     # Test suite (61+ tests)
+│   ├── conftest.py
+│   ├── test_toolcall_agent.py # 22 tests
+│   ├── test_manus_agent.py    # 14 tests
+│   ├── test_python_execute.py # 11 tests
+│   └── test_bash_tool.py      # 14 tests
+│
+└── .env.example               # Environment variables template
+```
+
+---
+
+## 🔄 Data Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Agent as Manus Agent
+    participant LLM as LLM Service
+    participant Tools as Tool Collection
+    participant Browser
+    participant Sandbox
+
+    User->>Agent: run("prompt")
+    Agent->>Agent: think()
+
+    Agent->>LLM: ask_tool(messages, tools)
+    LLM-->>Agent: tool_calls + content
+
+    alt Has tool calls
+        Agent->>Tools: execute(name, args)
+
+        alt PythonExecute
+            Tools->>Sandbox: subprocess(python)
+            Sandbox-->>Tools: output
+        else Bash
+            Tools->>Sandbox: check blocklist → execute
+            Sandbox-->>Tools: output
+        else BrowserUseTool
+            Tools->>Browser: navigate / click / extract
+            Browser-->>Tools: page content
+        else MCPClientTool
+            Tools->>LLM/MCP: remote tool call
+            LLM/MCP-->>Tools: result
+        end
+
+        Tools-->>Agent: ToolResult
+        Agent->>Agent: _handle_special_tool()
+        Agent->>Agent: act()
+    else Text only
+        Agent->>Agent: store response
+    end
+
+    Agent->>Agent: step() complete
+    loop Until max_steps or FINISHED
+        Agent->>Agent: next step
+    end
+
+    Agent-->>User: final result
+    Agent->>Agent: cleanup()
+```
+
+---
+
+## 🔒 Security Features
+
+OpenManus includes several security measures implemented across Sprints:
+
+### 1. Credential Management
+- **API keys read from env vars** (`LLM_API_KEY`, `PROXY_PASSWORD`, `VNC_PASSWORD`)
+- `.env` file support via `python-dotenv`
+- **No hardcoded credentials** in source code
+
+### 2. Code Execution Safety
+- `PythonExecute` runs in **isolated subprocess** (`create_subprocess_exec`), not `exec()`
+- Built-in timeout prevents runaway execution
+- Clean stdout/stderr capture
+
+### 3. Shell Command Blocklist
+The `Bash` tool blocks destructive commands via `_check_blocked_commands()`:
+
+| Blocked Pattern | Example |
+|---|---|
+| `rm -rf /` or `rm -rf ~` | Recursive root deletion |
+| `mkfs.*` | Filesystem formatting |
+| `dd if=` | Raw disk writes |
+| `chmod 777 /` | Permission escalation |
+| Fork bombs | `:(){ :\|:& };:` |
+| `reboot`, `shutdown`, `halt` | System control |
+
+### 4. Browser Safety
+- Default: **headless mode** (`headless=True`)
+- **Security features enabled** (`disable_security=False`)
+- Configurable via `BrowserSettings`
+
+### 5. Rate Limiting
+- Built-in `RateLimiter` in `LLM` service
+- Configurable max calls per time window
+- Async-safe via `asyncio.Lock`
+
+---
+
+## 🧪 Testing
+
+Tests are organized in the `tests/` directory and use `pytest` with `pytest-asyncio`:
+
+```bash
+# Run all tests
+python -m pytest tests/ -v
+
+# Run specific test file
+python -m pytest tests/test_toolcall_agent.py -v
+
+# Run with coverage report
+python -m pytest tests/ --cov=app --cov-report=term-missing
+```
+
+### Test Coverage (61 tests)
+
+| Test File | Tests | What It Covers |
+|---|---|---|
+| `test_toolcall_agent.py` | 22 | Think/act cycle, tool calls, edge cases, error handling |
+| `test_manus_agent.py` | 14 | Factory creation, MCP init, browser context, cleanup |
+| `test_python_execute.py` | 11 | Subprocess isolation, timeouts, syntax/runtime errors |
+| `test_bash_tool.py` | 14 | Basic execution, security blocklist (7 patterns), safe commands |
+
+---
+
+## 🛣️ Roadmap
+
+| Sprint | Focus | Status |
+|---|---|---|
+| **Sprint 1** | 🔒 Security: env vars, subprocess isolation, bash blocklist, browser safety | ✅ Complete |
+| **Sprint 2** | 🧪 Tests: 61 tests across all core components | ✅ Complete |
+| **Sprint 3** | 🎯 Quality: Daytona unification, dead code removal, rate limiting | ✅ Complete |
+| **Sprint 4** | 📖 Documentation: architecture diagrams, project structure docs | ✅ Complete |
+| **Sprint 5** | CI/CD pipeline, integration tests | ⏳ Pending |
+| **Sprint 6** | Performance optimization, caching, observability | ⏳ Pending |
+
+---
+
+## 🛠️ Development
+
+### Pre-commit
+
+Before submitting a pull request, run the pre-commit checks:
+
+```bash
+pre-commit run --all-files
+```
+
+### Adding a New Tool
+
+1. Create a new class in `app/tool/` inheriting from `BaseTool`
+2. Define `name`, `description`, `parameters` (JSON Schema)
+3. Implement the `execute()` method
+4. Add to `app/tool/__init__.py`
+5. Add to the Manus agent if it should be available by default
+
+### Adding a New Agent
+
+1. Inherit from `ToolCallAgent` (or `ReActAgent` for simpler agents)
+2. Override `think()` and/or `act()` as needed
+3. Define system prompts in `app/prompt/`
+4. Register in the appropriate entry point (`main.py`, `run_flow.py`)
+
+---
 
 ## How to contribute
 
