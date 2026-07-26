@@ -1,5 +1,7 @@
 import asyncio
-from typing import Any, Dict, List, Optional
+import hashlib
+import time
+from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 from bs4 import BeautifulSoup
@@ -17,6 +19,7 @@ from app.tool.search import (
     WebSearchEngine,
 )
 from app.tool.search.base import SearchItem
+from app.utils.metrics import metrics
 
 
 class SearchResult(BaseModel):
@@ -101,6 +104,96 @@ class SearchResponse(ToolResult):
 
         self.output = "\n".join(result_text)
         return self
+
+
+class SearchCache:
+    """TTL cache for search results to avoid repeated queries.
+
+    Caches results keyed by a hash of (query, num_results, lang, country).
+    Entries expire after the configured TTL. The cache is bounded to
+    prevent unbounded memory growth.
+
+    Attributes:
+        ttl_seconds: How long cached entries remain valid (default: 300s = 5 min)
+        max_entries: Maximum number of cached queries (default: 100)
+    """
+
+    def __init__(self, ttl_seconds: int = 300, max_entries: int = 100):
+        self.ttl_seconds = ttl_seconds
+        self.max_entries = max_entries
+        self._cache: Dict[str, Tuple[float, List[SearchResult]]] = {}
+        self._hit_count: int = 0
+        self._miss_count: int = 0
+
+    @staticmethod
+    def _make_key(query: str, num_results: int, lang: str, country: str) -> str:
+        """Generate a deterministic cache key from search parameters."""
+        raw = f"{query.strip().lower()}|{num_results}|{lang}|{country}"
+        return hashlib.sha256(raw.encode()).hexdigest()
+
+    def get(self, query: str, num_results: int, lang: str, country: str) -> Optional[List[SearchResult]]:
+        """Get cached results if available and not expired."""
+        key = self._make_key(query, num_results, lang, country)
+        entry = self._cache.get(key)
+
+        if entry is None:
+            self._miss_count += 1
+            return None
+
+        timestamp, results = entry
+        if time.monotonic() - timestamp > self.ttl_seconds:
+            # Expired
+            del self._cache[key]
+            self._miss_count += 1
+            return None
+
+        self._hit_count += 1
+        logger.info(
+            f"🔍 Search cache HIT for '{query[:50]}' "
+            f"({self._hit_count}/{self._hit_count + self._miss_count} hits)"
+        )
+        return results
+
+    def set(self, query: str, num_results: int, lang: str, country: str, results: List[SearchResult]) -> None:
+        """Store search results in cache."""
+        key = self._make_key(query, num_results, lang, country)
+
+        # Evict oldest entry if at capacity
+        if len(self._cache) >= self.max_entries:
+            oldest_key = min(self._cache, key=lambda k: self._cache[k][0])
+            del self._cache[oldest_key]
+
+        self._cache[key] = (time.monotonic(), results)
+        logger.info(
+            f"🔍 Search cache SET for '{query[:50]}' "
+            f"({len(self._cache)}/{self.max_entries} slots used)"
+        )
+
+    def invalidate(self, query: Optional[str] = None) -> None:
+        """Invalidate cache entries. If query is None, clears entire cache.
+
+        Note: When a query is specified, the entire cache is cleared because
+        the hash-based keys include num_results/lang/country, making
+        partial invalidation unreliable.
+        """
+        self._cache.clear()
+        if query:
+            logger.info(f"🔍 Search cache invalidated (all entries) for query '{query[:50]}'")
+        else:
+            logger.info("🔍 Search cache cleared entirely")
+
+    @property
+    def stats(self) -> Dict[str, Any]:
+        """Get cache statistics for observability."""
+        total = self._hit_count + self._miss_count
+        return {
+            "size": len(self._cache),
+            "max_entries": self.max_entries,
+            "ttl_seconds": self.ttl_seconds,
+            "hits": self._hit_count,
+            "misses": self._miss_count,
+            "hit_rate": f"{(self._hit_count / total * 100):.1f}%" if total > 0 else "N/A",
+        }
 
 
 class WebContentFetcher:
@@ -197,6 +290,10 @@ class WebSearch(BaseTool):
         "bing": BingSearchEngine(),
     }
     content_fetcher: WebContentFetcher = WebContentFetcher()
+    cache: SearchCache = SearchCache(
+        ttl_seconds=getattr(config.search_config, "cache_ttl", 300) if config.search_config else 300,
+        max_entries=getattr(config.search_config, "cache_max_entries", 100) if config.search_config else 100,
+    )
 
     async def execute(
         self,
@@ -246,18 +343,54 @@ class WebSearch(BaseTool):
                 else "us"
             )
 
+        # Check cache first
+        cached_results = self.cache.get(query, num_results, lang, country)
+        if cached_results is not None:
+            logger.info(f"🔍 Returning {len(cached_results)} cached results for '{query[:60]}'")
+            # Still fetch content if requested
+            if fetch_content:
+                cached_results = await self._fetch_content_for_results(cached_results)
+            return SearchResponse(
+                status="success",
+                query=query,
+                results=cached_results,
+                metadata=SearchMetadata(
+                    total_results=len(cached_results),
+                    language=lang,
+                    country=country,
+                ),
+            )
+
         search_params = {"lang": lang, "country": country}
 
         # Try searching with retries when all engines fail
+        start_time = time.monotonic()
         for retry_count in range(max_retries + 1):
             results = await self._try_all_engines(query, num_results, search_params)
 
             if results:
+                # Cache the results for future queries
+                self.cache.set(query, num_results, lang, country, results)
+
                 # Fetch content if requested
                 if fetch_content:
                     results = await self._fetch_content_for_results(results)
 
-                # Return a successful structured response
+                duration = (time.monotonic() - start_time) * 1000
+
+                # Record metrics for observability
+                metrics.record(
+                    "web_search",
+                    duration_ms=duration,
+                    success=True,
+                    metadata={
+                        "query": query[:60],
+                        "engine": search_params.get("engine", "auto"),
+                        "cached": False,
+                        "results_count": len(results),
+                    },
+                )
+
                 return SearchResponse(
                     status="success",
                     query=query,
@@ -280,6 +413,14 @@ class WebSearch(BaseTool):
                     f"All search engines failed after {max_retries} retries. Giving up."
                 )
 
+        duration = (time.monotonic() - start_time) * 1000
+        metrics.record(
+            "web_search",
+            duration_ms=duration,
+            success=False,
+            metadata={"query": query[:60], "reason": "all_engines_failed"},
+        )
+
         # Return an error response
         return SearchResponse(
             query=query,
@@ -297,17 +438,34 @@ class WebSearch(BaseTool):
         for engine_name in engine_order:
             engine = self._search_engine[engine_name]
             logger.info(f"🔎 Attempting search with {engine_name.capitalize()}...")
+
+            start = time.monotonic()
             search_items = await self._perform_search_with_engine(
                 engine, query, num_results, search_params
             )
+            duration = (time.monotonic() - start) * 1000
 
             if not search_items:
+                failed_engines.append(engine_name)
+                metrics.record(
+                    "search_engine",
+                    duration_ms=duration,
+                    success=False,
+                    metadata={"engine": engine_name, "query": query[:60]},
+                )
                 continue
 
             if failed_engines:
                 logger.info(
                     f"Search successful with {engine_name.capitalize()} after trying: {', '.join(failed_engines)}"
                 )
+
+            metrics.record(
+                "search_engine",
+                duration_ms=duration,
+                success=True,
+                metadata={"engine": engine_name, "query": query[:60]},
+            )
 
             # Transform search items into structured results
             return [
