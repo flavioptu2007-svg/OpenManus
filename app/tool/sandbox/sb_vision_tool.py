@@ -124,7 +124,9 @@ class SandboxVisionTool(SandboxToolsBase):
             try:
                 file_info = self.sandbox.fs.get_file_info(full_path)
                 if file_info.is_dir:
-                    return self.fail_response(f"路径 '{cleaned_path}' 是目录，不是图片文件。")
+                    return self.fail_response(
+                        f"路径 '{cleaned_path}' 是目录，不是图片文件。"
+                    )
             except Exception:
                 return self.fail_response(f"图片文件未找到: '{cleaned_path}'")
             if file_info.size > MAX_IMAGE_SIZE:

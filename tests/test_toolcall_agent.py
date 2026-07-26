@@ -1,6 +1,6 @@
 """Tests for ToolCallAgent — the base agent for tool/function calls."""
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -9,8 +9,7 @@ from app.exceptions import TokenLimitExceeded
 from app.llm import LLM
 from app.schema import AgentState, Function, Message, ToolCall, ToolChoice
 from app.tool import Terminate, ToolCollection
-from app.tool.base import ToolResult
-from tests.conftest import CleanupTool, FailingTool, MockTool
+from tests.conftest import FailingTool, MockTool
 
 
 def _make_tool_call(function_name: str, arguments: str = "{}") -> ToolCall:
@@ -110,9 +109,7 @@ async def test_act_executes_tool_calls(toolcall_agent):
 async def test_act_with_no_tool_calls(toolcall_agent):
     """Test act() with no tool calls returns last message content."""
     toolcall_agent.tool_calls = []
-    toolcall_agent.memory.add_message(
-        Message.assistant_message("Test content")
-    )
+    toolcall_agent.memory.add_message(Message.assistant_message("Test content"))
 
     result = await toolcall_agent.act()
 
@@ -311,7 +308,9 @@ async def test_think_with_token_limit_exceeded(toolcall_agent):
 
 
 @pytest.mark.asyncio
-async def test_think_preserves_next_step_prompt(toolcall_agent, mock_tool_call_response):
+async def test_think_preserves_next_step_prompt(
+    toolcall_agent, mock_tool_call_response
+):
     """Test think() restores the original next_step_prompt after processing."""
     original_prompt = "Original prompt"
     toolcall_agent.next_step_prompt = original_prompt

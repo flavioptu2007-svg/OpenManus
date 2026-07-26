@@ -66,6 +66,7 @@ class BaseTool(ABC, BaseModel):
     name: str
     description: str
     parameters: Optional[dict] = None
+
     class Config:
         arbitrary_types_allowed = True
         underscore_attrs_are_private = False

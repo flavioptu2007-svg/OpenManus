@@ -5,13 +5,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from app.agent.manus import Manus
-from app.schema import AgentState, Message, ToolCall
+from app.schema import AgentState
 
 
 @pytest.fixture
 def mock_llm():
     """Creates a properly mocked LLM for Manus tests."""
     from app.llm import LLM
+
     mock = AsyncMock(spec=LLM)
     mock.ask_tool = AsyncMock()
     mock.ask = AsyncMock()

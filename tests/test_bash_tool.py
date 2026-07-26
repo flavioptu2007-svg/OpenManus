@@ -31,9 +31,7 @@ async def test_simple_command(bash):
 @pytest.mark.asyncio
 async def test_command_with_output(bash):
     """Test command that produces multiline output."""
-    result = await bash.execute(
-        command="echo 'line1' && echo 'line2' && echo 'line3'"
-    )
+    result = await bash.execute(command="echo 'line1' && echo 'line2' && echo 'line3'")
 
     assert isinstance(result, CLIResult)
     assert "line1" in (result.output or "")
@@ -142,6 +140,7 @@ async def test_blocklist_halt(bash):
 
 
 # --- Safe Commands Should Still Work ---
+
 
 @pytest.mark.asyncio
 async def test_safe_command_rm_file(bash):

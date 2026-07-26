@@ -22,7 +22,9 @@ class SandboxManus(ToolCallAgent):
     """A versatile general-purpose agent with support for both local and MCP tools."""
 
     name: str = "SandboxManus"
-    description: str = "A versatile agent that can solve various tasks using multiple sandbox-tools including MCP-based tools"
+    description: str = (
+        "A versatile agent that can solve various tasks using multiple sandbox-tools including MCP-based tools"
+    )
 
     system_prompt: str = SYSTEM_PROMPT.format(directory=config.workspace_root)
     next_step_prompt: str = NEXT_STEP_PROMPT

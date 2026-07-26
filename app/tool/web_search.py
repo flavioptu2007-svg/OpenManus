@@ -131,7 +131,9 @@ class SearchCache:
         raw = f"{query.strip().lower()}|{num_results}|{lang}|{country}"
         return hashlib.sha256(raw.encode()).hexdigest()
 
-    def get(self, query: str, num_results: int, lang: str, country: str) -> Optional[List[SearchResult]]:
+    def get(
+        self, query: str, num_results: int, lang: str, country: str
+    ) -> Optional[List[SearchResult]]:
         """Get cached results if available and not expired."""
         key = self._make_key(query, num_results, lang, country)
         entry = self._cache.get(key)
@@ -154,7 +156,14 @@ class SearchCache:
         )
         return results
 
-    def set(self, query: str, num_results: int, lang: str, country: str, results: List[SearchResult]) -> None:
+    def set(
+        self,
+        query: str,
+        num_results: int,
+        lang: str,
+        country: str,
+        results: List[SearchResult],
+    ) -> None:
         """Store search results in cache."""
         key = self._make_key(query, num_results, lang, country)
 
@@ -178,7 +187,9 @@ class SearchCache:
         """
         self._cache.clear()
         if query:
-            logger.info(f"🔍 Search cache invalidated (all entries) for query '{query[:50]}'")
+            logger.info(
+                f"🔍 Search cache invalidated (all entries) for query '{query[:50]}'"
+            )
         else:
             logger.info("🔍 Search cache cleared entirely")
 
@@ -192,7 +203,9 @@ class SearchCache:
             "ttl_seconds": self.ttl_seconds,
             "hits": self._hit_count,
             "misses": self._miss_count,
-            "hit_rate": f"{(self._hit_count / total * 100):.1f}%" if total > 0 else "N/A",
+            "hit_rate": (
+                f"{(self._hit_count / total * 100):.1f}%" if total > 0 else "N/A"
+            ),
         }
 
 
@@ -291,8 +304,16 @@ class WebSearch(BaseTool):
     }
     content_fetcher: WebContentFetcher = WebContentFetcher()
     cache: SearchCache = SearchCache(
-        ttl_seconds=getattr(config.search_config, "cache_ttl", 300) if config.search_config else 300,
-        max_entries=getattr(config.search_config, "cache_max_entries", 100) if config.search_config else 100,
+        ttl_seconds=(
+            getattr(config.search_config, "cache_ttl", 300)
+            if config.search_config
+            else 300
+        ),
+        max_entries=(
+            getattr(config.search_config, "cache_max_entries", 100)
+            if config.search_config
+            else 100
+        ),
     )
 
     async def execute(
@@ -346,7 +367,9 @@ class WebSearch(BaseTool):
         # Check cache first
         cached_results = self.cache.get(query, num_results, lang, country)
         if cached_results is not None:
-            logger.info(f"🔍 Returning {len(cached_results)} cached results for '{query[:60]}'")
+            logger.info(
+                f"🔍 Returning {len(cached_results)} cached results for '{query[:60]}'"
+            )
             # Still fetch content if requested
             if fetch_content:
                 cached_results = await self._fetch_content_for_results(cached_results)

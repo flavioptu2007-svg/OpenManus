@@ -69,7 +69,7 @@ import os
 class LLMSettings(BaseModel):
     api_key: str = Field(
         default_factory=lambda: os.environ.get(
-            f"LLM_API_KEY", 
+            f"LLM_API_KEY",
             "YOUR_API_KEY"
         ),
         description="API key (override via LLM_API_KEY env var)"
@@ -390,7 +390,7 @@ class RateLimiter:
         self.max_calls = max_calls
         self.period = period
         self.calls: list[datetime] = []
-    
+
     async def acquire(self):
         now = datetime.now()
         self.calls = [c for c in self.calls if now - c < timedelta(seconds=self.period)]

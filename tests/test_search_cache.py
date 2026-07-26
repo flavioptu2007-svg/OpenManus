@@ -4,7 +4,6 @@ import time
 
 import pytest
 
-from app.tool.search.base import SearchItem
 from app.tool.web_search import SearchCache, SearchResult
 from app.utils.metrics import MetricsCollector
 

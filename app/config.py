@@ -41,7 +41,9 @@ class LLMSettings(BaseModel):
 
 class ProxySettings(BaseModel):
     server: str = Field(None, description="Proxy server address")
-    username: Optional[str] = Field(None, description="Proxy username (override via PROXY_USERNAME env var)")
+    username: Optional[str] = Field(
+        None, description="Proxy username (override via PROXY_USERNAME env var)"
+    )
     password: Optional[str] = Field(
         default_factory=lambda: os.environ.get("PROXY_PASSWORD", None),
         description="Proxy password (override via PROXY_PASSWORD env var)",
@@ -79,9 +81,13 @@ class RunflowSettings(BaseModel):
 
 
 class BrowserSettings(BaseModel):
-    headless: bool = Field(True, description="Whether to run browser in headless mode (safer: enabled by default)")
+    headless: bool = Field(
+        True,
+        description="Whether to run browser in headless mode (safer: enabled by default)",
+    )
     disable_security: bool = Field(
-        False, description="Disable browser security features (safer: disabled by default)"
+        False,
+        description="Disable browser security features (safer: disabled by default)",
     )
     extra_chromium_args: List[str] = Field(
         default_factory=list, description="Extra arguments to pass to the browser"
@@ -118,7 +124,9 @@ class SandboxSettings(BaseModel):
 
 
 class DaytonaSettings(BaseModel):
-    daytona_api_key: str = Field("", description="API key for Daytona (leave empty to disable)")
+    daytona_api_key: str = Field(
+        "", description="API key for Daytona (leave empty to disable)"
+    )
     daytona_server_url: Optional[str] = Field(
         "https://app.daytona.io/api", description=""
     )

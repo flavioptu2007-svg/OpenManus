@@ -168,12 +168,16 @@ class Crawl4aiTool(BaseTool):
                                     "url": url,
                                     "success": True,
                                     "status_code": getattr(result, "status_code", 200),
-                                    "title": result.metadata.get("title")
-                                    if result.metadata
-                                    else None,
-                                    "markdown": result.markdown
-                                    if hasattr(result, "markdown")
-                                    else None,
+                                    "title": (
+                                        result.metadata.get("title")
+                                        if result.metadata
+                                        else None
+                                    ),
+                                    "markdown": (
+                                        result.markdown
+                                        if hasattr(result, "markdown")
+                                        else None
+                                    ),
                                     "word_count": word_count,
                                     "links_count": links_count,
                                     "images_count": images_count,

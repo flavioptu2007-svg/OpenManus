@@ -7,6 +7,10 @@ English | [中文](README_zh.md) | [한국어](README_ko.md) | [日本語](READM
 [![GitHub stars](https://img.shields.io/github/stars/FoundationAgents/OpenManus?style=social)](https://github.com/FoundationAgents/OpenManus/stargazers)
 &ensp;
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) &ensp;
+[![CI](https://img.shields.io/github/actions/workflow/status/FoundationAgents/OpenManus/ci.yaml?branch=main&label=CI&logo=github)](https://github.com/FoundationAgents/OpenManus/actions/workflows/ci.yaml)
+&ensp;
+[![Coverage](https://img.shields.io/badge/coverage-75%20tests-brightgreen)](https://github.com/FoundationAgents/OpenManus/actions/workflows/ci.yaml)
+&ensp;
 [![Discord Follow](https://dcbadge.vercel.app/api/server/DYn29wFk9z?style=flat)](https://discord.gg/DYn29wFk9z)
 [![Demo](https://img.shields.io/badge/Demo-Hugging%20Face-yellow)](https://huggingface.co/spaces/lyh-917/OpenManusDemo)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15186407.svg)](https://doi.org/10.5281/zenodo.15186407)
@@ -439,7 +443,7 @@ python -m pytest tests/test_toolcall_agent.py -v
 python -m pytest tests/ --cov=app --cov-report=term-missing
 ```
 
-### Test Coverage (61 tests)
+### Test Coverage (75 tests)
 
 | Test File | Tests | What It Covers |
 |---|---|---|
@@ -447,6 +451,7 @@ python -m pytest tests/ --cov=app --cov-report=term-missing
 | `test_manus_agent.py` | 14 | Factory creation, MCP init, browser context, cleanup |
 | `test_python_execute.py` | 11 | Subprocess isolation, timeouts, syntax/runtime errors |
 | `test_bash_tool.py` | 14 | Basic execution, security blocklist (7 patterns), safe commands |
+| `test_search_cache.py` | 14 | TTL cache, metrics collector, search result validation |
 
 ---
 
@@ -458,8 +463,8 @@ python -m pytest tests/ --cov=app --cov-report=term-missing
 | **Sprint 2** | 🧪 Tests: 61 tests across all core components | ✅ Complete |
 | **Sprint 3** | 🎯 Quality: Daytona unification, dead code removal, rate limiting | ✅ Complete |
 | **Sprint 4** | 📖 Documentation: architecture diagrams, project structure docs | ✅ Complete |
-| **Sprint 5** | CI/CD pipeline, integration tests | ⏳ Pending |
-| **Sprint 6** | Performance optimization, caching, observability | ⏳ Pending |
+| **Sprint 5** | ⚙️ CI/CD: GitHub Actions pipeline (test, lint, syntax) | ✅ Complete |
+| **Sprint 6** | ⚡ Performance: search cache, metrics collector, observability | ✅ Complete |
 
 ---
 
@@ -523,6 +528,46 @@ Additionally, we are grateful to [AAAJ](https://github.com/metauto-ai/agent-as-a
 We also thank stepfun(阶跃星辰) for supporting our Hugging Face demo space.
 
 OpenManus is built by contributors from MetaGPT. Huge thanks to this agent community!
+
+---
+
+## 🎮 Educational HTML Assets
+
+This repository includes several standalone HTML educational resources for History teaching (BNCC-aligned, 6th-9th grade):
+
+### 🃏 Memory Games
+
+| File | Theme | Pairs | Sound | Grade |
+|---|---|---|---|---|
+| `jogo_memoria_reforma.html` | Protestant Reformation | 12 pairs | ✅ Web Audio API | 7th |
+| `jogo_memoria_brasil_colonia.html` | Colonial Brazil | 20 pairs | ✅ Web Audio API | 7th-8th |
+| `jogo_memoria_holandesas_digital.html` | Dutch Invasions | 16 pairs | ✅ Web Audio API | 7th-8th |
+| `jogo_memoria_holandesas.html` | Dutch Invasions (print) | 8 pairs | 🖨️ Print-friendly | 7th-8th |
+
+### 🧠 History Quiz (React + Tailwind)
+
+| File | Questions | Themes | Features |
+|---|---|---|---|
+| `quiz_historico.html` 🇧🇷 | **311 questions** | 42 themes (6th-9th) | 3 modes (Study/Quiz/Timer), 12 achievements, SoundFX, BNCC codes |
+| `quiz_historico_en.html` 🇺🇸 | **311 questions** | 42 themes (6th-9th) | Same features, fully translated to English |
+
+### 📊 School Management Systems
+
+| File | Description | Tech |
+|---|---|---|
+| `gestao_escolar.html` | Weekly grid, reports, JSON backup, occupancy dashboard | Vanilla HTML/CSS/JS |
+| `escola_organizada.html` | Space scheduling, login, conflict detection, CSV export | React + Tailwind |
+
+### 🤖 Local AI Agent
+
+| File | Description |
+|---|---|
+| `agente_ollama.py` | 10-tool local agent with Ollama function calling |
+| `guia_agente_local_ollama.md` | Step-by-step guide to build your own local agent |
+
+All HTML files are **zero-dependency** (open directly in browser) or use **CDN** (React, Tailwind).
+
+---
 
 ## Cite
 ```bibtex

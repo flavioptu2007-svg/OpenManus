@@ -136,13 +136,9 @@ class MetricsCollector:
         self.record(operation, duration_ms, success, metadata)
         meta_str = f" ({metadata})" if metadata else ""
         if success:
-            logger.info(
-                f"⏱️ {operation} completed in {duration_ms:.1f}ms{meta_str}"
-            )
+            logger.info(f"⏱️ {operation} completed in {duration_ms:.1f}ms{meta_str}")
         else:
-            logger.warning(
-                f"⏱️ {operation} FAILED in {duration_ms:.1f}ms{meta_str}"
-            )
+            logger.warning(f"⏱️ {operation} FAILED in {duration_ms:.1f}ms{meta_str}")
 
     def report(self) -> Dict[str, Any]:
         """Generate a performance report summary.
@@ -167,18 +163,14 @@ class MetricsCollector:
 
         report: Dict[str, Any] = {}
         total_ops = len(self._entries)
-        total_success = sum(
-            1 for e in self._entries if e.success
-        )
+        total_success = sum(1 for e in self._entries if e.success)
 
         report["summary"] = {
             "total_operations": total_ops,
             "total_success": total_success,
             "total_failures": total_ops - total_success,
             "overall_success_rate": (
-                f"{(total_success / total_ops) * 100:.1f}%"
-                if total_ops > 0
-                else "N/A"
+                f"{(total_success / total_ops) * 100:.1f}%" if total_ops > 0 else "N/A"
             ),
         }
 

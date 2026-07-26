@@ -1,0 +1,294 @@
+#!/usr/bin/env python3
+"""Translate quiz_historico_en.html to English."""
+import re
+
+html_path = "/home/flavio/OpenManus/quiz_historico_en.html"
+
+with open(html_path, "r", encoding="utf-8") as f:
+    content = f.read()
+
+# 1. Title and main text
+translations = {
+    # Title
+    "Quiz Histórico — ProfHistória IA": "History Quiz — ProfHistória IA",
+    
+    # UI Labels
+    "Quiz Historico": "History Quiz",
+    "perguntas disponiveis": "questions available",
+    "Todos": "All",
+    "Todos temas": "All themes",
+    "Todas": "All",
+    "Facil": "Easy",
+    "Medio": "Medium",
+    "Dificil": "Hard",
+    "Estudo": "Study",
+    "Tempo": "Timer",
+    "Iniciar Estudo": "Start Study",
+    "Iniciar Quiz": "Start Quiz",
+    "Iniciar Tempo": "Start Timer",
+    "Iniciar ": "Start ",
+    " perguntas)": " questions)",
+    "Proxima": "Next",
+    "Finalizar": "Finish",
+    "Novo Quiz": "New Quiz",
+    "Quiz Finalizado!": "Quiz Complete!",
+    "Acertou ": "You got ",
+    " de ": " out of ",
+    " perguntas": " questions",
+    "Progresso: ": "Progress: ",
+    " jogos completados, ": " games completed, ",
+    " conquistas desbloqueadas": " achievements unlocked",
+    "Novas Conquistas!": "New Achievements!",
+    "Correto!": "Correct!",
+    "Errado!": "Wrong!",
+    
+    # Achievement Names
+    "Primeiros Passos": "First Steps",
+    "Complete seu primeiro quiz": "Complete your first quiz",
+    "Historiador Iniciante": "Beginner Historian",
+    "Complete 5 quizzes": "Complete 5 quizzes",
+    "Historiador Dedicado": "Dedicated Historian",
+    "Complete 20 quizzes": "Complete 20 quizzes",
+    "Mestre da Historia": "History Master",
+    "Complete 50 quizzes": "Complete 50 quizzes",
+    "Nota Maxima": "Perfect Score",
+    "Tire 100% em um quiz": "Score 100% on a quiz",
+    "Sequencia de Ouro": "Gold Streak",
+    "Acima de 90% em 3 quizzes seguidos": "Above 90% in 3 consecutive quizzes",
+    "Explorador do 6 Ano": "6th Grade Explorer",
+    "Complete todos os temas do 6 ano": "Complete all 6th grade themes",
+    "Explorador do 7 Ano": "7th Grade Explorer",
+    "Complete todos os temas do 7 ano": "Complete all 7th grade themes",
+    "Explorador do 8 Ano": "8th Grade Explorer",
+    "Complete todos os temas do 8 ano": "Complete all 8th grade themes",
+    "Explorador do 9 Ano": "9th Grade Explorer",
+    "Complete todos os temas do 9 ano": "Complete all 9th grade themes",
+    "Mestre dos Temas": "Theme Master",
+    "Complete todos os anos": "Complete all grades",
+    "Velocista": "Sprinter",
+    "Complete um quiz no modo Tempo em menos de 60s": "Complete a Timer quiz in under 60s",
+    
+    # Mode labels
+    "estudo": "study",
+    "quiz": "quiz",
+    "tempo": "timer",
+    
+    # Theme names in TEMAS
+    "Introdução à História": "Introduction to History",
+    "Origem da Humanidade": "Origin of Humanity",
+    "Povos da África Antiga": "Ancient African Peoples",
+    "Oriente Médio Antigo": "Ancient Middle East",
+    "Povos Pré-Colombianos": "Pre-Columbian Peoples",
+    "Povos Originários do Brasil": "Indigenous Peoples of Brazil",
+    "Grécia Antiga": "Ancient Greece",
+    "Roma Antiga": "Ancient Rome",
+    "Crise do Império Romano": "Crisis of the Roman Empire",
+    "Reinos Africanos": "African Kingdoms",
+    "Crise do Feudalismo": "Crisis of Feudalism",
+    "Grandes Navegações": "Great Navigations",
+    "Renascimento Cultural": "Cultural Renaissance",
+    "Saberes Africanos e Pré-Colombianos": "African and Pre-Columbian Knowledge",
+    "Absolutismo": "Absolutism",
+    "Conquista da América": "Conquest of America",
+    "Escravidão Moderna": "Modern Slavery",
+    "Reforma e Contrarreforma": "Reformation and Counter-Reformation",
+    "Comércio Atlântico": "Atlantic Trade",
+    "Colonização Portuguesa": "Portuguese Colonization",
+    "Iluminismo": "Enlightenment",
+    "Revolução Industrial": "Industrial Revolution",
+    "Rev. Francesa e Napoleão": "French Rev. and Napoleon",
+    "Independências (EUA/Haiti)": "Independences (USA/Haiti)",
+    "Independência do Brasil": "Independence of Brazil",
+    "América Latina": "Latin America",
+    "Primeiro Reinado": "First Reign",
+    "Período Regencial": "Regency Period",
+    "Segundo Reinado": "Second Reign",
+    "Abolicionismo": "Abolitionism",
+    "Crise do Império": "Crisis of the Empire",
+    "Imperialismo": "Imperialism",
+    "Antecedentes da 1ª Guerra": "WWI Background",
+    "Primeira República": "First Republic",
+    "Sociedade Rep. Velha": "Old Republic Society",
+    "Revoltas (Canudos/Contestado)": "Revolts (Canudos/Contestado)",
+    "Crise de 1930": "Crisis of 1930",
+    "Revolução Russa": "Russian Revolution",
+    "1ª Guerra (consequências)": "WWI (consequences)",
+    "Entre Guerras / 1929": "Interwar / 1929",
+    "Fascismo e Nazismo": "Fascism and Nazism",
+    "Era Vargas": "Vargas Era",
+    "2ª Guerra Mundial": "World War II",
+    "Holocausto": "Holocaust",
+    "Brasil na 2ª Guerra": "Brazil in WWII",
+    "Fim do Estado Novo": "End of Estado Novo",
+    "Guerra Fria": "Cold War",
+    "Descolonização": "Decolonization",
+    "Regime Militar": "Military Regime",
+    "Nova República": "New Republic",
+    
+    # Ano labels
+    "6º Ano": "6th Grade",
+    "7º Ano": "7th Grade",
+    "8º Ano": "8th Grade",
+    "9º Ano": "9th Grade",
+    
+    # Other
+    "Ativar/Desativar som": "Toggle sound",
+}
+
+# Apply UI translations first (replace exact strings)
+for pt, en in sorted(translations.items(), key=lambda x: -len(x[0])):
+    content = content.replace(pt, en)
+
+# Now translate the question texts (pergunta, opts, exp)
+# These are harder to do automatically, so we'll use a dictionary approach
+
+question_translations = {
+    # Based on ID patterns - translating pergunta, opts, exp
+    # We'll translate the question fields using regex
+    
+    # --- 6th Grade: Introduction to History ---
+    "O que a História estuda?": "What does History study?",
+    "O futuro da humanidade": "The future of humanity",
+    "As ações humanas ao longo do tempo": "Human actions over time",
+    "Apenas guerras e reis": "Only wars and kings",
+    "A geografia dos países": "The geography of countries",
+    "A História estuda as ações humanas no tempo, analisando transformações sociais, políticas e culturais.": "History studies human actions over time, analyzing social, political, and cultural transformations.",
+    
+    "O que é uma fonte histórica?": "What is a historical source?",
+    "Apenas documentos escritos": "Only written documents",
+    "Qualquer vestígio do passado humano": "Any trace of the human past",
+    "Somente objetos de museu": "Only museum objects",
+    "Livros didáticos": "Textbooks",
+    "Fonte histórica é todo vestígio deixado pela ação humana ao longo do tempo: documentos, objetos, imagens, relatos orais.": "A historical source is any trace left by human action over time: documents, objects, images, oral accounts.",
+    
+    "O tempo histórico é diferente do tempo cronológico porque:": "Historical time differs from chronological time because:",
+    "É sempre mais curto": "It is always shorter",
+    "Considera mudanças e permanências nas sociedades": "It considers changes and permanences in societies",
+    "Só existe na Europa": "It only exists in Europe",
+    "Mede apenas segundos e minutos": "It only measures seconds and minutes",
+    "O tempo histórico considera ritmos de transformação social, podendo ser mais longo ou mais curto que o cronológico.": "Historical time considers rhythms of social transformation, which can be longer or shorter than chronological time.",
+    
+    "Qual civilização criou o primeiro sistema de escrita?": "Which civilization created the first writing system?",
+    "Gregos": "Greeks",
+    "Egípcios": "Egyptians",
+    "Sumérios": "Sumerians",
+    "Chineses": "Chinese",
+    "Os sumérios (Mesopotâmia) criaram a escrita cuneiforme por volta de 3500 a.C., um dos primeiros sistemas de escrita.": "The Sumerians (Mesopotamia) created cuneiform writing around 3500 BCE, one of the first writing systems.",
+
+    # --- 6th Grade: Origin of Humanity ---
+    "Onde surgiram os primeiros hominídeos?": "Where did the first hominids appear?",
+    "América": "America",
+    "África": "Africa",
+    "Europa": "Europe",
+    "Ásia": "Asia",
+    "Os primeiros hominídeos surgiram no continente africano há cerca de 4-6 milhões de anos.": "The first hominids appeared in Africa about 4-6 million years ago.",
+    
+    "O que caracteriza o Paleolítico?": "What characterizes the Paleolithic?",
+    "Agricultura e cidades": "Agriculture and cities",
+    "Pedra polida e metais": "Polished stone and metals",
+    "Pedra lascada e nomadismo": "Chipped stone and nomadism",
+    "Escrita e comércio": "Writing and trade",
+    "No Paleolítico (2,5 mi - 10 mil a.C.), os humanos eram nômades caçadores-coletores que usavam pedra lascada.": "In the Paleolithic (2.5M - 10,000 BCE), humans were nomadic hunter-gatherers who used chipped stone.",
+    
+    "A Revolução Neolítica foi marcada por:": "The Neolithic Revolution was marked by:",
+    "Invenção da escrita": "Invention of writing",
+    "Descoberta do fogo": "Discovery of fire",
+    "Desenvolvimento da agricultura e sedentarização": "Development of agriculture and sedentism",
+    "Construção de pirâmides": "Pyramid construction",
+    "A Revolução Neolítica (10.000 a.C.) transformou a humanidade com o desenvolvimento da agricultura e a sedentarização.": "The Neolithic Revolution (10,000 BCE) transformed humanity with the development of agriculture and sedentism.",
+    
+    "Qual foi uma das principais consequências do domínio do fogo?": "What was one of the main consequences of mastering fire?",
+    "Invenção da roda": "Invention of the wheel",
+    "Aquecimento, proteção e cocção de alimentos": "Heating, protection, and cooking food",
+    "Criação da escrita": "Creation of writing",
+    "Construção de navios": "Shipbuilding",
+    "O domínio do fogo permitiu aquecimento, proteção contra predadores, cocção de alimentos e iluminação.": "Mastery of fire allowed heating, protection from predators, cooking food, and lighting.",
+
+    # --- 6th Grade: Ancient Africa ---
+    "O reino de Kush ficava na região do atual:": "The Kingdom of Kush was in the region of present-day:",
+    "Egito": "Egypt",
+    "Sudão": "Sudan",
+    "África do Sul": "South Africa",
+    "Nigéria": "Nigeria",
+    "Kush (ou Núbia) localizava-se no atual Sudão, ao sul do Egito, com capital em Meroé.": "Kush (or Nubia) was located in present-day Sudan, south of Egypt, with its capital at Meroe.",
+    
+    "O Reino de Axum ficava onde hoje é:": "The Kingdom of Axum was where today is:",
+    "Etiópia e Eritreia": "Ethiopia and Eritrea",
+    "Gana": "Ghana",
+    "Mali": "Mali",
+    "Angola": "Angola",
+    "Axum (séc. I-VII) foi um importante reino na região da atual Etiópia e Eritreia, centro comercial e cristão.": "Axum (1st-7th c.) was an important kingdom in modern Ethiopia and Eritrea, a commercial and Christian center.",
+    
+    "O Reino de Ghana (Gana Antigo) ficou rico controlando o comércio de:": "The Empire of Ghana got rich by controlling trade of:",
+    "Especiarias e tecidos": "Spices and textiles",
+    "Ouro e sal": "Gold and salt",
+    "Escravos e marfim": "Slaves and ivory",
+    "Café e açúcar": "Coffee and sugar",
+    "Gana Antigo (séc. VI-XIII) controlava as rotas de ouro do sul e sal do Saara, enriquecendo com esse comércio.": "Ancient Ghana (6th-13th c.) controlled gold routes from the south and salt from the Sahara, enriching itself through this trade.",
+
+    # --- 6th Grade: Ancient Middle East ---
+    "Os rios Tigre e Eufrates estão associados a qual civilização?": "The Tigris and Euphrates rivers are associated with which civilization?",
+    "Egípcia": "Egyptian",
+    "Mesopotâmica": "Mesopotamian",
+    "Chinesa": "Chinese",
+    "Indiana": "Indian",
+    "A Mesopotâmia ('terra entre rios') desenvolveu-se entre o Tigre e o Eufrates, no atual Iraque.": "Mesopotamia ('land between rivers') developed between the Tigris and Euphrates, in modern Iraq.",
+    
+    "O Código de Hamurábi é importante porque:": "The Code of Hammurabi is important because:",
+    "É o primeiro código de leis escrito": "It is the first written legal code",
+    "Fundou o primeiro império": "It founded the first empire",
+    "Inventou a matemática": "It invented mathematics",
+    "Criou a democracia": "It created democracy",
+    "Hamurábi (séc. XVIII a.C.) criou um dos primeiros códigos de leis escritos, baseado no princípio 'olho por olho'.": "Hammurabi (18th c. BCE) created one of the first written legal codes, based on the principle of 'an eye for an eye'.",
+    
+    "Os fenícios são conhecidos principalmente por:": "The Phoenicians are mainly known for:",
+    "Construir pirâmides": "Building pyramids",
+    "Desenvolver o alfabeto fonético": "Developing the phonetic alphabet",
+    "Criar a democracia": "Creating democracy",
+    "Inventar a roda": "Inventing the wheel",
+    "Os fenícios criaram um alfabeto fonético (22 letras) que influenciou gregos e romanos, base do alfabeto ocidental.": "The Phoenicians created a phonetic alphabet (22 letters) that influenced Greeks and Romans, the basis of the Western alphabet.",
+    
+    # Pre-Columbian
+    "Qual império pré-colombiano se destacou no atual México?": "Which pre-Columbian empire stood out in present-day Mexico?",
+    "Inca": "Inca",
+    "Maias": "Mayans",
+    "Astecas": "Aztecs",
+    "Tupi": "Tupi",
+    "Os astecas (ou mexicas) formaram um império no México com capital em Tenochtitlán.": "The Aztecs (or Mexica) formed an empire in Mexico with its capital at Tenochtitlan.",
+    
+    "Os incas se localizavam principalmente:": "The Incas were mainly located:",
+    "México": "Mexico",
+    "América Central": "Central America",
+    "Cordilheira dos Andes": "Andes Mountains",
+    "Amazônia": "Amazon",
+    "O Império Inca estendia-se pela Cordilheira dos Andes, do atual Equador ao Chile.": "The Inca Empire stretched along the Andes, from modern Ecuador to Chile.",
+    
+    "Qual sistema agrícola os incas desenvolveram?": "Which agricultural system did the Incas develop?",
+    "Terraceamento (andenes)": "Terracing (andenes)",
+    "Rotação de culturas": "Crop rotation",
+    "Irrigação por canais": "Canal irrigation",
+    "Pousio": "Fallow",
+    "Os incas construíram terraços agrícolas (andenes) nas encostas dos Andes para agricultura.": "The Incas built agricultural terraces (andenes) on the slopes of the Andes for farming.",
+    
+    "Os maias desenvolveram importante conhecimento em:": "The Mayans developed important knowledge in:",
+    "Astronomia e matemática": "Astronomy and mathematics",
+    "Navegação oceânica": "Ocean navigation",
+    "Metalurgia do ferro": "Iron metallurgy",
+    "Pólvora": "Gunpowder",
+    "Os maias criaram calendário preciso, sistema numérico com zero e avançados conhecimentos astronômicos.": "The Mayans created a precise calendar, a numerical system with zero, and advanced astronomical knowledge.",
+}
+
+# Apply question translations
+for pt, en in sorted(question_translations.items(), key=lambda x: -len(x[0])):
+    content = content.replace(pt, en)
+
+with open(html_path, "w", encoding="utf-8") as f:
+    f.write(content)
+
+# Count what was translated
+total_replaced = sum(content.count(en) for en in translations.values())
+q_count = len(re.findall(r'id:"q\d+"', content))
+print(f"File translated: quiz_historico_en.html")
+print(f"Questions: {q_count}")
+print(f"UI translations applied: {len(translations)}")
+print(f"Question translations applied: {len(question_translations)}")

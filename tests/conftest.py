@@ -1,13 +1,11 @@
 """Shared fixtures and mocks for OpenManus tests."""
 
-from typing import AsyncGenerator, List, Optional
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-import pytest_asyncio
 
 from app.llm import LLM
-from app.schema import AgentState, Memory, Message, ToolCall, Function
+from app.schema import Function, Memory, Message, ToolCall
 from app.tool.base import BaseTool, ToolResult
 
 
