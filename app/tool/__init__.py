@@ -1,3 +1,4 @@
+from app.tool.avaliacao_provas import AvaliacaoProvas
 from app.tool.base import BaseTool
 from app.tool.bash import Bash
 from app.tool.browser_use_tool import BrowserUseTool
@@ -11,6 +12,7 @@ from app.tool.web_search import WebSearch
 
 
 __all__ = [
+    "AvaliacaoProvas",
     "BaseTool",
     "Bash",
     "BrowserUseTool",

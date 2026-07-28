@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jogo da Memória — Invasões Holandesas</title>
+<script src="i18n-loader.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#f5f5f5;color:#333;padding:2rem 1rem}
@@ -52,24 +53,29 @@ footer{text-align:center;margin-top:1.5rem;font-size:.7rem;color:#b0bec5}
 </head>
 <body>
 <div class="container">
-  <h1>🃏 Invasões Holandesas no Brasil</h1>
-  <h2>Jogo da Memória — 8 pares para imprimir e recortar</h2>
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:1rem">
+    <div>
+      <h1 data-i18n="games.memory">🃏 Jogo da Memória</h1>
+      <h2 data-i18n="memory.subtitle">Invasões Holandesas no Brasil — 8 pares para imprimir e recortar</h2>
+    </div>
+    <div id="i18n-switcher"></div>
+  </div>
 
   <div class="instructions">
-    <h3>📋 Instruções</h3>
+    <h3 data-i18n="memory.instructions_title">📋 Instruções</h3>
     <ol>
-      <li>Imprima as cartas abaixo, recorte cada uma no contorno tracejado e dobre ao meio.</li>
-      <li>Embaralhe as cartas e vire-as com a face para baixo.</li>
-      <li>O jogador vira duas cartas por vez, tentando formar pares (A + B).</li>
-      <li>Se encontrar um par, o jogador o mantém e joga novamente.</li>
-      <li>Se não encontrar, vira as cartas de volta e passa a vez.</li>
-      <li>O jogo termina quando todos os <strong>8 pares</strong> forem encontrados.</li>
+      <li><span data-i18n="memory.instructions[0]">Imprima as cartas abaixo, recorte cada uma no contorno tracejado e dobre ao meio.</span></li>
+      <li><span data-i18n="memory.instructions[1]">Embaralhe as cartas e vire-as com a face para baixo.</span></li>
+      <li><span data-i18n="memory.instructions[2]">O jogador vira duas cartas por vez, tentando formar pares (A + B).</span></li>
+      <li><span data-i18n="memory.instructions[3]">Se encontrar um par, o jogador o mantém e joga novamente.</span></li>
+      <li><span data-i18n="memory.instructions[4]">Se não encontrar, vira as cartas de volta e passa a vez.</span></li>
+      <li data-i18n="memory.instructions[5]" data-i18n-params='{"pairs":"8"}'>O jogo termina quando todos os <strong>8 pares</strong> forem encontrados.</li>
     </ol>
   </div>
 
   <div class="print-info">
-    <span>📄 Para impressão: as bordas tracejadas guiam o corte</span>
-    <button onclick="window.print()">🖨️ Imprimir</button>
+    <span data-i18n="memory.print_info">📄 Para impressão: as bordas tracejadas guiam o corte</span>
+    <button onclick="window.print()" data-i18n="memory.print_button">🖨️ Imprimir</button>
   </div>
 
   <div class="grid" id="cardGrid"></div>
@@ -78,6 +84,11 @@ footer{text-align:center;margin-top:1.5rem;font-size:.7rem;color:#b0bec5}
 </div>
 
 <script>
+// Render language switcher when i18n is ready
+document.addEventListener('i18n-loaded', () => {
+  document.getElementById('i18n-switcher').innerHTML = I18N.renderSwitcher();
+});
+
 const cards = [
   { pair:1, type:"A", term:"Maurício de Nassau", desc:"Governador do Brasil Holandês (1637-1644) que modernizou Recife e promoveu o desenvolvimento cultural e científico." },
   { pair:1, type:"B", term:"Palácio de Friburgo", desc:"Residência de Maurício de Nassau em Recife, era um impressionante palácio com observatório astronômico e jardins botânicos." },
