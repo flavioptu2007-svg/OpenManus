@@ -1,8 +1,60 @@
 """Shared fixtures and mocks for OpenManus tests."""
 
+import sys
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+
+# ---------------------------------------------------------------------------
+# Mock heavy / optional dependencies before any app imports so the test suite
+# can load even when only a subset of packages is installed.
+# ---------------------------------------------------------------------------
+def _ensure_mock(name: str) -> None:
+    """Insert a MagicMock into sys.modules if the module is not already loaded."""
+    if name not in sys.modules:
+        sys.modules[name] = MagicMock()
+
+# AWS Bedrock (optional provider)
+_ensure_mock("boto3")
+
+# Browser-use (optional, heavy dependency)
+for _m in (
+    "browser_use",
+    "browser_use.browser",
+    "browser_use.browser.context",
+    "browser_use.browser.browser",
+    "browser_use.dom",
+    "browser_use.dom.service",
+    "browser_use.dom.views",
+    "browser_use.dom.events",
+    "browser_use.dom.serializer",
+    "browser_use.dom.transformer",
+    "browser_use.dom.service.dom_payload_history",
+):
+    _ensure_mock(_m)
+
+# Search engines (optional)
+for _m in (
+    "baidusearch",
+    "baidusearch.baidusearch",
+    "duckduckgo_search",
+    "googlesearch",
+    "requests",
+    "bs4",
+    "unidiff",
+):
+    _ensure_mock(_m)
+
+# gymnasium / browsergym (optional)
+for _m in (
+    "gymnasium",
+    "gymnasium.envs",
+    "gymnasium.envs.browser",
+    "browsergym",
+    "browsergym.core",
+    "browsergym.core.registration",
+):
+    _ensure_mock(_m)
 
 from app.llm import LLM
 from app.schema import Function, Memory, Message, ToolCall
