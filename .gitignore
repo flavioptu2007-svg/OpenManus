@@ -200,3 +200,9 @@ cython_debug/
 
 # node
 node_modules
+
+### Backup & Data ###
+backup_avaliacoes_*.zip
+dados_avaliacoes/
+### Game Hub ###
+*.zip
