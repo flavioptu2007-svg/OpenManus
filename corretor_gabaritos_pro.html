@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corretor de Gabaritos Pro</title>
+    <link rel="stylesheet" href="index.css">
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/genai": "https://esm.sh/@google/genai@^0.12.0"
+        }
+      }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Corretor de Gabaritos Pro</h1>
+        </header>
+
+        <main>
+            <section id="gabarito-section" aria-labelledby="gabarito-heading">
+                <h2 id="gabarito-heading">1. Configurar Gabarito Oficial</h2>
+                <div class="form-group">
+                    <label for="num-questoes">Número de Questões:</label>
+                    <input type="number" id="num-questoes" name="num-questoes" min="1" max="200" value="10">
+                </div>
+                <div class="form-group">
+                    <label for="respostas-gabarito">Respostas do Gabarito (separadas por vírgula, ex: A,B,C,D,A):</label>
+                    <textarea id="respostas-gabarito" name="respostas-gabarito" rows="3" placeholder="Ex: A,B,C,D,E,A,B,C,D,E"></textarea>
+                </div>
+            </section>
+
+            <section id="aluno-section" aria-labelledby="aluno-heading">
+                <h2 id="aluno-heading">2. Enviar Cartão Resposta do Aluno</h2>
+                <div class="form-group">
+                    <label for="cartao-resposta-upload">Selecione a imagem do cartão resposta:</label>
+                    <input type="file" id="cartao-resposta-upload" name="cartao-resposta-upload" accept="image/*">
+                </div>
+                <div id="image-preview-container">
+                    <img id="image-preview" src="#" alt="Pré-visualização do cartão resposta" style="display: none;">
+                    <p id="image-preview-placeholder">Nenhuma imagem selecionada</p>
+                </div>
+            </section>
+
+            <section id="action-section">
+                <button id="corrigir-prova-btn" type="button" aria-label="Corrigir Prova">Corrigir Prova</button>
+            </section>
+
+            <section id="resultados-section" aria-labelledby="resultados-heading" aria-live="polite">
+                <h2 id="resultados-heading">3. Resultados</h2>
+                <div id="loading-indicator" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Processando... Por favor, aguarde.</p>
+                </div>
+                <div id="error-message" class="error-message" role="alert" style="display: none;"></div>
+                <div id="score-display"></div>
+                <div id="detailed-results-table-container">
+                    <table id="detailed-results-table">
+                        <thead>
+                            <tr>
+                                <th>Questão</th>
+                                <th>Gabarito</th>
+                                <th>Resposta do Aluno</th>
+                                <th>Resultado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailed-results-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Corretor de Gabaritos Pro</p>
+        </footer>
+    </div>
+    <script type="module" src="index.tsx"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+# Core
+gunicorn==23.0.0
+Flask==2.2.2
+Flask-SQLAlchemy==3.0.2
+Flask-Migrate==4.0.4
+Flask-Limiter==3.3.1
+Flask-JWT-Extended==4.5.2
+Flask-Caching==2.0.2
+marshmallow==3.19.0
+marshmallow-sqlalchemy==0.29.0
+python-dotenv==1.0.0
+
+# Async
+celery==5.2.7
+redis==4.5.4
+
+# Image processing
+opencv-python-headless>=4.7
+pyzbar==0.1.9
+numpy>=1.23
+Pillow>=9.5
+
+# PDF export
+reportlab>=4.0
+
+# HTTP
+requests>=2.28
+werkzeug>=2.2.2,<3.0
+
+# Tests
+pytest>=7.3
+pytest-flask>=1.2
+pytest-cov>=4.0
+factory-boy>=3.2
+Faker>=18.9
