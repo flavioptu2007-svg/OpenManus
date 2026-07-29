@@ -29,19 +29,15 @@ for _m in (
     "browser_use.dom.events",
     "browser_use.dom.serializer",
     "browser_use.dom.transformer",
-    "browser_use.dom.service.dom_payload_history",
 ):
     _ensure_mock(_m)
 
-# Search engines (optional)
+# Search engines (optional, not in requirements.txt)
 for _m in (
     "baidusearch",
     "baidusearch.baidusearch",
     "duckduckgo_search",
     "googlesearch",
-    "requests",
-    "bs4",
-    "unidiff",
 ):
     _ensure_mock(_m)
 
@@ -49,10 +45,8 @@ for _m in (
 for _m in (
     "gymnasium",
     "gymnasium.envs",
-    "gymnasium.envs.browser",
     "browsergym",
     "browsergym.core",
-    "browsergym.core.registration",
 ):
     _ensure_mock(_m)
 
