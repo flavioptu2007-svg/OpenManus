@@ -23,7 +23,7 @@ def tool():
     """Creates an AvaliacaoProvas tool instance with a temporary directory."""
     temp_dir = tempfile.mkdtemp()
     tool = AvaliacaoProvas()
-    tool._sistema.diretorio_dados = temp_dir
+    tool.sistema.diretorio_dados = temp_dir
     yield tool
     # Cleanup
     if os.path.exists(temp_dir):

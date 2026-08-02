@@ -1,6 +1,16 @@
+# Python hooks run with the project's Python 3.12 (pre-commit's default here
+# would otherwise pick Python 3.14, which old black (23.x) cannot parse:
+# `module 'ast' has no attribute 'Str'`). Bumped black to a 3.12-compatible
+# release.
+# NOTE: `python3.12` must be resolvable on PATH for local runs. On this machine
+# it is a symlink to the uv-managed Python 3.12.13 (~/.local/bin/python3.12).
+# CI provides it via actions/setup-python.
+default_language_version:
+  python: python3.12
+
 repos:
   - repo: https://github.com/psf/black
-    rev: 23.1.0
+    rev: 24.10.0
     hooks:
       - id: black
 
@@ -35,3 +45,25 @@ repos:
       - id: isort
         args:
           ["--profile", "black", "--filter-files", "--lines-after-imports=2"]
+
+  # ─── GitGuardian ggshield — secret scanning ───────────────────────────────
+  # Blocks commits (pre-commit) and pushes (pre-push) that contain secrets.
+  # Uses the locally installed ggshield binary (see .ggshield-hook.sh).
+  # Requires authentication: export GITGUARDIAN_API_KEY=... (or: ggshield auth login)
+  # Skips cleanly when the key is absent, so it never blocks development
+  # before the user authenticates.
+  - repo: local
+    hooks:
+      - id: ggshield-secret-scan
+        name: ggshield - secret scan (staged changes)
+        entry: ./.ggshield-hook.sh pre-commit
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: ggshield-secret-scan-push
+        name: ggshield - secret scan (commits being pushed)
+        entry: ./.ggshield-hook.sh pre-push
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
