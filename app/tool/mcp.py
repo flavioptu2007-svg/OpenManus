@@ -179,7 +179,7 @@ class MCPClients(ToolCollection):
                     self.tool_map = {
                         k: v
                         for k, v in self.tool_map.items()
-                        if v.server_id != server_id
+                        if isinstance(v, MCPClientTool) and v.server_id != server_id
                     }
                     self.tools = tuple(self.tool_map.values())
                     logger.info(f"Disconnected from MCP server {server_id}")

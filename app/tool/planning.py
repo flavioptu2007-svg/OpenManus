@@ -69,7 +69,7 @@ class PlanningTool(BaseTool):
     plans: dict = {}  # Dictionary to store plans by plan_id
     _current_plan_id: Optional[str] = None  # Track the current active plan
 
-    async def execute(
+    async def execute(  # type: ignore[override]
         self,
         *,
         command: Literal[

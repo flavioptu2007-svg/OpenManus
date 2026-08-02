@@ -316,7 +316,7 @@ class WebSearch(BaseTool):
         ),
     )
 
-    async def execute(
+    async def execute(  # type: ignore[override]
         self,
         query: str,
         num_results: int = 5,
@@ -596,4 +596,4 @@ if __name__ == "__main__":
             query="Python programming", fetch_content=True, num_results=1
         )
     )
-    print(search_response.to_tool_result())
+    print(search_response)

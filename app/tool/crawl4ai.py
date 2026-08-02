@@ -6,7 +6,7 @@ providing fast, precise, and AI-ready data extraction with clean Markdown genera
 """
 
 import asyncio
-from typing import List, Union
+from typing import Any, List, Union
 from urllib.parse import urlparse
 
 from app.logger import logger
@@ -62,7 +62,7 @@ class Crawl4aiTool(BaseTool):
         "required": ["urls"],
     }
 
-    async def execute(
+    async def execute(  # type: ignore[override]
         self,
         urls: Union[str, List[str]],
         timeout: int = 30,
@@ -128,7 +128,7 @@ class Crawl4aiTool(BaseTool):
                 wait_until="domcontentloaded",
             )
 
-            results = []
+            results: List[dict[str, Any]] = []
             successful_count = 0
             failed_count = 0
 

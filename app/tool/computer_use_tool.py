@@ -222,7 +222,7 @@ class ComputerUseTool(SandboxToolsBase):
             logging.error(f"API request failed: {str(e)}")
             return {"success": False, "error": str(e)}
 
-    async def execute(
+    async def execute(  # type: ignore[override]
         self,
         action: Literal[
             "move_to",

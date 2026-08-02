@@ -1,6 +1,6 @@
 import asyncio
 import json
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Union, cast
 
 from pydantic import Field
 
@@ -73,7 +73,9 @@ class ToolCallAgent(ReActAgent):
             raise
 
         self.tool_calls = tool_calls = (
-            response.tool_calls if response and response.tool_calls else []
+            cast(list[ToolCall], response.tool_calls)
+            if response and response.tool_calls
+            else []
         )
         content = response.content if response and response.content else ""
 

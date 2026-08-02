@@ -8,11 +8,12 @@ e gerar relatórios pedagógicos.
 
 from typing import Any, Dict, List, Optional
 
-from pydantic import model_validator
+from pydantic import Field
 
 from app.avaliacao.core import SistemaAvaliacao
 from app.exceptions import ToolError
 from app.tool.base import BaseTool, ToolResult
+
 
 _DESCRIPTION = """
 Sistema de Avaliação de Provas Objetivas (V/F) — ferramenta para professores
@@ -99,15 +100,9 @@ class AvaliacaoProvas(BaseTool):
         "required": ["command"],
     }
 
-    _sistema: Optional[SistemaAvaliacao] = None
+    sistema: SistemaAvaliacao = Field(default_factory=SistemaAvaliacao, exclude=True)
 
-    @model_validator(mode="after")
-    def _init_sistema(self):
-        """Initialize the evaluation system after pydantic validation."""
-        self._sistema = SistemaAvaliacao()
-        return self
-
-    async def execute(
+    async def execute(  # type: ignore[override]
         self,
         *,
         command: str,
@@ -133,7 +128,9 @@ class AvaliacaoProvas(BaseTool):
         """
         try:
             if command == "criar":
-                return self._cmd_criar(disciplina, num_questoes, alunos, gabarito, sobrescrever)
+                return self._cmd_criar(
+                    disciplina, num_questoes, alunos, gabarito, bool(sobrescrever)
+                )
             if command == "adicionar_alunos":
                 return self._cmd_adicionar_alunos(disciplina, alunos)
             if command == "definir_gabarito":
@@ -169,11 +166,15 @@ class AvaliacaoProvas(BaseTool):
         sobrescrever: bool,
     ) -> ToolResult:
         if not disciplina:
-            raise ToolError("Parâmetro 'disciplina' é obrigatório para o comando 'criar'.")
+            raise ToolError(
+                "Parâmetro 'disciplina' é obrigatório para o comando 'criar'."
+            )
         if not num_questoes or num_questoes <= 0:
-            raise ToolError("Parâmetro 'num_questoes' deve ser um número positivo para o comando 'criar'.")
+            raise ToolError(
+                "Parâmetro 'num_questoes' deve ser um número positivo para o comando 'criar'."
+            )
 
-        resultado = self._sistema.criar_disciplina(
+        resultado = self.sistema.criar_disciplina(
             nome=disciplina,
             num_questoes=num_questoes,
             alunos=alunos or [],
@@ -202,11 +203,15 @@ class AvaliacaoProvas(BaseTool):
         alunos: Optional[List[Dict[str, Any]]],
     ) -> ToolResult:
         if not disciplina:
-            raise ToolError("Parâmetro 'disciplina' é obrigatório para o comando 'adicionar_alunos'.")
+            raise ToolError(
+                "Parâmetro 'disciplina' é obrigatório para o comando 'adicionar_alunos'."
+            )
         if not alunos:
-            raise ToolError("Parâmetro 'alunos' é obrigatório para o comando 'adicionar_alunos'.")
+            raise ToolError(
+                "Parâmetro 'alunos' é obrigatório para o comando 'adicionar_alunos'."
+            )
 
-        resultado = self._sistema.adicionar_alunos(disciplina, alunos)
+        resultado = self.sistema.adicionar_alunos(disciplina, alunos)
 
         if resultado["status"] == "erro":
             return ToolResult(error=resultado["mensagem"])
@@ -228,11 +233,15 @@ class AvaliacaoProvas(BaseTool):
         gabarito: Optional[List[str]],
     ) -> ToolResult:
         if not disciplina:
-            raise ToolError("Parâmetro 'disciplina' é obrigatório para o comando 'definir_gabarito'.")
+            raise ToolError(
+                "Parâmetro 'disciplina' é obrigatório para o comando 'definir_gabarito'."
+            )
         if not gabarito:
-            raise ToolError("Parâmetro 'gabarito' é obrigatório para o comando 'definir_gabarito'.")
+            raise ToolError(
+                "Parâmetro 'gabarito' é obrigatório para o comando 'definir_gabarito'."
+            )
 
-        resultado = self._sistema.definir_gabarito(disciplina, gabarito)
+        resultado = self.sistema.definir_gabarito(disciplina, gabarito)
 
         if resultado["status"] == "erro":
             return ToolResult(error=resultado["mensagem"])
@@ -245,9 +254,11 @@ class AvaliacaoProvas(BaseTool):
 
     def _cmd_gerar_resultados(self, disciplina: Optional[str]) -> ToolResult:
         if not disciplina:
-            raise ToolError("Parâmetro 'disciplina' é obrigatório para o comando 'gerar_resultados'.")
+            raise ToolError(
+                "Parâmetro 'disciplina' é obrigatório para o comando 'gerar_resultados'."
+            )
 
-        resultado = self._sistema.gerar_resultados(disciplina)
+        resultado = self.sistema.gerar_resultados(disciplina)
 
         if resultado["status"] == "erro":
             return ToolResult(error=resultado["mensagem"])
@@ -262,19 +273,29 @@ class AvaliacaoProvas(BaseTool):
         output += "📈 Acertos por questão:\n"
         for q in range(1, resultado["num_questoes"] + 1):
             acertos = resultado["estatisticas_questoes"].get(q, 0)
-            pct = (acertos / resultado["total_alunos"]) * 100 if resultado["total_alunos"] > 0 else 0
+            pct = (
+                (acertos / resultado["total_alunos"]) * 100
+                if resultado["total_alunos"] > 0
+                else 0
+            )
             barra = "█" * int(pct / 5) + "░" * (20 - int(pct / 5))
-            output += f"  Q{q}: {barra} {acertos}/{resultado['total_alunos']} ({pct:.1f}%)\n"
+            output += (
+                f"  Q{q}: {barra} {acertos}/{resultado['total_alunos']} ({pct:.1f}%)\n"
+            )
 
         output += "\n🏆 Ranking:\n"
-        por_nota = sorted(resultado["resultados"], key=lambda r: (-r["pontuacao"], r["nome"].lower()))
+        por_nota = sorted(
+            resultado["resultados"], key=lambda r: (-r["pontuacao"], r["nome"].lower())
+        )
         posicao, nota_ant = 0, None
         for i, r in enumerate(por_nota, 1):
             if r["pontuacao"] != nota_ant:
                 posicao = i
                 nota_ant = r["pontuacao"]
             medalha = {1: "🥇", 2: "🥈", 3: "🥉"}.get(posicao, "  ")
-            output += f"  {medalha} {posicao:>2}º  {r['nome']:<30} {r['pontuacao']:>2} pts\n"
+            output += (
+                f"  {medalha} {posicao:>2}º  {r['nome']:<30} {r['pontuacao']:>2} pts\n"
+            )
 
         output += "\n📁 Arquivos gerados:\n"
         for tipo, caminho in resultado["arquivos"].items():
@@ -283,14 +304,16 @@ class AvaliacaoProvas(BaseTool):
         return ToolResult(output=output)
 
     def _cmd_listar(self) -> ToolResult:
-        disciplinas = self._sistema.listar_disciplinas()
+        disciplinas = self.sistema.listar_disciplinas()
 
         if not disciplinas:
             return ToolResult(output="📭 Nenhuma disciplina cadastrada ainda.")
 
         output = "📚 **Disciplinas Cadastradas**\n\n"
         for d in disciplinas:
-            status = "✅" if d["tem_resultado"] else ("📝" if d["tem_gabarito"] else "⏳")
+            status = (
+                "✅" if d["tem_resultado"] else ("📝" if d["tem_gabarito"] else "⏳")
+            )
             output += (
                 f"{status} **{d['nome']}**\n"
                 f"   Questões: {d['num_questoes']} | Alunos: {d['total_alunos']}\n"
@@ -306,9 +329,11 @@ class AvaliacaoProvas(BaseTool):
 
     def _cmd_ver_disciplina(self, disciplina: Optional[str]) -> ToolResult:
         if not disciplina:
-            raise ToolError("Parâmetro 'disciplina' é obrigatório para o comando 'ver_disciplina'.")
+            raise ToolError(
+                "Parâmetro 'disciplina' é obrigatório para o comando 'ver_disciplina'."
+            )
 
-        dados = self._sistema.obter_dados_completos(disciplina)
+        dados = self.sistema.obter_dados_completos(disciplina)
         if not dados:
             return ToolResult(error=f"Disciplina '{disciplina}' não encontrada.")
 
@@ -333,9 +358,11 @@ class AvaliacaoProvas(BaseTool):
 
     def _cmd_ver_resultados(self, disciplina: Optional[str]) -> ToolResult:
         if not disciplina:
-            raise ToolError("Parâmetro 'disciplina' é obrigatório para o comando 'ver_resultados'.")
+            raise ToolError(
+                "Parâmetro 'disciplina' é obrigatório para o comando 'ver_resultados'."
+            )
 
-        cache = self._sistema.obter_resultados(disciplina)
+        cache = self.sistema.obter_resultados(disciplina)
         if not cache:
             return ToolResult(
                 error=f"Ainda não há resultados para '{disciplina}'. Use o comando 'gerar_resultados' primeiro."
@@ -347,13 +374,17 @@ class AvaliacaoProvas(BaseTool):
 
         output += "📈 **Acertos por questão:**\n"
         total = len(cache["resultados"])
-        for q_str, acertos in sorted(cache["estatisticas_questoes"].items(), key=lambda x: int(x[0])):
+        for q_str, acertos in sorted(
+            cache["estatisticas_questoes"].items(), key=lambda x: int(x[0])
+        ):
             pct = (acertos / total) * 100 if total > 0 else 0
             barra = "█" * int(pct / 5) + "░" * (20 - int(pct / 5))
             output += f"  Q{q_str}: {barra} {acertos}/{total} ({pct:.1f}%)\n"
 
         output += "\n🏆 **Ranking:**\n"
-        por_nota = sorted(cache["resultados"], key=lambda r: (-r["pontuacao"], r["nome"].lower()))
+        por_nota = sorted(
+            cache["resultados"], key=lambda r: (-r["pontuacao"], r["nome"].lower())
+        )
         posicao, nota_ant = 0, None
         for i, r in enumerate(por_nota, 1):
             if r["pontuacao"] != nota_ant:
@@ -365,7 +396,7 @@ class AvaliacaoProvas(BaseTool):
         return ToolResult(output=output)
 
     def _cmd_backup(self) -> ToolResult:
-        resultado = self._sistema.fazer_backup()
+        resultado = self.sistema.fazer_backup()
         if resultado["status"] == "erro":
             return ToolResult(error=resultado["mensagem"])
         return ToolResult(output=f"✅ {resultado['mensagem']}")

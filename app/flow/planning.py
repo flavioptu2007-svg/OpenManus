@@ -1,7 +1,7 @@
 import json
 import time
 from enum import Enum
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 from pydantic import Field
 
@@ -89,6 +89,8 @@ class PlanningFlow(BaseFlow):
                 return self.agents[key]
 
         # Fallback to primary agent
+        if self.primary_agent is None:
+            raise ValueError("No primary agent available")
         return self.primary_agent
 
     async def execute(self, input_text: str) -> str:
@@ -121,7 +123,7 @@ class PlanningFlow(BaseFlow):
                 # Execute current step with appropriate agent
                 step_type = step_info.get("type") if step_info else None
                 executor = self.get_executor(step_type)
-                step_result = await self._execute_step(executor, step_info)
+                step_result = await self._execute_step(executor, step_info or {})
                 result += step_result + "\n"
 
                 # Check if agent wants to terminate
@@ -176,7 +178,7 @@ class PlanningFlow(BaseFlow):
         )
 
         # Process tool calls if present
-        if response.tool_calls:
+        if response and response.tool_calls:
             for tool_call in response.tool_calls:
                 if tool_call.function.name == "planning":
                     # Parse the arguments
@@ -189,10 +191,11 @@ class PlanningFlow(BaseFlow):
                             continue
 
                     # Ensure plan_id is set correctly and execute the tool
-                    args["plan_id"] = self.active_plan_id
+                    plan_args: dict[str, Any] = args if isinstance(args, dict) else {}
+                    plan_args["plan_id"] = self.active_plan_id
 
                     # Execute the tool via ToolCollection instead of directly
-                    result = await self.planning_tool.execute(**args)
+                    result = await self.planning_tool.execute(**plan_args)
 
                     logger.info(f"Plan creation result: {str(result)}")
                     return
@@ -202,12 +205,15 @@ class PlanningFlow(BaseFlow):
 
         # Create default plan using the ToolCollection
         await self.planning_tool.execute(
-            **{
-                "command": "create",
-                "plan_id": self.active_plan_id,
-                "title": f"Plan for: {request[:50]}{'...' if len(request) > 50 else ''}",
-                "steps": ["Analyze request", "Execute task", "Verify results"],
-            }
+            **cast(
+                dict[str, Any],
+                {
+                    "command": "create",
+                    "plan_id": self.active_plan_id,
+                    "title": f"Plan for: {request[:50]}{'...' if len(request) > 50 else ''}",
+                    "steps": ["Analyze request", "Execute task", "Verify results"],
+                },
+            )
         )
 
     async def _get_current_step_info(self) -> tuple[Optional[int], Optional[dict]]:
@@ -428,6 +434,8 @@ class PlanningFlow(BaseFlow):
             # Fallback to using an agent for the summary
             try:
                 agent = self.primary_agent
+                if agent is None:
+                    raise ValueError("No primary agent available")
                 summary_prompt = f"""
                 The plan has been completed. Here is the final plan status:
 

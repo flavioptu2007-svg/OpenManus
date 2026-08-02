@@ -1,0 +1,13 @@
+# Ruff configuration for the OpenManus project.
+# Pins the lint scope used in AUDITORIA_2026-07-31.md so `ruff check app/`
+# is reproducible without command-line flags.
+target-version = "py312"
+
+[lint]
+# Default ruff selection (E4, E7, E9, F) plus the rule groups used in the audit.
+select = ["E4", "E7", "E9", "F", "B", "ARG", "SIM", "UP", "N"]
+
+# Tools override base-class methods such as `execute(**kwargs)` to keep the
+# polymorphic interface; intentionally-unused variadic args are allowed.
+[lint.flake8-unused-arguments]
+ignore-variadic-names = true

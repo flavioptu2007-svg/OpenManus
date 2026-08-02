@@ -3,7 +3,7 @@ import sys
 import time
 import uuid
 from datetime import datetime
-from typing import Dict, List, Literal, Optional
+from typing import Any, Coroutine, Dict, List, Literal, Optional
 
 import boto3
 
@@ -241,7 +241,7 @@ class ChatCompletions:
         )
 
         # Initialize response structure
-        bedrock_response = {
+        bedrock_response: Dict[str, Any] = {
             "output": {"message": {"role": "", "content": []}},
             "stopReason": "",
             "usage": {},
@@ -307,7 +307,7 @@ class ChatCompletions:
         tools: Optional[List[dict]] = None,
         tool_choice: Literal["none", "auto", "required"] = "auto",
         **kwargs,
-    ) -> OpenAIResponse:
+    ) -> Coroutine[Any, Any, OpenAIResponse]:
         # Main entry point for chat completion
         bedrock_tools = []
         if tools is not None:

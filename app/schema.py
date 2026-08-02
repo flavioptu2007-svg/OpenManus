@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, List, Literal, Optional, Union, cast
 
 from pydantic import BaseModel, Field
 
@@ -149,8 +149,8 @@ class Message(BaseModel):
         ]
         return cls(
             role=Role.ASSISTANT,
-            content=content,
-            tool_calls=formatted_calls,
+            content=cast(Optional[str], content),
+            tool_calls=cast(Optional[List[ToolCall]], formatted_calls),
             base64_image=base64_image,
             **kwargs,
         )

@@ -9,7 +9,7 @@ import asyncio
 import atexit
 import json
 from inspect import Parameter, Signature
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional, cast
 
 from mcp.server.fastmcp import FastMCP
 
@@ -57,19 +57,23 @@ class MCPServer:
         # Set method metadata
         tool_method.__name__ = tool_name
         tool_method.__doc__ = self._build_docstring(tool_function)
-        tool_method.__signature__ = self._build_signature(tool_function)
+        setattr(tool_method, "__signature__", self._build_signature(tool_function))
 
         # Store parameter schema (important for tools that access it programmatically)
         param_props = tool_function.get("parameters", {}).get("properties", {})
         required_params = tool_function.get("parameters", {}).get("required", [])
-        tool_method._parameter_schema = {
-            param_name: {
-                "description": param_details.get("description", ""),
-                "type": param_details.get("type", "any"),
-                "required": param_name in required_params,
-            }
-            for param_name, param_details in param_props.items()
-        }
+        setattr(
+            tool_method,
+            "_parameter_schema",
+            {
+                param_name: {
+                    "description": param_details.get("description", ""),
+                    "type": param_details.get("type", "any"),
+                    "required": param_name in required_params,
+                }
+                for param_name, param_details in param_props.items()
+            },
+        )
 
         # Register with server
         self.server.tool()(tool_method)
@@ -110,7 +114,7 @@ class MCPServer:
             default = Parameter.empty if param_name in required_params else None
 
             # Map JSON Schema types to Python types (same as original)
-            annotation = Any
+            annotation: Any = Any
             if param_type == "string":
                 annotation = str
             elif param_type == "integer":
@@ -157,7 +161,7 @@ class MCPServer:
 
         # Start server (with same logging as original)
         logger.info(f"Starting OpenManus server ({transport} mode)")
-        self.server.run(transport=transport)
+        self.server.run(transport=cast(Literal["stdio", "sse"], transport))
 
 
 def parse_args() -> argparse.Namespace:

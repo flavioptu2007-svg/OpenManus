@@ -42,6 +42,8 @@ class BaseFlow(BaseModel, ABC):
     @property
     def primary_agent(self) -> Optional[BaseAgent]:
         """Get the primary agent for the flow"""
+        if self.primary_agent_key is None:
+            return None
         return self.agents.get(self.primary_agent_key)
 
     def get_agent(self, key: str) -> Optional[BaseAgent]:

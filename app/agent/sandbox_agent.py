@@ -73,7 +73,7 @@ class SandboxManus(ToolCallAgent):
 
     async def initialize_sandbox_tools(
         self,
-        password: str = config.daytona.VNC_password,
+        password: Optional[str] = config.daytona.VNC_password,
     ) -> None:
         try:
             # 创建新沙箱
@@ -141,7 +141,7 @@ class SandboxManus(ToolCallAgent):
         server_url: str,
         server_id: str = "",
         use_stdio: bool = False,
-        stdio_args: List[str] = None,
+        stdio_args: Optional[List[str]] = None,
     ) -> None:
         """Connect to an MCP server and add its tools."""
         if use_stdio:
@@ -155,7 +155,9 @@ class SandboxManus(ToolCallAgent):
 
         # Update available tools with only the new tools from this server
         new_tools = [
-            tool for tool in self.mcp_clients.tools if tool.server_id == server_id
+            tool
+            for tool in self.mcp_clients.tools
+            if isinstance(tool, MCPClientTool) and tool.server_id == server_id
         ]
         self.available_tools.add_tools(*new_tools)
 
@@ -181,7 +183,7 @@ class SandboxManus(ToolCallAgent):
         try:
             await delete_sandbox(sandbox_id)
             logger.info(f"Sandbox {sandbox_id} deleted successfully")
-            if sandbox_id in self.sandbox_link:
+            if self.sandbox_link and sandbox_id in self.sandbox_link:
                 del self.sandbox_link[sandbox_id]
         except Exception as e:
             logger.error(f"Error deleting sandbox {sandbox_id}: {e}")
@@ -212,7 +214,7 @@ class SandboxManus(ToolCallAgent):
             for tc in msg.tool_calls
         )
 
-        if browser_in_use:
+        if browser_in_use and self.browser_context_helper:
             self.next_step_prompt = (
                 await self.browser_context_helper.format_next_step_prompt()
             )

@@ -1,12 +1,13 @@
 import logging
 import os
+from typing import Any, List
 
 import structlog
 
 
 ENV_MODE = os.getenv("ENV_MODE", "LOCAL")
 
-renderer = [structlog.processors.JSONRenderer()]
+renderer: List[Any] = [structlog.processors.JSONRenderer()]
 if ENV_MODE.lower() == "local".lower():
     renderer = [structlog.dev.ConsoleRenderer()]
 

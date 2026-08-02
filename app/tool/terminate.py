@@ -20,6 +20,6 @@ class Terminate(BaseTool):
         "required": ["status"],
     }
 
-    async def execute(self, status: str) -> str:
+    async def execute(self, status: str) -> str:  # type: ignore[override]
         """Finish the current execution"""
         return f"The interaction has been completed with status: {status}"

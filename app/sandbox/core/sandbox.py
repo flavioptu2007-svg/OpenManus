@@ -263,6 +263,9 @@ class DockerSandbox:
             FileNotFoundError: If source file does not exist.
             RuntimeError: If copy operation fails.
         """
+        if not self.container:
+            raise RuntimeError("Sandbox not initialized")
+
         try:
             # Ensure destination file's parent directory exists
             parent_dir = os.path.dirname(dst_path)
@@ -323,6 +326,9 @@ class DockerSandbox:
             FileNotFoundError: If source file does not exist.
             RuntimeError: If copy operation fails.
         """
+        if not self.container:
+            raise RuntimeError("Sandbox not initialized")
+
         try:
             if not os.path.exists(src_path):
                 raise FileNotFoundError(f"Source file not found: {src_path}")

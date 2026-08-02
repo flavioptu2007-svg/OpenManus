@@ -1,5 +1,5 @@
 import json
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 from pydantic import Field, model_validator
 
@@ -11,13 +11,8 @@ from app.tool import BrowserUseTool, Terminate, ToolCollection
 from app.tool.sandbox.sb_browser_tool import SandboxBrowserTool
 
 
-# Avoid circular import if BrowserAgent needs BrowserContextHelper
-if TYPE_CHECKING:
-    from app.agent.base import BaseAgent  # Or wherever memory is defined
-
-
 class BrowserContextHelper:
-    def __init__(self, agent: "BaseAgent"):
+    def __init__(self, agent: ToolCallAgent):
         self.agent = agent
         self._current_base64_image: Optional[str] = None
 
@@ -119,9 +114,10 @@ class BrowserAgent(ToolCallAgent):
 
     async def think(self) -> bool:
         """Process current state and decide next actions using tools, with browser state info added"""
-        self.next_step_prompt = (
-            await self.browser_context_helper.format_next_step_prompt()
-        )
+        if self.browser_context_helper:
+            self.next_step_prompt = (
+                await self.browser_context_helper.format_next_step_prompt()
+            )
         return await super().think()
 
     async def cleanup(self):

@@ -1,7 +1,7 @@
 from typing import List, Optional, Tuple
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from app.logger import logger
 from app.tool.search.base import SearchItem, WebSearchEngine
@@ -58,11 +58,13 @@ class BingSearchEngine(WebSearchEngine):
         if not query:
             return []
 
-        list_result = []
+        list_result: List[SearchItem] = []
         first = 1
-        next_url = BING_SEARCH_URL + query
+        next_url: Optional[str] = BING_SEARCH_URL + query
 
         while len(list_result) < num_results:
+            if not next_url:
+                break
             data, next_url = self._parse_html(
                 next_url, rank_start=len(list_result), first=first
             )
@@ -76,7 +78,7 @@ class BingSearchEngine(WebSearchEngine):
 
     def _parse_html(
         self, url: str, rank_start: int = 0, first: int = 1
-    ) -> Tuple[List[SearchItem], str]:
+    ) -> Tuple[List[SearchItem], Optional[str]]:
         """
         Parse Bing search result HTML to extract search results and the next page URL.
 
@@ -84,28 +86,40 @@ class BingSearchEngine(WebSearchEngine):
             tuple: (List of SearchItem objects, next page URL or None)
         """
         try:
-            res = self.session.get(url=url)
+            session = self.session
+            if session is None:
+                return [], None
+            res = session.get(url=url)
             res.encoding = "utf-8"
             root = BeautifulSoup(res.text, "lxml")
 
             list_data = []
             ol_results = root.find("ol", id="b_results")
-            if not ol_results:
+            if not ol_results or not isinstance(ol_results, Tag):
                 return [], None
 
             for li in ol_results.find_all("li", class_="b_algo"):
                 title = ""
                 url = ""
                 abstract = ""
+                if not isinstance(li, Tag):
+                    continue
                 try:
                     h2 = li.find("h2")
-                    if h2:
-                        title = h2.text.strip()
-                        url = h2.a["href"].strip()
+                    if h2 and isinstance(h2, Tag):
+                        h2_title = h2.text.strip()
+                        if h2_title:
+                            title = h2_title
+                        h2_a = h2.a
+                        href = h2_a.get("href") if h2_a else None
+                        if isinstance(href, str) and href:
+                            url = href.strip()
 
                     p = li.find("p")
                     if p:
-                        abstract = p.text.strip()
+                        p_text = p.text.strip()
+                        if p_text:
+                            abstract = p_text
 
                     if ABSTRACT_MAX_LENGTH and len(abstract) > ABSTRACT_MAX_LENGTH:
                         abstract = abstract[:ABSTRACT_MAX_LENGTH]
@@ -124,10 +138,13 @@ class BingSearchEngine(WebSearchEngine):
                     continue
 
             next_btn = root.find("a", title="Next page")
-            if not next_btn:
+            if not next_btn or not isinstance(next_btn, Tag):
                 return list_data, None
 
-            next_url = BING_HOST_URL + next_btn["href"]
+            href = next_btn.get("href")
+            if not href:
+                return list_data, None
+            next_url = BING_HOST_URL + str(href)
             return list_data, next_url
         except Exception as e:
             logger.warning(f"Error parsing HTML: {e}")

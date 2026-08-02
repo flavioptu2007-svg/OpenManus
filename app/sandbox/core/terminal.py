@@ -25,8 +25,8 @@ class DockerSession:
         """
         self.api = APIClient()
         self.container_id = container_id
-        self.exec_id = None
-        self.socket = None
+        self.exec_id: Optional[str] = None
+        self.socket: Optional[socket.socket] = None
 
     async def create(self, working_dir: str, env_vars: Dict[str, str]) -> None:
         """Creates an interactive session with the container.
@@ -126,6 +126,8 @@ class DockerSession:
         buffer = b""
         while b"$ " not in buffer:
             try:
+                if self.socket is None:
+                    raise RuntimeError("Socket not initialized")
                 chunk = self.socket.recv(4096)
                 if chunk:
                     buffer += chunk
@@ -160,13 +162,16 @@ class DockerSession:
             self.socket.sendall(full_command.encode())
 
             async def read_output() -> str:
+                sock = self.socket
+                if sock is None:
+                    raise RuntimeError("Session not initialized")
                 buffer = b""
                 result_lines = []
                 command_sent = False
 
                 while True:
                     try:
-                        chunk = self.socket.recv(4096)
+                        chunk = sock.recv(4096)
                         if not chunk:
                             break
 
@@ -273,7 +278,7 @@ class AsyncDockerizedTerminal:
         self.working_dir = working_dir
         self.env_vars = env_vars or {}
         self.default_timeout = default_timeout
-        self.session = None
+        self.session: Optional[DockerSession] = None
 
     async def init(self) -> None:
         """Initializes the terminal environment.

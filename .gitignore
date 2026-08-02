@@ -206,4 +206,11 @@ backup_avaliacoes_*.zip
 dados_avaliacoes/
 # Backups datados (ex.: backup_20260802/) — podem conter .env com chaves reais
 backup_*/
+# Backups de config e arquivos .bak (não são código fonte)
+config.toml.backup-*
+*.bak
+# Binário vazio de diagnóstico de câmera (não é código)
+v4l2-ctl
+# Relatório de estado gerado localmente (relatorio.txt)
+relatorio.txt
 ### Game Hub ###

@@ -67,7 +67,7 @@ class SandboxVisionTool(SandboxToolsBase):
     def compress_image(self, image_bytes: bytes, mime_type: str, file_path: str):
         """压缩图片，保持合理质量。"""
         try:
-            img = Image.open(BytesIO(image_bytes))
+            img: Image.Image = Image.open(BytesIO(image_bytes))
             if img.mode in ("RGBA", "LA", "P"):
                 background = Image.new("RGB", img.size, (255, 255, 255))
                 if img.mode == "P":
@@ -104,7 +104,7 @@ class SandboxVisionTool(SandboxToolsBase):
         except Exception:
             return image_bytes, mime_type
 
-    async def execute(
+    async def execute(  # type: ignore[override]
         self, action: str, file_path: Optional[str] = None, **kwargs
     ) -> ToolResult:
         """

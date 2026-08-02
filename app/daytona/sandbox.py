@@ -1,4 +1,5 @@
 import time
+from typing import Optional
 
 from daytona import (
     CreateSandboxFromImageParams,
@@ -66,7 +67,7 @@ def start_supervisord_session(sandbox: Sandbox):
         raise e
 
 
-def create_sandbox(password: str, project_id: str = None):
+def create_sandbox(password: str, project_id: Optional[str] = None):
     """Create a new sandbox with all required services configured and running."""
     client = _ensure_daytona()
 

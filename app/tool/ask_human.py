@@ -6,7 +6,7 @@ class AskHuman(BaseTool):
 
     name: str = "ask_human"
     description: str = "Use this tool to ask human for help."
-    parameters: str = {
+    parameters: dict = {
         "type": "object",
         "properties": {
             "inquire": {
@@ -17,5 +17,5 @@ class AskHuman(BaseTool):
         "required": ["inquire"],
     }
 
-    async def execute(self, inquire: str) -> str:
+    async def execute(self, inquire: str) -> str:  # type: ignore[override]
         return input(f"""Bot: {inquire}\n\nYou: """).strip()

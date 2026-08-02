@@ -3,17 +3,21 @@
 
 import re
 
+
 V3_PATH = "/home/flavio/Secretária/Download/planejador-escolar-v3.0.html"
 BACKUP_PATH = V3_PATH + ".bak"
 OMREDU_PATH = "/home/flavio/OpenManus/omredu_corretor_gabaritos.html"
+
 
 def read_file(path):
     with open(path, "r", encoding="utf-8") as f:
         return f.read()
 
+
 def write_file(path, content):
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
+
 
 def extract_omredu_js():
     """Extrai o JS do OMREdu, removendo funções que conflitam com o v3.0."""
@@ -28,12 +32,14 @@ def extract_omredu_js():
     # Remover a função showAlert (apoia em console.warn) - vamos adaptar
     return js
 
+
 def build_nav_button():
-    return '''    <button data-target="omredu">🤖 Corretor IA</button>\n'''
+    return """    <button data-target="omredu">🤖 Corretor IA</button>\n"""
+
 
 def build_section():
     """Cria a seção OMREdu para inserir no v3.0."""
-    section = '''<!-- OMREdu: Corretor de Gabaritos com IA -->
+    section = """<!-- OMREdu: Corretor de Gabaritos com IA -->
 <section id="omredu" class="panel-section section-hidden" aria-label="Corretor de gabaritos com IA">
   <div class="card" style="max-width:100%;overflow:visible">
     <div class="card-hd">
@@ -203,12 +209,13 @@ def build_section():
     </div>
   </div>
 </section>
-'''
+"""
     return section
+
 
 def build_omr_css():
     """Gera CSS específico para o OMREdu integrado."""
-    return '''
+    return """
 /* ── OMR: CORRETOR DE GABARITOS ── */
 #omredu .prova-cfg { background: var(--sf2); border: 1px solid var(--bd); border-radius: var(--rmd); padding: var(--s4); margin: 0; }
 #omredu .omr-gab-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 5px; margin-top: .3rem; }
@@ -233,11 +240,12 @@ def build_omr_css():
 #omredu .omr-aluno-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg,var(--pr),var(--pu)); display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 800; color: #fff; flex-shrink: 0; }
 @keyframes omrSpin { to { transform: rotate(360deg); } }
 @media(max-width:880px){#omredu .prova-cfg > div[style*="grid-template-columns: 380px"] { grid-template-columns: 1fr !important; }}
-'''
+"""
+
 
 def build_omr_js():
     """Gera o JavaScript adaptado do OMREdu."""
-    return '''
+    return """
 /* ============================================
    OMR EDU — CORRETOR DE GABARITOS (integrado)
    ============================================ */
@@ -334,16 +342,58 @@ function omrClearImage() {
 
 async function omrStartCamera() {
   try {
-    omrStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 960 } }
-    });
-    document.getElementById('omr-video').srcObject = omrStream;
-    document.getElementById('omr-cameraWrap').style.display = 'block';
-    document.getElementById('omr-cameraStart').style.display = 'none';
-    document.getElementById('omr-cameraControls').style.display = 'block';
+    omrStream = await omrGetCameraStream();
   } catch (err) {
-    omrShowAlert('Câmera: ' + err.message, 'error');
+    omrShowAlert(omrCameraErrorMessage(err), 'error');
+    return;
   }
+  document.getElementById('omr-video').srcObject = omrStream;
+  document.getElementById('omr-cameraWrap').style.display = 'block';
+  document.getElementById('omr-cameraStart').style.display = 'none';
+  document.getElementById('omr-cameraControls').style.display = 'block';
+}
+
+function omrCameraErrorMessage(err) {
+  const name = err && err.name;
+  if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+    return 'Permissão de câmera negada. Clique no ícone 🔒 da barra de endereço, permita o acesso à câmera e tente novamente.';
+  }
+  if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+    return 'Nenhuma câmera encontrada no dispositivo. Conecte uma webcam e tente novamente.';
+  }
+  if (name === 'NotReadableError' || name === 'TrackStartError') {
+    return 'A câmera está em uso por outro aplicativo (ex: Zoom, Meet). Feche-o e tente novamente.';
+  }
+  if (name === 'OverconstrainedError') {
+    return 'A câmera não suporta a configuração solicitada. Tente novamente.';
+  }
+  if (name === 'SecurityError') {
+    return 'Acesso à câmera bloqueado pelo navegador. Abra a página via HTTPS ou localhost (não pelo arquivo diretamente).';
+  }
+  if (name === 'AbortError') return 'A captura de vídeo foi interrompida. Tente novamente.';
+  return 'Câmera: ' + (err ? (err.message || err.name) : 'desconhecido');
+}
+
+async function omrGetCameraStream() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    throw new Error('getUserMedia indisponível');
+  }
+  const tentativas = [
+    { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 960 } } },
+    { video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } } },
+    { video: { width: { ideal: 1280 }, height: { ideal: 960 } } }
+  ];
+  let ultimoErro = null;
+  for (const opts of tentativas) {
+    try {
+      return await navigator.mediaDevices.getUserMedia(opts);
+    } catch (err) {
+      ultimoErro = err;
+      // Erro de permissão/câmera ocupada não se resolve tentando outras câmeras
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' || err.name === 'SecurityError' || err.name === 'NotReadableError' || err.name === 'TrackStartError') break;
+    }
+  }
+  throw ultimoErro || new Error('getUserMedia indisponível');
 }
 
 function omrCapturePhoto() {
@@ -605,7 +655,9 @@ function omrExportarCSV() {
 
 // Init
 omrRenderGabarito();
-'''
+"""
+
+
 def inject():
     html = read_file(V3_PATH)
 
@@ -617,7 +669,7 @@ def inject():
     nav_btn = build_nav_button()
     html = html.replace(
         '<button data-target="dashboard">📊 Dashboard</button>',
-        '<button data-target="dashboard">📊 Dashboard</button>\n' + nav_btn
+        '<button data-target="dashboard">📊 Dashboard</button>\n' + nav_btn,
     )
 
     # 3. Adicionar seção antes de </main>
@@ -630,11 +682,13 @@ def inject():
 
     # Criar backup
     import shutil
+
     shutil.copy2(V3_PATH, BACKUP_PATH)
     print(f"Backup salvo: {BACKUP_PATH}")
 
     write_file(V3_PATH, html)
     print(f"✅ Injeção concluída em: {V3_PATH}")
+
 
 if __name__ == "__main__":
     inject()

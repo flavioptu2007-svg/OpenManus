@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-from typing import Any, Hashable
+from typing import Any, Hashable, Optional
 
 import pandas as pd
 from pydantic import Field, model_validator
@@ -61,7 +61,7 @@ Outputs:
         self,
         json_info: list[dict[str, str]],
         path_str: str,
-        directory: str = None,
+        directory: str | None = None,
     ) -> list[str]:
         res = []
         for item in json_info:
@@ -93,7 +93,7 @@ Outputs:
 
     async def data_visualization(
         self, json_info: list[dict[str, str]], output_type: str, language: str
-    ) -> str:
+    ) -> dict[str, Any]:
         data_list = []
         csv_file_path = self.get_file_path(json_info, "csvFilePath")
         for index, item in enumerate(json_info):
@@ -147,7 +147,7 @@ Outputs:
 
     async def add_insighs(
         self, json_info: list[dict[str, str]], output_type: str
-    ) -> str:
+    ) -> dict[str, Any]:
         data_list = []
         chart_file_path = self.get_file_path(
             json_info, "chartPath", os.path.join(config.workspace_root, "visualization")
@@ -193,21 +193,23 @@ Outputs:
         else:
             return {"observation": f"{success_template}"}
 
-    async def execute(
+    async def execute(  # type: ignore[override]
         self,
         json_path: str,
         output_type: str | None = "html",
         tool_type: str | None = "visualization",
         language: str | None = "en",
-    ) -> str:
+    ) -> dict[str, Any]:
         try:
             logger.info(f"📈 data_visualization with {json_path} in: {tool_type} ")
             with open(json_path, "r", encoding="utf-8") as file:
                 json_info = json.load(file)
             if tool_type == "visualization":
-                return await self.data_visualization(json_info, output_type, language)
+                return await self.data_visualization(
+                    json_info, output_type or "html", language or "en"
+                )
             else:
-                return await self.add_insighs(json_info, output_type)
+                return await self.add_insighs(json_info, output_type or "html")
         except Exception as e:
             return {
                 "observation": f"Error: {e}",
@@ -219,9 +221,9 @@ Outputs:
         file_name: str,
         output_type: str,
         task_type: str,
-        insights_id: list[str] = None,
-        dict_data: list[dict[Hashable, Any]] = None,
-        chart_description: str = None,
+        insights_id: str | None = None,
+        dict_data: Optional[list[dict[Hashable, Any]]] = None,
+        chart_description: str | None = None,
         language: str = "en",
     ):
         llm_config = {

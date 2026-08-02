@@ -5,6 +5,7 @@ from typing import Any, ClassVar, Dict, Optional
 from daytona import Sandbox, SandboxState
 from pydantic import Field
 
+from app.config import config
 from app.daytona.client import daytona
 from app.daytona.sandbox import create_sandbox, start_supervisord_session
 from app.tool.base import BaseTool
@@ -63,7 +64,9 @@ class SandboxToolsBase(BaseTool):
         if self._sandbox is None:
             # Get or start the sandbox
             try:
-                self._sandbox = create_sandbox(password=config.daytona.VNC_password)
+                self._sandbox = create_sandbox(
+                    password=config.daytona.VNC_password or ""
+                )
                 # Log URLs if not already printed
                 if not SandboxToolsBase._urls_printed:
                     vnc_link = self._sandbox.get_preview_link(6080)
@@ -93,6 +96,8 @@ class SandboxToolsBase(BaseTool):
             ):
                 logger.info(f"Sandbox is in {self._sandbox.state} state. Starting...")
                 try:
+                    if daytona is None:
+                        raise RuntimeError("Daytona client not initialized")
                     daytona.start(self._sandbox)
                     # Wait a moment for the sandbox to initialize
                     # sleep(5)

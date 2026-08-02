@@ -3,10 +3,9 @@ import os
 import threading
 import tomllib
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 
 # Load environment variables from .env file (must be called before any config access)
@@ -22,29 +21,117 @@ PROJECT_ROOT = get_project_root()
 WORKSPACE_ROOT = PROJECT_ROOT / "workspace"
 
 
+def _env_api_key() -> str:
+    """Resolve the API key from environment variables.
+
+    Order matches test_openrouter.py: OPENROUTER_API_KEY first, then
+    LLM_API_KEY. Returns "" when neither is set.
+    """
+    return os.environ.get("OPENROUTER_API_KEY") or os.environ.get("LLM_API_KEY") or ""
+
+
+# Models that accept image inputs. This is the built-in default; it can be
+# overridden per provider via the `multimodal_models` key in config.toml or
+# globally via the MULTIMODAL_MODELS env var (comma-separated). Keeping it
+# data-driven lets OpenRouter/Gemini/Ollama vision models (e.g.
+# "google/gemma-4-26b-a4b-it:free") be used without editing app code.
+DEFAULT_MULTIMODAL_MODELS = [
+    "gpt-4-vision-preview",
+    "gpt-4o",
+    "gpt-4o-mini",
+    "claude-3-opus-20240229",
+    "claude-3-sonnet-20240229",
+    "claude-3-haiku-20240307",
+]
+
+
+def _multimodal_models() -> list[str]:
+    """Resolve the multimodal model list for LLMSettings.
+
+    Order: MULTIMODAL_MODELS env var (comma-separated) -> default list.
+    """
+    raw = os.environ.get("MULTIMODAL_MODELS")
+    if raw:
+        return [m.strip() for m in raw.split(",") if m.strip()]
+    return list(DEFAULT_MULTIMODAL_MODELS)
+
+
 class LLMSettings(BaseModel):
     model: str = Field(..., description="Model name")
     base_url: str = Field(..., description="API base URL")
     api_key: str = Field(
-        default_factory=lambda: os.environ.get("LLM_API_KEY", ""),
-        description="API key (override via LLM_API_KEY env var)",
+        default_factory=_env_api_key,
+        description=(
+            "API key. Env vars OPENROUTER_API_KEY / LLM_API_KEY take "
+            "precedence over config.toml values (see README security note)."
+        ),
     )
+
+    @field_validator("api_key")
+    @classmethod
+    def _api_key_env_overrides_toml(cls, v: str, info: ValidationInfo) -> str:
+        """Env var API key wins over the config.toml value when set.
+
+        README security note: "Environment variables override config.toml
+        values". This is what lets a key stored only in .env (gitignored)
+        take effect even when config.toml still holds a placeholder.
+
+        Scoping: OPENROUTER_API_KEY only applies to OpenRouter endpoints
+        (base_url contains "openrouter") so it can never clobber the keys
+        of other providers (Azure, Ollama, Bedrock...). LLM_API_KEY remains
+        the documented generic override and applies to any provider.
+        """
+        or_key = os.environ.get("OPENROUTER_API_KEY")
+        if or_key and "openrouter" in (info.data.get("base_url") or "").lower():
+            return or_key
+        llm_key = os.environ.get("LLM_API_KEY")
+        if llm_key:
+            return llm_key
+        return v
+
     max_tokens: int = Field(4096, description="Maximum number of tokens per request")
-    max_input_tokens: Optional[int] = Field(
+    max_input_tokens: int | None = Field(
         None,
         description="Maximum input tokens to use across all requests (None for unlimited)",
     )
     temperature: float = Field(1.0, description="Sampling temperature")
+    multimodal_models: list[str] = Field(
+        default_factory=_multimodal_models,
+        description=(
+            "Models that accept image inputs for this provider. "
+            "Override via MULTIMODAL_MODELS env var (comma-separated) or "
+            "the `multimodal_models` key in config.toml."
+        ),
+    )
     api_type: str = Field(..., description="Azure, Openai, or Ollama")
     api_version: str = Field(..., description="Azure Openai version if AzureOpenai")
+    http_referer: str = Field(
+        default_factory=lambda: os.environ.get(
+            "OPENROUTER_HTTP_REFERER",
+            "https://github.com/FoundationAgents/OpenManus",
+        ),
+        description=(
+            "HTTP-Referer header sent to OpenAI-compatible APIs "
+            "(OpenRouter recommends it for app tracking). "
+            "Override via OPENROUTER_HTTP_REFERER env var."
+        ),
+    )
+    x_title: str = Field(
+        default_factory=lambda: os.environ.get("OPENROUTER_X_TITLE", "OpenManus"),
+        description=(
+            "X-Title header sent to OpenAI-compatible APIs "
+            "(OpenRouter recommends it for app tracking). "
+            "Override via OPENROUTER_X_TITLE env var."
+        ),
+    )
 
 
 class ProxySettings(BaseModel):
-    server: str = Field(None, description="Proxy server address")
-    username: Optional[str] = Field(
+    server: str | None = Field(None, description="Proxy server address")
+    username: str | None = Field(
         None, description="Proxy username (override via PROXY_USERNAME env var)"
     )
-    password: Optional[str] = Field(
+    password: str | None = Field(
         default_factory=lambda: os.environ.get("PROXY_PASSWORD", None),
         description="Proxy password (override via PROXY_PASSWORD env var)",
     )
@@ -52,7 +139,7 @@ class ProxySettings(BaseModel):
 
 class SearchSettings(BaseModel):
     engine: str = Field(default="Google", description="Search engine the llm to use")
-    fallback_engines: List[str] = Field(
+    fallback_engines: list[str] = Field(
         default_factory=lambda: ["DuckDuckGo", "Baidu", "Bing"],
         description="Fallback search engines to try if the primary engine fails",
     )
@@ -89,19 +176,19 @@ class BrowserSettings(BaseModel):
         False,
         description="Disable browser security features (safer: disabled by default)",
     )
-    extra_chromium_args: List[str] = Field(
+    extra_chromium_args: list[str] = Field(
         default_factory=list, description="Extra arguments to pass to the browser"
     )
-    chrome_instance_path: Optional[str] = Field(
+    chrome_instance_path: str | None = Field(
         None, description="Path to a Chrome instance to use"
     )
-    wss_url: Optional[str] = Field(
+    wss_url: str | None = Field(
         None, description="Connect to a browser instance via WebSocket"
     )
-    cdp_url: Optional[str] = Field(
+    cdp_url: str | None = Field(
         None, description="Connect to a browser instance via CDP"
     )
-    proxy: Optional[ProxySettings] = Field(
+    proxy: ProxySettings | None = Field(
         None, description="Proxy settings for the browser"
     )
     max_content_length: int = Field(
@@ -127,23 +214,21 @@ class DaytonaSettings(BaseModel):
     daytona_api_key: str = Field(
         "", description="API key for Daytona (leave empty to disable)"
     )
-    daytona_server_url: Optional[str] = Field(
-        "https://app.daytona.io/api", description=""
-    )
-    daytona_target: Optional[str] = Field("us", description="enum ['eu', 'us']")
-    sandbox_image_name: Optional[str] = Field("whitezxj/sandbox:0.1.0", description="")
-    sandbox_entrypoint: Optional[str] = Field(
+    daytona_server_url: str | None = Field("https://app.daytona.io/api", description="")
+    daytona_target: str | None = Field("us", description="enum ['eu', 'us']")
+    sandbox_image_name: str | None = Field("whitezxj/sandbox:0.1.0", description="")
+    sandbox_entrypoint: str | None = Field(
         "/usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf",
         description="",
     )
-    VNC_password: Optional[str] = Field(
+    VNC_password: str | None = Field(
         default_factory=lambda: os.environ.get("VNC_PASSWORD"),
         description="VNC password for the vnc service in sandbox (REQUIRED - set via VNC_PASSWORD env var)",
     )
 
     @field_validator("VNC_password")
     @classmethod
-    def validate_vnc_password(cls, v: Optional[str]) -> Optional[str]:
+    def validate_vnc_password(cls, v: str | None) -> str | None:
         if v is not None and len(v) < 8:
             raise ValueError(
                 "VNC password must be at least 8 characters. "
@@ -156,9 +241,9 @@ class MCPServerConfig(BaseModel):
     """Configuration for a single MCP server"""
 
     type: str = Field(..., description="Server connection type (sse or stdio)")
-    url: Optional[str] = Field(None, description="Server URL for SSE connections")
-    command: Optional[str] = Field(None, description="Command for stdio connections")
-    args: List[str] = Field(
+    url: str | None = Field(None, description="Server URL for SSE connections")
+    command: str | None = Field(None, description="Command for stdio connections")
+    args: list[str] = Field(
         default_factory=list, description="Arguments for stdio command"
     )
 
@@ -169,12 +254,12 @@ class MCPSettings(BaseModel):
     server_reference: str = Field(
         "app.mcp.server", description="Module reference for the MCP server"
     )
-    servers: Dict[str, MCPServerConfig] = Field(
+    servers: dict[str, MCPServerConfig] = Field(
         default_factory=dict, description="MCP server configurations"
     )
 
     @classmethod
-    def load_server_config(cls) -> Dict[str, MCPServerConfig]:
+    def load_server_config(cls) -> dict[str, MCPServerConfig]:
         """Load MCP server configuration from JSON file"""
         config_path = PROJECT_ROOT / "config" / "mcp.json"
 
@@ -196,25 +281,23 @@ class MCPSettings(BaseModel):
                     )
                 return servers
         except Exception as e:
-            raise ValueError(f"Failed to load MCP server config: {e}")
+            raise ValueError(f"Failed to load MCP server config: {e}") from e
 
 
 class AppConfig(BaseModel):
-    llm: Dict[str, LLMSettings]
-    sandbox: Optional[SandboxSettings] = Field(
-        None, description="Sandbox configuration"
-    )
-    browser_config: Optional[BrowserSettings] = Field(
+    llm: dict[str, LLMSettings]
+    sandbox: SandboxSettings | None = Field(None, description="Sandbox configuration")
+    browser_config: BrowserSettings | None = Field(
         None, description="Browser configuration"
     )
-    search_config: Optional[SearchSettings] = Field(
+    search_config: SearchSettings | None = Field(
         None, description="Search configuration"
     )
-    mcp_config: Optional[MCPSettings] = Field(None, description="MCP configuration")
-    run_flow_config: Optional[RunflowSettings] = Field(
+    mcp_config: MCPSettings | None = Field(None, description="MCP configuration")
+    run_flow_config: RunflowSettings | None = Field(
         None, description="Run flow configuration"
     )
-    daytona_config: Optional[DaytonaSettings] = Field(
+    daytona_config: DaytonaSettings | None = Field(
         None, description="Daytona configuration"
     )
 
@@ -274,7 +357,15 @@ class Config:
             "temperature": base_llm.get("temperature", 1.0),
             "api_type": base_llm.get("api_type", ""),
             "api_version": base_llm.get("api_version", ""),
+            "multimodal_models": base_llm.get("multimodal_models"),
+            "http_referer": base_llm.get("http_referer"),
+            "x_title": base_llm.get("x_title"),
         }
+        # Drop keys that are absent in the TOML: passing explicit None would
+        # raise a pydantic ValidationError and would also defeat the
+        # default_factory (env var fallback) of fields like api_key,
+        # http_referer and x_title.
+        default_settings = {k: v for k, v in default_settings.items() if v is not None}
 
         # handle browser config.
         browser_config = raw_config.get("browser", {})
@@ -357,7 +448,7 @@ class Config:
         self._config = AppConfig(**config_dict)
 
     @property
-    def llm(self) -> Dict[str, LLMSettings]:
+    def llm(self) -> dict[str, LLMSettings]:
         return self._config.llm
 
     @property
@@ -369,11 +460,11 @@ class Config:
         return self._config.daytona_config
 
     @property
-    def browser_config(self) -> Optional[BrowserSettings]:
+    def browser_config(self) -> BrowserSettings | None:
         return self._config.browser_config
 
     @property
-    def search_config(self) -> Optional[SearchSettings]:
+    def search_config(self) -> SearchSettings | None:
         return self._config.search_config
 
     @property

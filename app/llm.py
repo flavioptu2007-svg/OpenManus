@@ -1,7 +1,8 @@
 import asyncio
 import math
 import time
-from typing import Dict, List, Optional, Union
+from collections.abc import Sequence
+from typing import Any
 
 import tiktoken
 from openai import (
@@ -21,8 +22,8 @@ from tenacity import (
 )
 
 from app.bedrock import BedrockClient
-from app.config import LLMSettings, config
-from app.exceptions import TokenLimitExceeded
+from app.config import DEFAULT_MULTIMODAL_MODELS, LLMSettings, config
+from app.exceptions import TokenLimitExceededError
 from app.logger import logger  # Assuming a logger is set up in your app
 from app.schema import (
     ROLE_VALUES,
@@ -33,15 +34,18 @@ from app.schema import (
 )
 
 
+# OpenRouter recommends identifying the calling app via the HTTP-Referer
+# and X-Title headers (https://openrouter.ai/docs/api-reference/headers).
+# Values come from LLMSettings.http_referer / .x_title (config.toml or
+# OPENROUTER_HTTP_REFERER / OPENROUTER_X_TITLE env vars). They are sent to
+# all OpenAI-compatible providers; unknown headers are ignored by other APIs.
+
 REASONING_MODELS = ["o1", "o3-mini"]
-MULTIMODAL_MODELS = [
-    "gpt-4-vision-preview",
-    "gpt-4o",
-    "gpt-4o-mini",
-    "claude-3-opus-20240229",
-    "claude-3-sonnet-20240229",
-    "claude-3-haiku-20240307",
-]
+# Backwards-compatible alias for the default multimodal model list. Per-model
+# image support is resolved at runtime from LLMSettings.multimodal_models
+# (configurable via config.toml `multimodal_models` or MULTIMODAL_MODELS env
+# var); this constant is only the built-in default / import surface.
+MULTIMODAL_MODELS = DEFAULT_MULTIMODAL_MODELS
 
 
 class RateLimiter:
@@ -132,11 +136,10 @@ class TokenCounter:
         # OpenAI doesn't specify a separate calculation for medium
 
         # For high detail, calculate based on dimensions if available
-        if detail == "high" or detail == "medium":
+        if (detail == "high" or detail == "medium") and "dimensions" in image_item:
             # If dimensions are provided in the image_item
-            if "dimensions" in image_item:
-                width, height = image_item["dimensions"]
-                return self._calculate_high_detail_tokens(width, height)
+            width, height = image_item["dimensions"]
+            return self._calculate_high_detail_tokens(width, height)
 
         return (
             self._calculate_high_detail_tokens(1024, 1024) if detail == "high" else 1024
@@ -165,7 +168,7 @@ class TokenCounter:
             total_tiles * self.HIGH_DETAIL_TILE_TOKENS
         ) + self.LOW_DETAIL_IMAGE_TOKENS
 
-    def count_content(self, content: Union[str, List[Union[str, dict]]]) -> int:
+    def count_content(self, content: str | list[str | dict]) -> int:
         """Calculate tokens for message content"""
         if not content:
             return 0
@@ -184,7 +187,7 @@ class TokenCounter:
                     token_count += self.count_image(item)
         return token_count
 
-    def count_tool_calls(self, tool_calls: List[dict]) -> int:
+    def count_tool_calls(self, tool_calls: list[dict]) -> int:
         """Calculate tokens for tool calls"""
         token_count = 0
         for tool_call in tool_calls:
@@ -194,7 +197,7 @@ class TokenCounter:
                 token_count += self.count_text(function.get("arguments", ""))
         return token_count
 
-    def count_message_tokens(self, messages: List[dict]) -> int:
+    def count_message_tokens(self, messages: list[dict]) -> int:
         """Calculate the total number of tokens in a message list"""
         total_tokens = self.FORMAT_TOKENS  # Base format tokens
 
@@ -222,39 +225,53 @@ class TokenCounter:
 
 
 class LLM:
-    _instances: Dict[str, "LLM"] = {}
+    _instances: dict[str, "LLM"] = {}
 
     def __new__(
-        cls, config_name: str = "default", llm_config: Optional[LLMSettings] = None
+        cls, config_name: str = "default", llm_config: LLMSettings | None = None
     ):
         if config_name not in cls._instances:
             instance = super().__new__(cls)
-            instance.__init__(config_name, llm_config)
+            LLM.__init__(instance, config_name, llm_config)
             cls._instances[config_name] = instance
         return cls._instances[config_name]
 
     def __init__(
-        self, config_name: str = "default", llm_config: Optional[LLMSettings] = None
+        self,
+        config_name: str = "default",
+        llm_config: LLMSettings | dict[str, LLMSettings] | None = None,
     ):
         if not hasattr(self, "client"):  # Only initialize if not already initialized
-            llm_config = llm_config or config.llm
-            llm_config = llm_config.get(config_name, llm_config["default"])
-            self.model = llm_config.model
-            self.max_tokens = llm_config.max_tokens
-            self.temperature = llm_config.temperature
-            self.api_type = llm_config.api_type
-            self.api_key = llm_config.api_key
-            self.api_version = llm_config.api_version
-            self.base_url = llm_config.base_url
+            # Resolve the settings for this config_name. The parameter may be a
+            # single LLMSettings, a dict (e.g. {"default": ...}), or None
+            # (fall back to the global config.llm dict).
+            if llm_config is None:
+                settings: LLMSettings = config.llm.get(
+                    config_name, config.llm["default"]
+                )
+            elif isinstance(llm_config, dict):
+                settings = llm_config.get(config_name, llm_config["default"])
+            else:
+                settings = llm_config
+            self.model = settings.model
+            self.max_tokens = settings.max_tokens
+            self.temperature = settings.temperature
+            self.api_type = settings.api_type
+            self.api_key = settings.api_key
+            self.api_version = settings.api_version
+            self.base_url = settings.base_url
+            self.http_referer = settings.http_referer
+            self.x_title = settings.x_title
+            # settings is always an LLMSettings after the dict lookup above,
+            # so the field is never None (default_factory provides the default
+            # list). Assign directly: an explicitly-empty list must stay empty
+            # ("no image support") instead of falling back to the defaults.
+            self.multimodal_models = settings.multimodal_models
 
             # Add token counting related attributes
             self.total_input_tokens = 0
             self.total_completion_tokens = 0
-            self.max_input_tokens = (
-                llm_config.max_input_tokens
-                if hasattr(llm_config, "max_input_tokens")
-                else None
-            )
+            self.max_input_tokens = settings.max_input_tokens
 
             # Initialize tokenizer
             try:
@@ -263,6 +280,10 @@ class LLM:
                 # If the model is not in tiktoken's presets, use cl100k_base as default
                 self.tokenizer = tiktoken.get_encoding("cl100k_base")
 
+            # The three backends (AsyncOpenAI, AsyncAzureOpenAI, BedrockClient)
+            # are duck-typed to expose `chat.completions.create`; mypy can't
+            # prove a common signature across them, so the client is typed Any.
+            self.client: Any
             if self.api_type == "azure":
                 self.client = AsyncAzureOpenAI(
                     base_url=self.base_url,
@@ -272,7 +293,14 @@ class LLM:
             elif self.api_type == "aws":
                 self.client = BedrockClient()
             else:
-                self.client = AsyncOpenAI(api_key=self.api_key, base_url=self.base_url)
+                self.client = AsyncOpenAI(
+                    api_key=self.api_key,
+                    base_url=self.base_url,
+                    default_headers={
+                        "HTTP-Referer": self.http_referer,
+                        "X-Title": self.x_title,
+                    },
+                )
 
             self.token_counter = TokenCounter(self.tokenizer)
             self.rate_limiter = RateLimiter()
@@ -283,7 +311,7 @@ class LLM:
             return 0
         return len(self.tokenizer.encode(text))
 
-    def count_message_tokens(self, messages: List[dict]) -> int:
+    def count_message_tokens(self, messages: list[dict]) -> int:
         return self.token_counter.count_message_tokens(messages)
 
     def update_token_count(self, input_tokens: int, completion_tokens: int = 0) -> None:
@@ -316,8 +344,8 @@ class LLM:
 
     @staticmethod
     def format_messages(
-        messages: List[Union[dict, Message]], supports_images: bool = False
-    ) -> List[dict]:
+        messages: Sequence[Message | dict], supports_images: bool = False
+    ) -> list[dict]:
         """
         Format messages for LLM by converting them to OpenAI message format.
 
@@ -407,14 +435,14 @@ class LLM:
         stop=stop_after_attempt(6),
         retry=retry_if_exception_type(
             (OpenAIError, Exception, ValueError)
-        ),  # Don't retry TokenLimitExceeded
+        ),  # Don't retry TokenLimitExceededError
     )
     async def ask(
         self,
-        messages: List[Union[dict, Message]],
-        system_msgs: Optional[List[Union[dict, Message]]] = None,
+        messages: list[dict | Message],
+        system_msgs: list[dict | Message] | None = None,
         stream: bool = True,
-        temperature: Optional[float] = None,
+        temperature: float | None = None,
     ) -> str:
         """
         Send a prompt to the LLM and get the response.
@@ -429,34 +457,35 @@ class LLM:
             str: The generated response
 
         Raises:
-            TokenLimitExceeded: If token limits are exceeded
+            TokenLimitExceededError: If token limits are exceeded
             ValueError: If messages are invalid or response is empty
             OpenAIError: If API call fails after retries
             Exception: For unexpected errors
         """
         try:
             # Check if the model supports images
-            supports_images = self.model in MULTIMODAL_MODELS
+            supports_images = self.model in self.multimodal_models
 
             # Format system and user messages with image support check
+            formatted_messages = self.format_messages(messages, supports_images)
             if system_msgs:
-                system_msgs = self.format_messages(system_msgs, supports_images)
-                messages = system_msgs + self.format_messages(messages, supports_images)
-            else:
-                messages = self.format_messages(messages, supports_images)
+                formatted_messages = (
+                    self.format_messages(system_msgs, supports_images)
+                    + formatted_messages
+                )
 
             # Calculate input token count
-            input_tokens = self.count_message_tokens(messages)
+            input_tokens = self.count_message_tokens(formatted_messages)
 
             # Check if token limits are exceeded
             if not self.check_token_limit(input_tokens):
                 error_message = self.get_limit_error_message(input_tokens)
                 # Raise a special exception that won't be retried
-                raise TokenLimitExceeded(error_message)
+                raise TokenLimitExceededError(error_message)
 
-            params = {
+            params: dict[str, Any] = {
                 "model": self.model,
-                "messages": messages,
+                "messages": formatted_messages,
             }
 
             if self.model in REASONING_MODELS:
@@ -513,14 +542,14 @@ class LLM:
 
             return full_response
 
-        except TokenLimitExceeded:
+        except TokenLimitExceededError:
             # Re-raise token limit errors without logging
             raise
         except ValueError:
-            logger.exception(f"Validation error")
+            logger.exception("Validation error")
             raise
         except OpenAIError as oe:
-            logger.exception(f"OpenAI API error")
+            logger.exception("OpenAI API error")
             if isinstance(oe, AuthenticationError):
                 logger.error("Authentication failed. Check API key.")
             elif isinstance(oe, RateLimitError):
@@ -529,7 +558,7 @@ class LLM:
                 logger.error(f"API error: {oe}")
             raise
         except Exception:
-            logger.exception(f"Unexpected error in ask")
+            logger.exception("Unexpected error in ask")
             raise
 
     @retry(
@@ -537,15 +566,15 @@ class LLM:
         stop=stop_after_attempt(6),
         retry=retry_if_exception_type(
             (OpenAIError, Exception, ValueError)
-        ),  # Don't retry TokenLimitExceeded
+        ),  # Don't retry TokenLimitExceededError
     )
     async def ask_with_images(
         self,
-        messages: List[Union[dict, Message]],
-        images: List[Union[str, dict]],
-        system_msgs: Optional[List[Union[dict, Message]]] = None,
+        messages: list[dict | Message],
+        images: list[str | dict],
+        system_msgs: list[dict | Message] | None = None,
         stream: bool = False,
-        temperature: Optional[float] = None,
+        temperature: float | None = None,
     ) -> str:
         """
         Send a prompt with images to the LLM and get the response.
@@ -561,7 +590,7 @@ class LLM:
             str: The generated response
 
         Raises:
-            TokenLimitExceeded: If token limits are exceeded
+            TokenLimitExceededError: If token limits are exceeded
             ValueError: If messages are invalid or response is empty
             OpenAIError: If API call fails after retries
             Exception: For unexpected errors
@@ -569,13 +598,15 @@ class LLM:
         try:
             # For ask_with_images, we always set supports_images to True because
             # this method should only be called with models that support images
-            if self.model not in MULTIMODAL_MODELS:
+            if self.model not in self.multimodal_models:
                 raise ValueError(
-                    f"Model {self.model} does not support images. Use a model from {MULTIMODAL_MODELS}"
+                    f"Model {self.model} does not support images. Use a model from {self.multimodal_models}"
                 )
 
             # Format messages with image support
-            formatted_messages = self.format_messages(messages, supports_images=True)
+            formatted_messages: list[dict] = self.format_messages(
+                messages, supports_images=True
+            )
 
             # Ensure the last message is from the user to attach images
             if not formatted_messages or formatted_messages[-1]["role"] != "user":
@@ -622,10 +653,12 @@ class LLM:
             # Calculate tokens and check limits
             input_tokens = self.count_message_tokens(all_messages)
             if not self.check_token_limit(input_tokens):
-                raise TokenLimitExceeded(self.get_limit_error_message(input_tokens))
+                raise TokenLimitExceededError(
+                    self.get_limit_error_message(input_tokens)
+                )
 
             # Set up API parameters
-            params = {
+            params: dict[str, Any] = {
                 "model": self.model,
                 "messages": all_messages,
                 "stream": stream,
@@ -671,7 +704,7 @@ class LLM:
 
             return full_response
 
-        except TokenLimitExceeded:
+        except TokenLimitExceededError:
             raise
         except ValueError as ve:
             logger.error(f"Validation error in ask_with_images: {ve}")
@@ -694,16 +727,16 @@ class LLM:
         stop=stop_after_attempt(6),
         retry=retry_if_exception_type(
             (OpenAIError, Exception, ValueError)
-        ),  # Don't retry TokenLimitExceeded
+        ),  # Don't retry TokenLimitExceededError
     )
     async def ask_tool(
         self,
-        messages: List[Union[dict, Message]],
-        system_msgs: Optional[List[Union[dict, Message]]] = None,
+        messages: Sequence[Message | dict],
+        system_msgs: Sequence[Message | dict] | None = None,
         timeout: int = 300,
-        tools: Optional[List[dict]] = None,
+        tools: list[dict] | None = None,
         tool_choice: TOOL_CHOICE_TYPE = ToolChoice.AUTO,  # type: ignore
-        temperature: Optional[float] = None,
+        temperature: float | None = None,
         **kwargs,
     ) -> ChatCompletionMessage | None:
         """
@@ -722,7 +755,7 @@ class LLM:
             ChatCompletionMessage: The model's response
 
         Raises:
-            TokenLimitExceeded: If token limits are exceeded
+            TokenLimitExceededError: If token limits are exceeded
             ValueError: If tools, tool_choice, or messages are invalid
             OpenAIError: If API call fails after retries
             Exception: For unexpected errors
@@ -733,17 +766,18 @@ class LLM:
                 raise ValueError(f"Invalid tool_choice: {tool_choice}")
 
             # Check if the model supports images
-            supports_images = self.model in MULTIMODAL_MODELS
+            supports_images = self.model in self.multimodal_models
 
             # Format messages
+            formatted_messages = self.format_messages(messages, supports_images)
             if system_msgs:
-                system_msgs = self.format_messages(system_msgs, supports_images)
-                messages = system_msgs + self.format_messages(messages, supports_images)
-            else:
-                messages = self.format_messages(messages, supports_images)
+                formatted_messages = (
+                    self.format_messages(system_msgs, supports_images)
+                    + formatted_messages
+                )
 
             # Calculate input token count
-            input_tokens = self.count_message_tokens(messages)
+            input_tokens = self.count_message_tokens(formatted_messages)
 
             # If there are tools, calculate token count for tool descriptions
             tools_tokens = 0
@@ -757,7 +791,7 @@ class LLM:
             if not self.check_token_limit(input_tokens):
                 error_message = self.get_limit_error_message(input_tokens)
                 # Raise a special exception that won't be retried
-                raise TokenLimitExceeded(error_message)
+                raise TokenLimitExceededError(error_message)
 
             # Validate tools if provided
             if tools:
@@ -766,9 +800,9 @@ class LLM:
                         raise ValueError("Each tool must be a dict with 'type' field")
 
             # Set up the completion request
-            params = {
+            params: dict[str, Any] = {
                 "model": self.model,
-                "messages": messages,
+                "messages": formatted_messages,
                 "tools": tools,
                 "tool_choice": tool_choice,
                 "timeout": timeout,
@@ -798,13 +832,14 @@ class LLM:
                 return None
 
             # Update token counts
-            self.update_token_count(
-                response.usage.prompt_tokens, response.usage.completion_tokens
-            )
+            if response.usage is not None:
+                self.update_token_count(
+                    response.usage.prompt_tokens, response.usage.completion_tokens
+                )
 
             return response.choices[0].message
 
-        except TokenLimitExceeded:
+        except TokenLimitExceededError:
             # Re-raise token limit errors without logging
             raise
         except ValueError as ve:

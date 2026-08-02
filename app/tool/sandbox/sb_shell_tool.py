@@ -354,7 +354,7 @@ class SandboxShellTool(SandboxToolsBase):
         except Exception as e:
             return self.fail_response(f"Error listing commands: {str(e)}")
 
-    async def execute(
+    async def execute(  # type: ignore[override]
         self,
         action: str,
         command: str,

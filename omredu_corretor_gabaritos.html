@@ -1178,17 +1178,59 @@ function clearImage() {
 
 async function startCamera() {
   try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 960 } }
-    });
-    const video = document.getElementById('videoEl');
-    video.srcObject = stream;
-    document.getElementById('cameraWrap').style.display = 'block';
-    document.getElementById('cameraStart').style.display = 'none';
-    document.getElementById('cameraControls').style.display = 'block';
+    stream = await getCameraStream();
   } catch (err) {
-    showAlert('Não foi possível acessar a câmera: ' + err.message, 'error');
+    showAlert(cameraErrorMessage(err), 'error');
+    return;
   }
+  const video = document.getElementById('videoEl');
+  video.srcObject = stream;
+  document.getElementById('cameraWrap').style.display = 'block';
+  document.getElementById('cameraStart').style.display = 'none';
+  document.getElementById('cameraControls').style.display = 'block';
+}
+
+function cameraErrorMessage(err) {
+  const name = err && err.name;
+  if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+    return 'Permissão de câmera negada. Clique no ícone 🔒 da barra de endereço, permita o acesso à câmera e tente novamente.';
+  }
+  if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+    return 'Nenhuma câmera encontrada no dispositivo. Conecte uma webcam e tente novamente.';
+  }
+  if (name === 'NotReadableError' || name === 'TrackStartError') {
+    return 'A câmera está em uso por outro aplicativo (ex: Zoom, Meet). Feche-o e tente novamente.';
+  }
+  if (name === 'OverconstrainedError') {
+    return 'A câmera não suporta a configuração solicitada. Tente novamente.';
+  }
+  if (name === 'SecurityError') {
+    return 'Acesso à câmera bloqueado pelo navegador. Abra a página via HTTPS ou localhost (não pelo arquivo diretamente).';
+  }
+  if (name === 'AbortError') return 'A captura de vídeo foi interrompida. Tente novamente.';
+  return 'Não foi possível acessar a câmera: ' + (err ? (err.message || err.name) : 'desconhecido');
+}
+
+async function getCameraStream() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    throw new Error('getUserMedia indisponível');
+  }
+  const tentativas = [
+    { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 960 } } },
+    { video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } } },
+    { video: { width: { ideal: 1280 }, height: { ideal: 960 } } }
+  ];
+  let ultimoErro = null;
+  for (const opts of tentativas) {
+    try {
+      return await navigator.mediaDevices.getUserMedia(opts);
+    } catch (err) {
+      ultimoErro = err;
+      // Erro de permissão/câmera ocupada não se resolve tentando outras câmeras
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' || err.name === 'SecurityError' || err.name === 'NotReadableError' || err.name === 'TrackStartError') break;
+    }
+  }
+  throw ultimoErro || new Error('getUserMedia indisponível');
 }
 
 function capturePhoto() {

@@ -1,7 +1,7 @@
 import asyncio
 import base64
 import json
-from typing import Generic, Optional, TypeVar
+from typing import Any, Generic, Optional, TypeVar
 
 from browser_use import Browser as BrowserUseBrowser
 from browser_use import BrowserConfig
@@ -141,7 +141,10 @@ class BrowserUseTool(BaseTool, Generic[Context]):
     async def _ensure_browser_initialized(self) -> BrowserContext:
         """Ensure browser and context are initialized."""
         if self.browser is None:
-            browser_config_kwargs = {"headless": True, "disable_security": False}
+            browser_config_kwargs: dict[str, Any] = {
+                "headless": True,
+                "disable_security": False,
+            }
 
             if config.browser_config:
                 from browser_use.browser.browser import ProxySettings
@@ -187,7 +190,7 @@ class BrowserUseTool(BaseTool, Generic[Context]):
 
         return self.context
 
-    async def execute(
+    async def execute(  # type: ignore[override]
         self,
         action: str,
         url: Optional[str] = None,
@@ -428,6 +431,8 @@ Page content:
                     }
 
                     # Use LLM to extract content with required function calling
+                    if self.llm is None:
+                        return ToolResult(error="LLM not initialized")
                     response = await self.llm.ask_tool(
                         messages,
                         tools=[extraction_function],

@@ -111,7 +111,7 @@ class StrReplaceEditor(BaseTool):
             else self._local_operator
         )
 
-    async def execute(
+    async def execute(  # type: ignore[override]
         self,
         *,
         command: Command,
@@ -131,6 +131,7 @@ class StrReplaceEditor(BaseTool):
         await self.validate_path(command, Path(path), operator)
 
         # Execute the appropriate command
+        result: ToolResult
         if command == "view":
             result = await self.view(path, view_range, operator)
         elif command == "create":
@@ -197,9 +198,11 @@ class StrReplaceEditor(BaseTool):
         self,
         path: PathLike,
         view_range: Optional[List[int]] = None,
-        operator: FileOperator = None,
+        operator: Optional[FileOperator] = None,
     ) -> CLIResult:
         """Display file or directory content."""
+        if operator is None:
+            raise ToolError("Operator not initialized")
         # Determine if path is a directory
         is_dir = await operator.is_directory(path)
 
@@ -286,9 +289,11 @@ class StrReplaceEditor(BaseTool):
         path: PathLike,
         old_str: str,
         new_str: Optional[str] = None,
-        operator: FileOperator = None,
+        operator: Optional[FileOperator] = None,
     ) -> CLIResult:
         """Replace a unique string in a file with a new string."""
+        if operator is None:
+            raise ToolError("Operator not initialized")
         # Read file content and expand tabs
         file_content = (await operator.read_file(path)).expandtabs()
         old_str = old_str.expandtabs()
@@ -342,9 +347,11 @@ class StrReplaceEditor(BaseTool):
         path: PathLike,
         insert_line: int,
         new_str: str,
-        operator: FileOperator = None,
+        operator: Optional[FileOperator] = None,
     ) -> CLIResult:
         """Insert text at a specific line in a file."""
+        if operator is None:
+            raise ToolError("Operator not initialized")
         # Read and prepare content
         file_text = (await operator.read_file(path)).expandtabs()
         new_str = new_str.expandtabs()
@@ -392,9 +399,11 @@ class StrReplaceEditor(BaseTool):
         return CLIResult(output=success_msg)
 
     async def undo_edit(
-        self, path: PathLike, operator: FileOperator = None
+        self, path: PathLike, operator: Optional[FileOperator] = None
     ) -> CLIResult:
         """Revert the last edit made to a file."""
+        if operator is None:
+            raise ToolError("Operator not initialized")
         if not self._file_history[path]:
             raise ToolError(f"No edit history found for {path}.")
 

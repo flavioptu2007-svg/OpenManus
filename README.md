@@ -156,6 +156,174 @@ In addition, you need to install the relevant dependencies to ensure the agent r
 
 ---
 
+## 🚀 Running with the Project venv (recommended)
+
+If your system has a different Python installed globally (e.g. Python 3.14) whose `PYTHONPATH` interferes with the project's virtualenv, activate the project venv and **clear `PYTHONPATH` first**:
+
+```bash
+cd OpenManus
+unset PYTHONPATH
+source .venv/bin/activate
+python main.py
+```
+
+The following helper scripts are included to avoid repeating this:
+
+| Script | Purpose |
+|---|---|
+| `activate_openmanus.sh` | Unsets `PYTHONPATH` and activates the project venv |
+| `run_agent_test.sh` | Activates the venv and runs `main.py` with a test prompt (customizable) |
+| `test_om_flow.sh` | Full validation suite: `om`/`omtest` aliases, clean venv, agent startup (+ LLM auth status) |
+
+#### Writing new shell scripts (shared helpers in `lib/common.sh`)
+
+All project shell scripts must source the shared helpers instead of re-implementing the boilerplate:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+# Resolve the script's directory robustly (relative path, PATH or symlink safe)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/common.sh"   # shared helpers below
+
+# 1. Clear the system PYTHONPATH before activating the project venv
+om_unset_pythonpath
+
+# 2. Guard: clear message if the venv is missing (use `|| exit 1` in executed
+#    scripts, or `|| return 1 2>/dev/null || exit 1` in *sourced* scripts)
+om_require_venv "$SCRIPT_DIR" || exit 1
+source "$SCRIPT_DIR/.venv/bin/activate"
+```
+
+> **Rule:** never hardcode `unset PYTHONPATH` or the venv guard inline — always `source "$SCRIPT_DIR/lib/common.sh"` and use `om_unset_pythonpath` / `om_require_venv`.
+
+```bash
+# Activate the environment (unset PYTHONPATH + venv)
+source activate_openmanus.sh
+
+# Run the agent with the default test prompt
+./run_agent_test.sh
+
+# Run the agent with a custom prompt
+./run_agent_test.sh "Write a haiku about the sea"
+
+# Run the agent AND the full validation suite (test_om_flow.sh)
+./run_agent_test.sh --flow
+# or: CHECK_FLOW=1 ./run_agent_test.sh
+```
+
+`test_om_flow.sh` can also be run standalone:
+
+```bash
+./test_om_flow.sh                 # default checks (aliases + venv + agent start)
+./test_om_flow.sh "your prompt"   # custom prompt
+./test_om_flow.sh "prompt" --verbose   # show the raw omtest output
+```
+
+### Convenience aliases
+
+Add these to your `~/.bashrc` (or `~/.zshrc`):
+
+```bash
+# OpenManus: clean env + project venv (reuses activate_openmanus.sh)
+alias om="cd ~/OpenManus && source activate_openmanus.sh"
+
+# Run the agent with a test prompt
+alias omtest="~/OpenManus/run_agent_test.sh"
+```
+
+After `source ~/.bashrc`, usage is:
+
+```bash
+om          # enter the project with a clean venv
+omtest      # run the agent with a default test prompt
+```
+
+### Running the OpenRouter connection test
+
+`test_openrouter.py` validates connectivity, lists available models, and confirms the tracking headers (`HTTP-Referer` / `X-Title`) are sent:
+
+```bash
+# Reads the key from OPENROUTER_API_KEY / LLM_API_KEY env vars, or from the
+# .env file in the project root (it does NOT read config/config.toml)
+export OPENROUTER_API_KEY=sk-or-v1-...   # required if not in .env
+unset PYTHONPATH && ./.venv/bin/python test_openrouter.py
+```
+
+OpenRouter tracking headers are configurable via `config.toml` (`http_referer` / `x_title`) or the `OPENROUTER_HTTP_REFERER` / `OPENROUTER_X_TITLE` env vars — see [`.env.example`](.env.example).
+
+### OpenRouter key & config utilities
+
+The following Python utilities automate the OpenRouter setup above. None of them hardcode or print the full key — only a masked prefix, length and checksum (each row states where its key comes from):
+
+| Script | Purpose |
+|---|---|
+| `insert_openrouter_key.py` | Inserts/updates `OPENROUTER_API_KEY` in `.env` from a **base64-encoded key** (bypasses chat secret-masking); validates the `sk-or-v1-` format and writes the file with `0600` perms; `--verify` also checks the key live against the OpenRouter API |
+| `update_openrouter_config.py` | Sets the default/vision models and copies the real key from `.env` into `config/config.toml` (validates the TOML before writing; idempotent — safe to re-run) |
+| `test_ask_tool_models.py` | Re-tests candidate (free) models with the **real Manus tool payload** via `ask_tool` (key read via config → env vars / `.env`), to pick models that don't reject the agent's tool schemas |
+
+```bash
+# 1. Insert a key into .env from base64 (argv or stdin; --verify adds a live API check)
+echo 'BASE64_DA_CHAVE' | ./.venv/bin/python insert_openrouter_key.py
+./.venv/bin/python insert_openrouter_key.py --verify 'BASE64_DA_CHAVE'
+
+# 2. Point config.toml at working free models + the real key
+unset PYTHONPATH && ./.venv/bin/python update_openrouter_config.py
+
+# 3. Re-validate candidate models with the real agent payload
+unset PYTHONPATH && ./.venv/bin/python test_ask_tool_models.py
+```
+
+---
+
+## 🤖 Using OpenCode with OpenRouter
+
+[OpenCode](https://opencode.ai) is a terminal AI coding assistant. To use it with OpenRouter:
+
+### 1. Install
+
+```bash
+curl -fsSL https://opencode.ai/install | bash
+export PATH=$HOME/.opencode/bin:$PATH   # add to ~/.bashrc
+```
+
+### 2. Authenticate
+
+```bash
+opencode auth login -p openrouter
+# Paste your OpenRouter API key (sk-or-v1-...) when prompted
+```
+
+> OpenRouter keys **always start with `sk-or-v1-`**. Keys in other formats are rejected with `401 Missing Authentication header`. Create one at <https://openrouter.ai/settings/keys>.
+
+Credentials are stored in `~/.local/share/opencode/auth.json`. Check or remove them with:
+
+```bash
+opencode auth list      # show configured providers
+opencode auth logout openrouter   # remove the credential (e.g. to re-login)
+```
+
+Alternatively, OpenCode auto-detects the `OPENROUTER_API_KEY` environment variable — no login needed:
+
+```bash
+export OPENROUTER_API_KEY=sk-or-v1-...
+```
+
+### 3. Run
+
+```bash
+# One-shot prompt (non-interactive — recommended for scripts)
+echo 'Diga apenas a palavra OK' | opencode run --model openrouter/openai/gpt-4o-mini 'Diga apenas a palavra OK'
+
+# Interactive session
+opencode
+```
+
+> **Note:** without piped stdin, `opencode run` opens the interactive TUI. Pipe a prompt (`echo ... | opencode run ...`) when scripting.
+
+---
+
 ## 🏗️ Architecture
 
 OpenManus follows a **layered, modular architecture** with clear separation of concerns:
@@ -425,6 +593,69 @@ The `Bash` tool blocks destructive commands via `_check_blocked_commands()`:
 - Built-in `RateLimiter` in `LLM` service
 - Configurable max calls per time window
 - Async-safe via `asyncio.Lock`
+
+---
+
+## 🛡️ Secret Scanning (GitGuardian / ggshield)
+
+Secrets (API keys, tokens, passwords) must never reach the repository. This project uses **GitGuardian ggshield** in three complementary layers:
+
+### 1. Local pre-commit / pre-push blocking
+
+`ggshield` is registered as a **local pre-commit hook** (see `.pre-commit-config.yaml`), so commits and pushes containing secrets are **blocked before they reach the remote**:
+
+```bash
+# Install ggshield (standalone binary, no sudo) - check the releases page for the
+# current version: https://github.com/GitGuardian/ggshield/releases
+curl -fsSL https://github.com/GitGuardian/ggshield/releases/latest/download/ggshield-1.53.0-x86_64-unknown-linux-gnu.tar.gz -o /tmp/ggshield.tar.gz && tar xzf /tmp/ggshield.tar.gz -C /tmp && cp /tmp/ggshield-1.53.0-x86_64-unknown-linux-gnu/ggshield ~/.local/bin/ && chmod +x ~/.local/bin/ggshield
+# Alternative (always current): pipx install ggshield
+
+# Authenticate (required for secret scans):
+export GITGUARDIAN_API_KEY=your-gitguardian-api-key   # or: ggshield auth login
+
+# Install the hooks (registers pre-commit + pre-push):
+pre-commit install
+pre-commit install --hook-type pre-push
+```
+
+> The hook **skips cleanly when `GITGUARDIAN_API_KEY` is unset**, so it never blocks development before authentication.
+
+### 2. CI/CD integration (GitHub Actions)
+
+`.github/workflows/secret-scan.yaml` runs `ggshield secret scan` on **every push, pull request, and daily (cron)** on the `main` branch.
+
+To enable it in your GitHub repository:
+
+1. Create a GitGuardian account → [dashboard.gitguardian.com](https://dashboard.gitguardian.com)
+2. Generate an API token: **Settings → API → Create a new token** (with `scan` scope)
+3. Add it as a repository secret: **Settings → Secrets and variables → Actions → New repository secret** → name `GITGUARDIAN_API_KEY`
+4. Until the secret is set, the workflow simply doesn't run the scan step (no failure)
+
+### 3. Connect repositories & continuous commit scanning (GitGuardian dashboard)
+
+For **continuous scanning of every commit ever pushed** (including history), connect the repository to the GitGuardian dashboard:
+
+1. In the dashboard: **Repositories → Add repository** (or *Install on GitHub/GitLab*)
+2. Authorize GitGuardian to access the repository (GitHub App for GitHub; integration for GitLab)
+3. GitGuardian will scan the **full history** and every future commit automatically
+
+### 4. Alerts & incident owners
+
+Configure who gets notified and who owns remediation in the dashboard:
+
+| Setting | Where | Recommendation |
+|---|---|---|
+| **Alert channels** | Settings → Alerting | Email + Slack/Teams webhook (incidents, high severity only) |
+| **Incident owners** | Settings → Incident management → Assignees | Assign owners per repository/team, enable **auto-assignment** |
+| **Severity rules** | Settings → Incident management → Rules | Auto-assign by detector/severity (e.g. all `OpenAI API Key` → security team) |
+| **Remediation workflow** | Dashboard → Incident | Rotate the leaked secret immediately, then push a fix |
+
+**Incident response checklist:**
+
+1. **Rotate/revoke the leaked secret immediately** (at the provider)
+2. Remove it from the repo: `git filter-repo` or BFG, then force-push
+3. Re-scan to confirm zero findings
+4. Update the owner/assignee status in the dashboard
 
 ---
 

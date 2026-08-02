@@ -134,7 +134,7 @@ class SandboxFilesTool(SandboxToolsBase):
             print(f"Error getting workspace state: {str(e)}")
             return {}
 
-    async def execute(
+    async def execute(  # type: ignore[override]
         self,
         action: str,
         file_path: Optional[str] = None,
@@ -165,7 +165,7 @@ class SandboxFilesTool(SandboxToolsBase):
                             "file_path and file_contents are required for create_file"
                         )
                     return await self._create_file(
-                        file_path, file_contents, permissions
+                        file_path, file_contents, permissions or "644"
                     )
 
                 # String replacement
@@ -183,7 +183,7 @@ class SandboxFilesTool(SandboxToolsBase):
                             "file_path and file_contents are required for full_file_rewrite"
                         )
                     return await self._full_file_rewrite(
-                        file_path, file_contents, permissions
+                        file_path, file_contents, permissions or "644"
                     )
 
                 # File deletion
@@ -354,7 +354,7 @@ class SandboxFilesTool(SandboxToolsBase):
         """Clean up sandbox resources."""
 
     @classmethod
-    def create_with_context(cls, context: Context) -> "SandboxFilesTool[Context]":
+    def create_with_context(cls, context: Context) -> "SandboxFilesTool":
         """Factory method to create a SandboxFilesTool with a specific context."""
         raise NotImplementedError(
             "create_with_context not implemented for SandboxFilesTool"

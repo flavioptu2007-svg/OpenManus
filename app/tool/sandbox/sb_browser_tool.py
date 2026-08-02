@@ -193,7 +193,7 @@ class SandboxBrowserTool(SandboxToolsBase):
             return False, f"Validation error: {str(e)}"
 
     async def _execute_browser_action(
-        self, endpoint: str, params: dict = None, method: str = "POST"
+        self, endpoint: str, params: Optional[dict] = None, method: str = "POST"
     ) -> ToolResult:
         """Execute a browser automation action through the sandbox API."""
         try:
@@ -260,7 +260,7 @@ class SandboxBrowserTool(SandboxToolsBase):
                     return (
                         self.success_response(success_response)
                         if success_response["success"]
-                        else self.fail_response(success_response)
+                        else self.fail_response(json.dumps(success_response))
                     )
                 except json.JSONDecodeError as e:
                     logger.error(f"Failed to parse response JSON: {e}")
@@ -275,7 +275,7 @@ class SandboxBrowserTool(SandboxToolsBase):
             logger.debug(traceback.format_exc())
             return self.fail_response(f"Error executing browser action: {e}")
 
-    async def execute(
+    async def execute(  # type: ignore[override]
         self,
         action: str,
         url: Optional[str] = None,

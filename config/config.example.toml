@@ -5,6 +5,11 @@ base_url = "https://api.anthropic.com/v1/" # API endpoint URL
 api_key = "YOUR_API_KEY"                   # Your API key
 max_tokens = 8192                          # Maximum number of tokens in the response
 temperature = 0.0                          # Controls randomness
+# Models that accept image inputs (images are attached only for these).
+# Defaults to well-known multimodal models (gpt-4o, claude-3...). Override
+# here per provider or globally via the MULTIMODAL_MODELS env var
+# (comma-separated, e.g. "gpt-4o,google/gemma-4-26b-a4b-it:free").
+# multimodal_models = ["gpt-4o", "google/gemma-4-26b-a4b-it:free"]
 
 # [llm] # Amazon Bedrock
 # api_type = "aws"                                       # Required
@@ -46,6 +51,9 @@ base_url = "https://api.anthropic.com/v1/" # API endpoint URL for vision model
 api_key = "YOUR_API_KEY"                   # Your API key for vision model
 max_tokens = 8192                          # Maximum number of tokens in the response
 temperature = 0.0                          # Controls randomness for vision model
+# Vision models must be listed here (or in MULTIMODAL_MODELS env var) or
+# ask_with_images will raise "Model ... does not support images".
+# multimodal_models = ["google/gemma-4-26b-a4b-it:free"]
 
 # [llm.vision] #OLLAMA VISION:
 # api_type = 'ollama'

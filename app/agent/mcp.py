@@ -25,7 +25,9 @@ class MCPAgent(ToolCallAgent):
 
     # Initialize MCP tool collection
     mcp_clients: MCPClients = Field(default_factory=MCPClients)
-    available_tools: MCPClients = None  # Will be set in initialize()
+    available_tools: MCPClients = Field(
+        default_factory=MCPClients
+    )  # Will be set in initialize()
 
     max_steps: int = 20
     connection_type: str = "stdio"  # "stdio" or "sse"
@@ -164,7 +166,8 @@ class MCPAgent(ToolCallAgent):
                 )
             )
 
-    def _should_finish_execution(self, name: str, **kwargs) -> bool:
+    @staticmethod
+    def _should_finish_execution(name: str = "", **kwargs) -> bool:
         """Determine if tool execution should finish the agent"""
         # Terminate if the tool name is 'terminate'
         return name.lower() == "terminate"

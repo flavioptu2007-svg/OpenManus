@@ -26,7 +26,7 @@ class PythonExecute(BaseTool):
         "required": ["code"],
     }
 
-    async def execute(
+    async def execute(  # type: ignore[override]
         self,
         code: str,
         timeout: int = 30,
