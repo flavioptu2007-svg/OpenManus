@@ -8,12 +8,44 @@ para o agente seguir (ex.: "use gabaritos_consultar_questoes para listar IDs").
 """
 
 import os
+import pathlib
 from typing import Any, Optional
 
 import httpx
 
 
 DEFAULT_URL = "http://127.0.0.1:5000"
+
+
+def _env_ou_dotenv(nome: str) -> str:
+    """Lê a variável do ambiente; se ausente, procura no `.env` local.
+
+    Alguns clientes MCP (stdio) não repassam o ambiente completo ao
+    subprocesso do servidor — este fallback garante que `GABARITOS_API_KEY`
+    funcione mesmo quando o servidor for iniciado por um orquestrador.
+    """
+    valor = os.environ.get(nome, "")
+    if valor:
+        return valor
+    # Busca em ./config/.env, ./.env e omr_system/.env (pai do pacote)
+    candidatos = [
+        pathlib.Path.cwd() / ".env",
+        pathlib.Path.cwd() / "config" / ".env",
+        pathlib.Path(__file__).resolve().parent.parent / ".env",
+    ]
+    for caminho in candidatos:
+        try:
+            texto = caminho.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for linha in texto.splitlines():
+            linha = linha.strip()
+            if not linha or linha.startswith("#") or "=" not in linha:
+                continue
+            chave, _, valor = linha.partition("=")
+            if chave.strip() == nome:
+                return valor.strip().strip('"').strip("'")
+    return ""
 
 
 class GabaritosError(Exception):
@@ -47,9 +79,9 @@ class GabaritosClient:
         timeout: float = 30.0,
     ):
         self.base_url = (
-            base_url or os.environ.get("GABARITOS_API_URL", DEFAULT_URL)
+            base_url or _env_ou_dotenv("GABARITOS_API_URL") or DEFAULT_URL
         ).rstrip("/")
-        self.api_key = api_key or os.environ.get("GABARITOS_API_KEY", "")
+        self.api_key = api_key or _env_ou_dotenv("GABARITOS_API_KEY")
         headers = {"X-API-Key": self.api_key} if self.api_key else {}
         self._http = httpx.Client(
             base_url=self.base_url, timeout=timeout, headers=headers
