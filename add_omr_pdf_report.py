@@ -4,13 +4,16 @@
 V3_PATH = "/home/flavio/Secretária/Download/planejador-escolar-v3.0.html"
 BACKUP_PATH = V3_PATH + ".pdfbak"
 
+
 def read_file(path):
     with open(path, "r", encoding="utf-8") as f:
         return f.read()
 
+
 def write_file(path, content):
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
+
 
 def add_pdf_button(html):
     """Adiciona botão de relatório PDF ao lado dos botões existentes."""
@@ -22,13 +25,14 @@ def add_pdf_button(html):
                 <button class="btn bs bsm" onclick="omrExportarCSV()">⬇ CSV</button>
                 <button class="btn bs bsm" onclick="omrExportarPDF()">📄 PDF</button>
                 <button class="btn bs bsm" onclick="omrNovaAnalise()">🔄 Nova</button>"""
-    
+
     count = html.count(old_btns)
     if count > 0:
         html = html.replace(old_btns, new_btns, 1)  # Só o primeiro
         print(f"✅ Botão PDF adicionado (substituiu 1 ocorrência de {count})")
-    
+
     return html
+
 
 def add_pdf_js(html):
     """Adiciona a função omrExportarPDF ao JS."""
@@ -198,7 +202,7 @@ function omrExportarPDF() {
     marker = """function omrExportarCSV() {
   if (!omrResultadoAtual) return;
   const r = omrResultadoAtual;"""
-    
+
     if marker in html:
         html = html.replace(marker, marker + pdf_js_func, 1)
         print(f"✅ Função omrExportarPDF adicionada ao JS")
@@ -206,12 +210,14 @@ function omrExportarPDF() {
         print("❌ Marcador omrExportarCSV não encontrado!")
         # Tentar encontrar com outro padrão
         import re
-        matches = list(re.finditer(r'function omrExportarCSV\(\)\s*\{', html))
+
+        matches = list(re.finditer(r"function omrExportarCSV\(\)\s*\{", html))
         print(f"Encontradas {len(matches)} ocorrências de 'function omrExportarCSV'")
         for m in matches:
             print(f"  Posição {m.start()}: {html[m.start():m.start()+80]}")
-    
+
     return html
+
 
 def add_habilidade_inputs(html):
     """Adiciona campos de habilidade por questão no gabarito."""
@@ -224,7 +230,7 @@ def add_habilidade_inputs(html):
             <button class="btn bs bsm" onclick="omrFillAll('C')">Tudo C</button>
             <button class="btn bs bsm" onclick="omrClearGab()">Limpar</button>
           </div>"""
-    
+
     new_gab_header = """<p class="prova-cfg-title">📋 Gabarito Oficial</p>
           <div class="omr-gab-grid" id="omr-gabaritoGrid"></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.6rem">
@@ -240,15 +246,16 @@ def add_habilidade_inputs(html):
               <div class="omr-hab-grid" id="omr-habGrid"></div>
             </div>
           </details>"""
-    
+
     count = html.count(old_gab_header)
     if count > 0:
         html = html.replace(old_gab_header, new_gab_header, 1)
         print(f"✅ Mapeamento de habilidades adicionado ao gabarito")
     else:
         print("❌ Cabeçalho do gabarito não encontrado!")
-    
+
     return html
+
 
 def add_gabarito_habilidades_js(html):
     """Adiciona JS para renderizar campos de habilidade e estende omrRenderGabarito."""
@@ -276,8 +283,7 @@ omrRenderGabarito = function() {
 """
     # Adicionar após a declaração de omrRenderGabarito (a primeira, antes das funções de utilidade)
     marker1 = "function omrRenderGabarito() {"
-    marker2 = """function omrFillAll"""
-    
+
     if marker1 in html:
         # Encontrar a primeira ocorrência e adicionar depois dela
         idx = html.find(marker1)
@@ -292,8 +298,9 @@ omrRenderGabarito = function() {
             print("❌ Não encontrou end_marker para omrRenderGabarito")
     else:
         print("❌ omrRenderGabarito não encontrado!")
-    
+
     return html
+
 
 def add_pdf_hab_css(html):
     """Adiciona CSS para a grid de habilidades."""
@@ -315,24 +322,27 @@ def add_pdf_hab_css(html):
             print("❌ Não encontrou final do bloco CSS OMR")
     else:
         print("❌ Marcador CSS OMR não encontrado!")
-    
+
     return html
+
 
 def main():
     import shutil
+
     shutil.copy2(V3_PATH, BACKUP_PATH)
     print(f"Backup salvo: {BACKUP_PATH}")
-    
+
     html = read_file(V3_PATH)
-    
+
     html = add_pdf_button(html)
     html = add_habilidade_inputs(html)
     html = add_pdf_hab_css(html)
     html = add_pdf_js(html)
     html = add_gabarito_habilidades_js(html)
-    
+
     write_file(V3_PATH, html)
     print(f"\n✅ Relatório PDF adicionado em: {V3_PATH}")
+
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,38 @@
+# =====================================================================
+# NVIDIA Nemotron via Ollama — exemplo de configuração
+# =====================================================================
+# Integração HistóriaIA Copilot / OpenManus com modelos Nemotron locais
+# (servidos pelo Ollama, que expõe endpoint OpenAI-compatível).
+#
+# USO:
+#   cp config.example-model-nemotron.toml config.toml
+#   (ou adicione o bloco [llm.nemotron] abaixo ao seu config.toml ativo —
+#    o router de IA lê automaticamente sobreposições [llm.<nome>].)
+#
+# MODELOS RECOMENDADOS (ollama pull):
+#   nemotron-mini:latest   -> 4.2B  (Q4_K_M, ~2.7 GB)  CPU-friendly  ✅ RECOMENDADO
+#   nemotron:latest        -> 70.6B (Q4_K_M, ~42 GB)   exige GPU/VRAM elevada
+#
+# Modelo padrão do agente (mantém o que estiver ativo no [llm] principal):
+[llm]
+api_type = "ollama"
+model = "nemotron-mini:latest"          # The LLM model to use
+base_url = "http://localhost:11434/v1"  # Ollama OpenAI-compatible endpoint
+api_key = "ollama"                      # Ollama aceita qualquer chave não vazia
+max_tokens = 4096
+temperature = 0.0
+
+# Sobrescrita exclusiva do provider "nemotron" (usada por LLM("nemotron")
+# no router de IA — NÃO altera o modelo padrão do agente).
+[llm.nemotron]
+model = "nemotron-mini:latest"
+base_url = "http://localhost:11434/v1"
+api_key = "ollama"
+max_tokens = 4096
+temperature = 0.0
+
+# Variáveis de ambiente (opcionais — usadas pelos scripts de health check,
+# benchmark e dashboard). Ver .env.example.
+# NEMOTRON_MODEL=nemotron-mini:latest
+# NEMOTRON_URL=http://localhost:11434/v1
+# NEMOTRON_TIMEOUT=300

@@ -1,7 +1,10 @@
 """Image processing utilities — preprocess, deskew, detect_grid."""
+
+import logging
+
 import cv2
 import numpy as np
-import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +21,7 @@ def preprocess_image(image_path: str, output_path: str = None):
         enhanced = clahe.apply(gray)
         blurred = cv2.GaussianBlur(enhanced, (5, 5), 0)
         binary = cv2.adaptiveThreshold(
-            blurred, 255,
-            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-            cv2.THRESH_BINARY_INV, 11, 2
+            blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2
         )
         result = binary
         if output_path:
@@ -39,10 +40,10 @@ def deskew_image(image_path: str, output_path: str = None):
             raise ValueError(f"Imagem não encontrada: {image_path}")
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        _, thresh = cv2.threshold(gray, 0, 255,
-                                  cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL,
-                                        cv2.CHAIN_APPROX_SIMPLE)
+        _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        contours, _ = cv2.findContours(
+            thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
         if not contours:
             logger.warning("Nenhum contorno encontrado; imagem mantida.")
             if output_path:
@@ -54,7 +55,9 @@ def deskew_image(image_path: str, output_path: str = None):
         ar = w / float(h)
 
         if not (0.5 < ar < 2.0):
-            logger.warning(f"Aspect ratio fora do esperado ({ar:.2f}); deskew ignorado.")
+            logger.warning(
+                f"Aspect ratio fora do esperado ({ar:.2f}); deskew ignorado."
+            )
             if output_path:
                 cv2.imwrite(output_path, img)
             return img
@@ -71,9 +74,9 @@ def deskew_image(image_path: str, output_path: str = None):
 
         (H, W) = img.shape[:2]
         M = cv2.getRotationMatrix2D((W // 2, H // 2), angle, 1.0)
-        rotated = cv2.warpAffine(img, M, (W, H),
-                                  flags=cv2.INTER_CUBIC,
-                                  borderMode=cv2.BORDER_REPLICATE)
+        rotated = cv2.warpAffine(
+            img, M, (W, H), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE
+        )
         if output_path:
             cv2.imwrite(output_path, rotated)
         return rotated
@@ -91,9 +94,9 @@ def detect_grid(image_path: str, min_lines: int = 5) -> dict | None:
             raise ValueError(f"Imagem não encontrada: {image_path}")
 
         edges = cv2.Canny(img, 50, 150, apertureSize=3)
-        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 80,
-                                  minLineLength=img.shape[1] * 0.4,
-                                  maxLineGap=20)
+        lines = cv2.HoughLinesP(
+            edges, 1, np.pi / 180, 80, minLineLength=img.shape[1] * 0.4, maxLineGap=20
+        )
         if lines is None:
             logger.error("Nenhuma linha detectada.")
             return None
@@ -112,8 +115,7 @@ def detect_grid(image_path: str, min_lines: int = 5) -> dict | None:
         v_lines = sorted(set(_cluster(v_lines)))
 
         if len(h_lines) < min_lines or len(v_lines) < min_lines:
-            logger.error(
-                f"Linhas insuficientes: H={len(h_lines)}, V={len(v_lines)}")
+            logger.error(f"Linhas insuficientes: H={len(h_lines)}, V={len(v_lines)}")
             return None
 
         questoes = {}
@@ -123,15 +125,13 @@ def detect_grid(image_path: str, min_lines: int = 5) -> dict | None:
             questoes[q_num] = {}
             for j, alt in enumerate(alternativas):
                 questoes[q_num][alt] = {
-                    'top':    h_lines[i],
-                    'bottom': h_lines[i + 1],
-                    'left':   v_lines[j],
-                    'right':  v_lines[j + 1]
+                    "top": h_lines[i],
+                    "bottom": h_lines[i + 1],
+                    "left": v_lines[j],
+                    "right": v_lines[j + 1],
                 }
 
-        return {'questoes': questoes,
-                'h_lines': h_lines,
-                'v_lines': v_lines}
+        return {"questoes": questoes, "h_lines": h_lines, "v_lines": v_lines}
 
     except Exception as e:
         logger.error(f"detect_grid error: {e}")

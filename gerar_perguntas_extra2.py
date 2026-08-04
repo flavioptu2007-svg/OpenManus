@@ -216,15 +216,23 @@ NOVAS_PERGUNTAS = """
 """
 
 if __name__ == "__main__":
-    import sys, re
-    html_path = sys.argv[1] if len(sys.argv) > 1 else "/home/flavio/OpenManus/quiz_historico.html"
+    import re
+    import sys
+
+    html_path = (
+        sys.argv[1]
+        if len(sys.argv) > 1
+        else "/home/flavio/OpenManus/quiz_historico.html"
+    )
 
     with open(html_path, "r", encoding="utf-8") as f:
         content = f.read()
 
     # Insert new questions before the closing ]; of PERGUNTAS
     target = "    ];\n\n    // ─── Conquistas"
-    new_content = content.replace(target, NOVAS_PERGUNTAS + "    ];\n\n    // ─── Conquistas", 1)
+    new_content = content.replace(
+        target, NOVAS_PERGUNTAS + "    ];\n\n    // ─── Conquistas", 1
+    )
 
     if content == new_content:
         print("ERROR: Could not find insertion point!")
@@ -235,4 +243,6 @@ if __name__ == "__main__":
 
     q_count = len(re.findall(r'id:"q\d+"', new_content))
     print(f"✅ {q_count} perguntas totais no arquivo!")
-    print(f"   Inseridas {len(re.findall(r'id:"q\d+"', NOVAS_PERGUNTAS))} novas perguntas")
+    print(
+        f"   Inseridas {len(re.findall(r'id:"q\d+"', NOVAS_PERGUNTAS))} novas perguntas"
+    )

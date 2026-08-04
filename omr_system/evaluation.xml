@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Avaliação do servidor MCP gabaritos_mcp (Fase 2).
+
+  Critérios aplicados a cada pergunta:
+  - Independente (não depende da resposta de outra pergunta);
+  - Somente leitura (nenhuma pergunta grava dados);
+  - Complexa (exige múltiplas chamadas de tools e/ou cruzamento de dados);
+  - Realista (situações reais de um professor/orientador usando o sistema);
+  - Resposta única e verificável (as respostas descrevem o passo a passo
+    exato e o resultado observável esperado);
+  - Estável no tempo (baseia-se nos dados de seed e na estrutura do
+    protocolo, não em contagens fixas que mudam com o uso).
+
+  Convenção de chamada: cada tool recebe um único objeto "dados":
+    gabaritos_consultar_questoes({ "dados": { "materia": "História" } })
+-->
+<evaluation>
+  <qa_pair>
+    <question>
+      Quantas questões existem no banco hoje? Conte usando apenas a paginação
+      da tool gabaritos_consultar_questoes.
+    </question>
+    <answer>
+      Chame gabaritos_consultar_questoes com { "dados": { "limit": 100, "offset": 0, "response_format": "json" } }.
+      Leia o campo "total" da resposta. Como o seed cria 5 questões quando o
+      banco está vazio, o total deve ser &gt;= 5. Se "has_more" for true, repita com
+      "offset" igual a "next_offset" e some as listas até "has_more" ser false.
+      Resposta esperada: o número total de questões, com a observação de que as
+      5 primeiras do seed são: capital do Brasil (Geografia), 2+2 (Matemática),
+      democracia (História), Revolução Industrial (História), fotossíntese (Ciências).
+    </answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>
+      Qual é o texto exato da questão cadastrada com a habilidade EF06GE01?
+    </question>
+    <answer>
+      Chame gabaritos_consultar_questoes com { "dados": { "materia": "Geografia", "limit": 20, "response_format": "json" } }.
+      Localize na lista o registro cujo campo "habilidade" é "EF06GE01" e
+      copie o campo "texto".
+      Resposta esperada: "Qual é a capital do Brasil?" (dificuldade "Fácil",
+      série "6º Ano").
+    </answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>
+      Quais questões de Matemática existem e qual a dificuldade de cada uma?
+    </question>
+    <answer>
+      Chame gabaritos_consultar_questoes com { "dados": { "materia": "Matemática", "limit": 20, "response_format": "json" } }.
+      Liste cada questão com id, texto e dificuldade.
+      Resposta esperada: o seed contém "Resolva: 2 + 2 = ?" (habilidade
+      EF06MA01, dificuldade "Fácil", série "6º Ano"). Se houver outras questões
+      de Matemática cadastradas posteriormente, elas também devem aparecer.
+    </answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>
+      Existem questões de série "8º Ano" no banco? Quais são?
+    </question>
+    <answer>
+      Chame gabaritos_consultar_questoes com { "dados": { "serie": "8º Ano", "limit": 20, "response_format": "json" } }.
+      Copie id, texto, matéria e habilidade de cada registro retornado.
+      Resposta esperada: ao menos "Explique a Revolução Industrial."
+      (habilidade EF08HI01, História, dificuldade "Difícil") — este item vem do
+      seed e é estável. O total real pode ser maior se outras questões da série
+      forem cadastradas.
+    </answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>
+      Liste as provas cadastradas usando paginação. O que os campos "has_more"
+      e "next_offset" indicam na primeira página?
+    </question>
+    <answer>
+      Chame gabaritos_listar_provas com { "dados": { "limit": 5, "offset": 0, "response_format": "json" } }.
+      Analise o corpo: "total" é o número total de provas; "has_more" informa se
+      existem registros além desta página; "next_offset" traz o offset da
+      próxima página (ou null quando "has_more" é false).
+      Resposta esperada: descrição textual da primeira página (IDs e nomes das
+      provas) mais a explicação: has_more = (offset + itens) &lt; total e
+      next_offset = offset + itens quando has_more é true.
+    </answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>
+      Escolha a primeira prova da listagem e liste todas as suas questões.
+      Confirme que cada questão da resposta pertence a essa prova.
+    </question>
+    <answer>
+      1) gabaritos_listar_provas com { "dados": { "limit": 1, "offset": 0, "response_format": "json" } }
+         → anote o "id" da primeira prova.
+      2) gabaritos_consultar_prova com { "dados": { "prova_id": &lt;id&gt;, "response_format": "json" } }.
+      3) Verifique que o campo "questoes" está presente e que cada item possui
+         "prova_id" igual ao id consultado.
+      Resposta esperada: o texto das questões da prova e a confirmação de que
+      todos os itens têm prova_id = &lt;id&gt;. Se a prova não tiver questões, a
+      resposta deve reportar "sem questões associadas".
+    </answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>
+      Quantos resultados (folhas de resposta) já foram processados? Liste-os
+      filtrando pela prova escolhida na pergunta anterior.
+    </question>
+    <answer>
+      1) gabaritos_consultar_resultados com { "dados": { "limit": 100, "offset": 0, "response_format": "json" } }
+         → leia "total".
+      2) gabaritos_consultar_resultados com { "dados": { "prova_id": &lt;id da prova escolhida&gt;, "limit": 100, "offset": 0, "response_format": "json" } }.
+      Resposta esperada: o total geral e o total filtrado por prova. Todos os
+      itens da segunda chamada devem ter "prova_id" igual ao filtro informado.
+      Se não houver resultados, a resposta deve reportar zero (a tool retorna
+      "_Nenhum resultado processado._" em markdown ou lista vazia em json).
+    </answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>
+      Processe uma imagem de gabarito em branco (JPEG/PNG 120x120 branco,
+      codificada em base64) e descreva a leitura estruturada retornada.
+    </question>
+    <answer>
+      Chame gabaritos_processar_gabarito com { "dados": { "image_base64": "&lt;base64 da imagem branca&gt;", "filename": "gabarito.png", "response_format": "json" } }
+      (sem "prova_id" — assim a operação NÃO grava nada).
+      Resposta esperada: um objeto com "qr_data" vazio (lista), "marked_answers_count" = 0,
+      "total_bubbles" = 0, "confidence" = 0.0 e "image_file" com o nome salvo.
+      A resposta deve explicar que, por não haver prova_id, nenhum resultado foi
+      persistido (operação somente leitura nesta chamada).
+    </answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>
+      Comparando as duas consultas de questões (sem filtro e com filtro de
+      matéria), o que o filtro faz com o "total" retornado?
+    </question>
+    <answer>
+      1) gabaritos_consultar_questoes com { "dados": { "limit": 1, "offset": 0, "response_format": "json" } }
+         → anote "total" (todas as questões).
+      2) gabaritos_consultar_questoes com { "dados": { "materia": "Ciências", "limit": 1, "offset": 0, "response_format": "json" } }
+         → anote "total" (somente Ciências).
+      Resposta esperada: o total filtrado é menor ou igual ao total geral (o
+      filtro restringe o conjunto). Com os dados de seed, Ciências contém
+      "O que é fotossíntese?" (EF06CI01) — total &gt;= 1. A explicação deve
+      mencionar que o filtro de matéria usa correspondência parcial (ilike %...%).
+    </answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>
+      Pegue a primeira questão de História da listagem e verifique se ela está
+      atribuída a alguma prova. Se estiver, consulte a prova e confirme que a
+      questão aparece nela.
+    </question>
+    <answer>
+      1) gabaritos_consultar_questoes com { "dados": { "materia": "História", "limit": 1, "offset": 0, "response_format": "json" } }
+         → anote "id" e o campo "prova_id" do primeiro item.
+      2) Se "prova_id" for null: resposta — "questão não atribuída a nenhuma
+         prova" (é o estado de seed).
+      3) Se "prova_id" tiver valor: gabaritos_consultar_prova com { "dados": { "prova_id": &lt;valor&gt;, "response_format": "json" } }
+         e confirme que a lista "questoes" contém o id da questão.
+      Resposta esperada: o estado real da questão (atribuída ou não) com a
+      evidência da consulta cruzada entre as duas tools.
+    </answer>
+  </qa_pair>
+</evaluation>

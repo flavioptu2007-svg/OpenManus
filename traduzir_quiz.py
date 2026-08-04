@@ -2,6 +2,7 @@
 """Translate quiz_historico_en.html to English."""
 import re
 
+
 html_path = "/home/flavio/OpenManus/quiz_historico_en.html"
 
 with open(html_path, "r", encoding="utf-8") as f:
@@ -11,7 +12,6 @@ with open(html_path, "r", encoding="utf-8") as f:
 translations = {
     # Title
     "Quiz Histórico — ProfHistória IA": "History Quiz — ProfHistória IA",
-    
     # UI Labels
     "Quiz Historico": "History Quiz",
     "perguntas disponiveis": "questions available",
@@ -41,7 +41,6 @@ translations = {
     "Novas Conquistas!": "New Achievements!",
     "Correto!": "Correct!",
     "Errado!": "Wrong!",
-    
     # Achievement Names
     "Primeiros Passos": "First Steps",
     "Complete seu primeiro quiz": "Complete your first quiz",
@@ -67,12 +66,10 @@ translations = {
     "Complete todos os anos": "Complete all grades",
     "Velocista": "Sprinter",
     "Complete um quiz no modo Tempo em menos de 60s": "Complete a Timer quiz in under 60s",
-    
     # Mode labels
     "estudo": "study",
     "quiz": "quiz",
     "tempo": "timer",
-    
     # Theme names in TEMAS
     "Introdução à História": "Introduction to History",
     "Origem da Humanidade": "Origin of Humanity",
@@ -124,13 +121,11 @@ translations = {
     "Descolonização": "Decolonization",
     "Regime Militar": "Military Regime",
     "Nova República": "New Republic",
-    
     # Ano labels
     "6º Ano": "6th Grade",
     "7º Ano": "7th Grade",
     "8º Ano": "8th Grade",
     "9º Ano": "9th Grade",
-    
     # Other
     "Ativar/Desativar som": "Toggle sound",
 }
@@ -145,7 +140,6 @@ for pt, en in sorted(translations.items(), key=lambda x: -len(x[0])):
 question_translations = {
     # Based on ID patterns - translating pergunta, opts, exp
     # We'll translate the question fields using regex
-    
     # --- 6th Grade: Introduction to History ---
     "O que a História estuda?": "What does History study?",
     "O futuro da humanidade": "The future of humanity",
@@ -153,28 +147,24 @@ question_translations = {
     "Apenas guerras e reis": "Only wars and kings",
     "A geografia dos países": "The geography of countries",
     "A História estuda as ações humanas no tempo, analisando transformações sociais, políticas e culturais.": "History studies human actions over time, analyzing social, political, and cultural transformations.",
-    
     "O que é uma fonte histórica?": "What is a historical source?",
     "Apenas documentos escritos": "Only written documents",
     "Qualquer vestígio do passado humano": "Any trace of the human past",
     "Somente objetos de museu": "Only museum objects",
     "Livros didáticos": "Textbooks",
     "Fonte histórica é todo vestígio deixado pela ação humana ao longo do tempo: documentos, objetos, imagens, relatos orais.": "A historical source is any trace left by human action over time: documents, objects, images, oral accounts.",
-    
     "O tempo histórico é diferente do tempo cronológico porque:": "Historical time differs from chronological time because:",
     "É sempre mais curto": "It is always shorter",
     "Considera mudanças e permanências nas sociedades": "It considers changes and permanences in societies",
     "Só existe na Europa": "It only exists in Europe",
     "Mede apenas segundos e minutos": "It only measures seconds and minutes",
     "O tempo histórico considera ritmos de transformação social, podendo ser mais longo ou mais curto que o cronológico.": "Historical time considers rhythms of social transformation, which can be longer or shorter than chronological time.",
-    
     "Qual civilização criou o primeiro sistema de escrita?": "Which civilization created the first writing system?",
     "Gregos": "Greeks",
     "Egípcios": "Egyptians",
     "Sumérios": "Sumerians",
     "Chineses": "Chinese",
     "Os sumérios (Mesopotâmia) criaram a escrita cuneiforme por volta de 3500 a.C., um dos primeiros sistemas de escrita.": "The Sumerians (Mesopotamia) created cuneiform writing around 3500 BCE, one of the first writing systems.",
-
     # --- 6th Grade: Origin of Humanity ---
     "Onde surgiram os primeiros hominídeos?": "Where did the first hominids appear?",
     "América": "America",
@@ -182,28 +172,24 @@ question_translations = {
     "Europa": "Europe",
     "Ásia": "Asia",
     "Os primeiros hominídeos surgiram no continente africano há cerca de 4-6 milhões de anos.": "The first hominids appeared in Africa about 4-6 million years ago.",
-    
     "O que caracteriza o Paleolítico?": "What characterizes the Paleolithic?",
     "Agricultura e cidades": "Agriculture and cities",
     "Pedra polida e metais": "Polished stone and metals",
     "Pedra lascada e nomadismo": "Chipped stone and nomadism",
     "Escrita e comércio": "Writing and trade",
     "No Paleolítico (2,5 mi - 10 mil a.C.), os humanos eram nômades caçadores-coletores que usavam pedra lascada.": "In the Paleolithic (2.5M - 10,000 BCE), humans were nomadic hunter-gatherers who used chipped stone.",
-    
     "A Revolução Neolítica foi marcada por:": "The Neolithic Revolution was marked by:",
     "Invenção da escrita": "Invention of writing",
     "Descoberta do fogo": "Discovery of fire",
     "Desenvolvimento da agricultura e sedentarização": "Development of agriculture and sedentism",
     "Construção de pirâmides": "Pyramid construction",
     "A Revolução Neolítica (10.000 a.C.) transformou a humanidade com o desenvolvimento da agricultura e a sedentarização.": "The Neolithic Revolution (10,000 BCE) transformed humanity with the development of agriculture and sedentism.",
-    
     "Qual foi uma das principais consequências do domínio do fogo?": "What was one of the main consequences of mastering fire?",
     "Invenção da roda": "Invention of the wheel",
     "Aquecimento, proteção e cocção de alimentos": "Heating, protection, and cooking food",
     "Criação da escrita": "Creation of writing",
     "Construção de navios": "Shipbuilding",
     "O domínio do fogo permitiu aquecimento, proteção contra predadores, cocção de alimentos e iluminação.": "Mastery of fire allowed heating, protection from predators, cooking food, and lighting.",
-
     # --- 6th Grade: Ancient Africa ---
     "O reino de Kush ficava na região do atual:": "The Kingdom of Kush was in the region of present-day:",
     "Egito": "Egypt",
@@ -211,21 +197,18 @@ question_translations = {
     "África do Sul": "South Africa",
     "Nigéria": "Nigeria",
     "Kush (ou Núbia) localizava-se no atual Sudão, ao sul do Egito, com capital em Meroé.": "Kush (or Nubia) was located in present-day Sudan, south of Egypt, with its capital at Meroe.",
-    
     "O Reino de Axum ficava onde hoje é:": "The Kingdom of Axum was where today is:",
     "Etiópia e Eritreia": "Ethiopia and Eritrea",
     "Gana": "Ghana",
     "Mali": "Mali",
     "Angola": "Angola",
     "Axum (séc. I-VII) foi um importante reino na região da atual Etiópia e Eritreia, centro comercial e cristão.": "Axum (1st-7th c.) was an important kingdom in modern Ethiopia and Eritrea, a commercial and Christian center.",
-    
     "O Reino de Ghana (Gana Antigo) ficou rico controlando o comércio de:": "The Empire of Ghana got rich by controlling trade of:",
     "Especiarias e tecidos": "Spices and textiles",
     "Ouro e sal": "Gold and salt",
     "Escravos e marfim": "Slaves and ivory",
     "Café e açúcar": "Coffee and sugar",
     "Gana Antigo (séc. VI-XIII) controlava as rotas de ouro do sul e sal do Saara, enriquecendo com esse comércio.": "Ancient Ghana (6th-13th c.) controlled gold routes from the south and salt from the Sahara, enriching itself through this trade.",
-
     # --- 6th Grade: Ancient Middle East ---
     "Os rios Tigre e Eufrates estão associados a qual civilização?": "The Tigris and Euphrates rivers are associated with which civilization?",
     "Egípcia": "Egyptian",
@@ -233,21 +216,18 @@ question_translations = {
     "Chinesa": "Chinese",
     "Indiana": "Indian",
     "A Mesopotâmia ('terra entre rios') desenvolveu-se entre o Tigre e o Eufrates, no atual Iraque.": "Mesopotamia ('land between rivers') developed between the Tigris and Euphrates, in modern Iraq.",
-    
     "O Código de Hamurábi é importante porque:": "The Code of Hammurabi is important because:",
     "É o primeiro código de leis escrito": "It is the first written legal code",
     "Fundou o primeiro império": "It founded the first empire",
     "Inventou a matemática": "It invented mathematics",
     "Criou a democracia": "It created democracy",
     "Hamurábi (séc. XVIII a.C.) criou um dos primeiros códigos de leis escritos, baseado no princípio 'olho por olho'.": "Hammurabi (18th c. BCE) created one of the first written legal codes, based on the principle of 'an eye for an eye'.",
-    
     "Os fenícios são conhecidos principalmente por:": "The Phoenicians are mainly known for:",
     "Construir pirâmides": "Building pyramids",
     "Desenvolver o alfabeto fonético": "Developing the phonetic alphabet",
     "Criar a democracia": "Creating democracy",
     "Inventar a roda": "Inventing the wheel",
     "Os fenícios criaram um alfabeto fonético (22 letras) que influenciou gregos e romanos, base do alfabeto ocidental.": "The Phoenicians created a phonetic alphabet (22 letters) that influenced Greeks and Romans, the basis of the Western alphabet.",
-    
     # Pre-Columbian
     "Qual império pré-colombiano se destacou no atual México?": "Which pre-Columbian empire stood out in present-day Mexico?",
     "Inca": "Inca",
@@ -255,21 +235,18 @@ question_translations = {
     "Astecas": "Aztecs",
     "Tupi": "Tupi",
     "Os astecas (ou mexicas) formaram um império no México com capital em Tenochtitlán.": "The Aztecs (or Mexica) formed an empire in Mexico with its capital at Tenochtitlan.",
-    
     "Os incas se localizavam principalmente:": "The Incas were mainly located:",
     "México": "Mexico",
     "América Central": "Central America",
     "Cordilheira dos Andes": "Andes Mountains",
     "Amazônia": "Amazon",
     "O Império Inca estendia-se pela Cordilheira dos Andes, do atual Equador ao Chile.": "The Inca Empire stretched along the Andes, from modern Ecuador to Chile.",
-    
     "Qual sistema agrícola os incas desenvolveram?": "Which agricultural system did the Incas develop?",
     "Terraceamento (andenes)": "Terracing (andenes)",
     "Rotação de culturas": "Crop rotation",
     "Irrigação por canais": "Canal irrigation",
     "Pousio": "Fallow",
     "Os incas construíram terraços agrícolas (andenes) nas encostas dos Andes para agricultura.": "The Incas built agricultural terraces (andenes) on the slopes of the Andes for farming.",
-    
     "Os maias desenvolveram importante conhecimento em:": "The Mayans developed important knowledge in:",
     "Astronomia e matemática": "Astronomy and mathematics",
     "Navegação oceânica": "Ocean navigation",

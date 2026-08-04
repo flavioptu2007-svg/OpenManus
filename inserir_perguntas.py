@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Insert new questions into quiz_historico.html before the closing ]; of PERGUNTAS."""
-import re, sys
+import re
+import sys
+
 
 html_path = "/home/flavio/OpenManus/quiz_historico.html"
 
@@ -21,20 +23,20 @@ print(f"New questions to insert: {len(novas)} chars")
 
 # Insert before the closing ]; of PERGUNTAS
 # Find the last ], before Conquistas
-end_marker = '    ];\n\n    // ---- Conquistas'
+end_marker = "    ];\n\n    // ---- Conquistas"
 # But the actual file might have different spacing. Let's find it differently.
 # Find the last occurrence of "    ];" that is followed by a blank line and "    //"
-pos = content.rfind('    ];\n\n    //')
+pos = content.rfind("    ];\n\n    //")
 if pos == -1:
     # Try alternative patterns
-    pos = content.rfind('    ];\n    //')
+    pos = content.rfind("    ];\n    //")
 if pos == -1:
     print("ERROR: Could not find insertion point!")
     print("Last 200 chars:")
     print(content[-200:])
     sys.exit(1)
 
-new_content = content[:pos] + novas + '\n' + content[pos:]
+new_content = content[:pos] + novas + "\n" + content[pos:]
 
 with open(html_path, "w", encoding="utf-8") as f:
     f.write(new_content)

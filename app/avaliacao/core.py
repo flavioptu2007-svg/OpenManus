@@ -146,9 +146,7 @@ class SistemaAvaliacao:
             ),
         }
 
-    def adicionar_alunos(
-        self, disciplina: str, alunos: List[Dict[str, Any]]
-    ) -> dict:
+    def adicionar_alunos(self, disciplina: str, alunos: List[Dict[str, Any]]) -> dict:
         """Adiciona alunos a uma disciplina existente.
 
         Args:
@@ -203,9 +201,7 @@ class SistemaAvaliacao:
             "mensagem": f"{len(adicionados)} aluno(s) adicionado(s) com sucesso.",
         }
 
-    def definir_gabarito(
-        self, disciplina: str, gabarito: List[str]
-    ) -> dict:
+    def definir_gabarito(self, disciplina: str, gabarito: List[str]) -> dict:
         """Define ou atualiza o gabarito de uma disciplina.
 
         Args:
@@ -256,10 +252,16 @@ class SistemaAvaliacao:
         """
         dados = self.carregar(disciplina)
         if not dados:
-            return {"status": "erro", "mensagem": f"Disciplina '{disciplina}' não encontrada."}
+            return {
+                "status": "erro",
+                "mensagem": f"Disciplina '{disciplina}' não encontrada.",
+            }
 
         if not dados["alunos"]:
-            return {"status": "erro", "mensagem": f"Não há alunos cadastrados em '{disciplina}'."}
+            return {
+                "status": "erro",
+                "mensagem": f"Não há alunos cadastrados em '{disciplina}'.",
+            }
 
         if not dados.get("gabarito"):
             return {
@@ -321,11 +323,13 @@ class SistemaAvaliacao:
                 pontuacao = len(acertos)
                 observacao = f"{pontuacao}/{num_questoes} acertos"
 
-            resultados.append({
-                "nome": nome,
-                "pontuacao": pontuacao,
-                "observacao": observacao,
-            })
+            resultados.append(
+                {
+                    "nome": nome,
+                    "pontuacao": pontuacao,
+                    "observacao": observacao,
+                }
+            )
 
         return resultados, estatisticas_questoes
 
@@ -344,7 +348,9 @@ class SistemaAvaliacao:
         maior, menor = max(pontuacoes), min(pontuacoes)
 
         alfabetica = sorted(resultados, key=lambda r: r["nome"].lower())
-        por_nota = sorted(resultados, key=lambda r: (-r["pontuacao"], r["nome"].lower()))
+        por_nota = sorted(
+            resultados, key=lambda r: (-r["pontuacao"], r["nome"].lower())
+        )
 
         data_hora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
@@ -353,10 +359,14 @@ class SistemaAvaliacao:
         with open(caminho_alf, "w", encoding="utf-8") as f:
             f.write(f"RESULTADOS DE {disciplina.upper()} — ORDEM ALFABÉTICA\n")
             f.write(f"Data/Hora: {data_hora}\n")
-            f.write(f"Total de alunos: {total_alunos} | Questões: {num_questoes} | Média: {media:.2f}\n")
+            f.write(
+                f"Total de alunos: {total_alunos} | Questões: {num_questoes} | Média: {media:.2f}\n"
+            )
             f.write("-" * 70 + "\n")
             for r in alfabetica:
-                f.write(f"{r['nome']:<35} {r['pontuacao']:>3} pontos   {r['observacao']}\n")
+                f.write(
+                    f"{r['nome']:<35} {r['pontuacao']:>3} pontos   {r['observacao']}\n"
+                )
 
         # Arquivo por nota
         caminho_notas = self._caminho(f"{disciplina}_notas.txt")
@@ -364,7 +374,9 @@ class SistemaAvaliacao:
             f.write(f"RESULTADOS DE {disciplina.upper()} — ORDEM DE NOTAS\n")
             f.write(f"Data/Hora: {data_hora}\n")
             f.write(f"Total de alunos: {total_alunos} | Questões: {num_questoes}\n")
-            f.write(f"Média: {media:.2f} | Maior nota: {maior} | Menor nota: {menor}\n\n")
+            f.write(
+                f"Média: {media:.2f} | Maior nota: {maior} | Menor nota: {menor}\n\n"
+            )
 
             f.write("ESTATÍSTICAS POR QUESTÃO (acertos):\n")
             f.write("-" * 40 + "\n")
@@ -381,7 +393,9 @@ class SistemaAvaliacao:
                 if r["pontuacao"] != nota_ant:
                     posicao = i
                     nota_ant = r["pontuacao"]
-                f.write(f"{posicao:>3}º  {r['nome']:<35} {r['pontuacao']:>3} pontos   {r['observacao']}\n")
+                f.write(
+                    f"{posicao:>3}º  {r['nome']:<35} {r['pontuacao']:>3} pontos   {r['observacao']}\n"
+                )
             f.write("-" * 70 + "\n")
             f.write(f"\nMédia da turma: {media:.2f} pontos\n")
 
@@ -394,7 +408,9 @@ class SistemaAvaliacao:
             "menor": menor,
             "gerado_em": data_hora,
         }
-        with open(self._caminho(f"{disciplina}_cache.json"), "w", encoding="utf-8") as f:
+        with open(
+            self._caminho(f"{disciplina}_cache.json"), "w", encoding="utf-8"
+        ) as f:
             json.dump(cache, f, ensure_ascii=False, indent=2)
 
         return {
@@ -418,16 +434,18 @@ class SistemaAvaliacao:
                 nome = arquivo[:-5]
                 dados = self.carregar(nome)
                 if dados:
-                    disciplinas.append({
-                        "nome": nome,
-                        "num_questoes": dados["num_questoes"],
-                        "total_alunos": len(dados["alunos"]),
-                        "tem_gabarito": dados.get("gabarito") is not None,
-                        "tem_resultado": os.path.exists(
-                            self._caminho(f"{nome}_cache.json")
-                        ),
-                        "ultima_atualizacao": dados.get("ultima_atualizacao", ""),
-                    })
+                    disciplinas.append(
+                        {
+                            "nome": nome,
+                            "num_questoes": dados["num_questoes"],
+                            "total_alunos": len(dados["alunos"]),
+                            "tem_gabarito": dados.get("gabarito") is not None,
+                            "tem_resultado": os.path.exists(
+                                self._caminho(f"{nome}_cache.json")
+                            ),
+                            "ultima_atualizacao": dados.get("ultima_atualizacao", ""),
+                        }
+                    )
         return disciplinas
 
     def obter_resultados(self, disciplina: str) -> Optional[dict]:

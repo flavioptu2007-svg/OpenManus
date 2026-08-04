@@ -4,18 +4,20 @@ Executa testes, avalia 7 dimensões ponderadas, aplica melhorias
 e itera até nota 10/10 ou limite de iterações.
 Testes adaptados para a API atual (app.utils.omr + /api/v1).
 """
-import unittest
-import sys
+
 import io
-import time
 import json
 import logging
+import os
+import tempfile
+import time
+import unittest
 from dataclasses import dataclass, field
 from typing import List, Tuple
-import numpy as np
+
 import cv2
-import tempfile
-import os
+import numpy as np
+
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -24,6 +26,7 @@ TARGET_SCORE = 10.0
 
 
 # ── DIMENSÕES DE AVALIAÇÃO ─────────────────────────────────
+
 
 @dataclass
 class Dimension:
@@ -47,6 +50,7 @@ DIMENSIONS = [
 
 # ── SUÍTE DE TESTES (usa app factory + blueprints atuais) ──
 
+
 class OMRTestSuite(unittest.TestCase):
     """Suíte completa de testes para o sistema OMR v3.0."""
 
@@ -58,6 +62,7 @@ class OMRTestSuite(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         import shutil
+
         shutil.rmtree(cls.test_dir, ignore_errors=True)
 
     @classmethod
@@ -65,7 +70,7 @@ class OMRTestSuite(unittest.TestCase):
         """Cria imagens sintéticas para os testes."""
         # Imagem com círculos simulando bolhas marcadas
         img = np.ones((600, 800, 3), dtype=np.uint8) * 255
-        
+
         # Desenhar bolhas (círculos com raio 15 → área ~707 < 800, detectável)
         cv2.circle(img, (100, 100), 15, (30, 30, 30), -1)
         cv2.circle(img, (300, 100), 15, (30, 30, 30), -1)
@@ -78,18 +83,16 @@ class OMRTestSuite(unittest.TestCase):
 
         # Imagem em branco (sem bolhas)
         cls.blank_img = os.path.join(cls.test_dir, "blank.jpg")
-        cv2.imwrite(cls.blank_img,
-                    np.ones((600, 800, 3), dtype=np.uint8) * 255)
+        cv2.imwrite(cls.blank_img, np.ones((600, 800, 3), dtype=np.uint8) * 255)
 
         # Imagem inclinada
         M = cv2.getRotationMatrix2D((300, 400), 8, 1)
         cls.skewed_img = os.path.join(cls.test_dir, "skewed.jpg")
-        cv2.imwrite(cls.skewed_img,
-                    cv2.warpAffine(img, M, (600, 800)))
+        cv2.imwrite(cls.skewed_img, cv2.warpAffine(img, M, (600, 800)))
 
         # Arquivo não-imagem
         cls.bad_file = os.path.join(cls.test_dir, "bad.txt")
-        with open(cls.bad_file, 'w') as f:
+        with open(cls.bad_file, "w") as f:
             f.write("not an image")
 
     # ── CORREÇÃO FUNCIONAL (API atual: app.utils.omr) ───────
@@ -97,6 +100,7 @@ class OMRTestSuite(unittest.TestCase):
     def test_detect_answer_sheet_valid(self):
         """detect_answer_sheet retorna resultado para imagem válida."""
         from app.utils.omr import detect_answer_sheet
+
         img = cv2.imread(self.valid_img)
         result = detect_answer_sheet(img)
         self.assertIsInstance(result, dict)
@@ -109,6 +113,7 @@ class OMRTestSuite(unittest.TestCase):
     def test_detect_answer_sheet_blank(self):
         """detect_answer_sheet retorna 0 marcações para imagem em branco."""
         from app.utils.omr import detect_answer_sheet
+
         img = cv2.imread(self.blank_img)
         result = detect_answer_sheet(img)
         self.assertIsInstance(result, dict)
@@ -117,21 +122,24 @@ class OMRTestSuite(unittest.TestCase):
 
     def test_detect_answer_sheet_sem_imagem(self):
         """detect_answer_sheet levanta exceção para imagem inválida."""
-        from app.utils.omr import detect_answer_sheet
         from app.exceptions import ImageProcessingError
+        from app.utils.omr import detect_answer_sheet
+
         with self.assertRaises(ImageProcessingError):
             detect_answer_sheet(None)
 
     def test_detect_answer_sheet_vazia(self):
         """detect_answer_sheet levanta exceção para array vazio."""
-        from app.utils.omr import detect_answer_sheet
         from app.exceptions import ImageProcessingError
+        from app.utils.omr import detect_answer_sheet
+
         with self.assertRaises(ImageProcessingError):
             detect_answer_sheet(np.array([], dtype=np.uint8).reshape(0, 0, 3))
 
     def test_calcular_nota_perfect(self):
         """calcular_nota retorna 10 para gabarito perfeito."""
         from app.utils.omr import calcular_nota
+
         respostas = {"1": "A", "2": "B", "3": "C"}
         gabarito = {"1": "A", "2": "B", "3": "C"}
         nota, acertos = calcular_nota(respostas, gabarito)
@@ -141,6 +149,7 @@ class OMRTestSuite(unittest.TestCase):
     def test_calcular_nota_zero(self):
         """calcular_nota retorna 0 para nenhum acerto."""
         from app.utils.omr import calcular_nota
+
         respostas = {"1": "B", "2": "C", "3": "D"}
         gabarito = {"1": "A", "2": "B", "3": "C"}
         nota, acertos = calcular_nota(respostas, gabarito)
@@ -150,6 +159,7 @@ class OMRTestSuite(unittest.TestCase):
     def test_calcular_nota_partial(self):
         """calcular_nota retorna nota parcial."""
         from app.utils.omr import calcular_nota
+
         respostas = {"1": "A", "2": "X", "3": "C"}
         gabarito = {"1": "A", "2": "B", "3": "C"}
         nota, acertos = calcular_nota(respostas, gabarito)
@@ -159,6 +169,7 @@ class OMRTestSuite(unittest.TestCase):
     def test_calcular_nota_anulada(self):
         """calcular_nota ignora questões anuladas."""
         from app.utils.omr import calcular_nota
+
         respostas = {"1": "ANULADA", "2": "B"}
         gabarito = {"1": "A", "2": "B"}
         nota, acertos = calcular_nota(respostas, gabarito)
@@ -167,6 +178,7 @@ class OMRTestSuite(unittest.TestCase):
     def test_calcular_nota_empty_gabarito(self):
         """calcular_nota retorna 0 para gabarito vazio."""
         from app.utils.omr import calcular_nota
+
         nota, acertos = calcular_nota({"1": "A"}, {})
         self.assertEqual(nota, 0.0)
         self.assertEqual(acertos, 0)
@@ -174,11 +186,13 @@ class OMRTestSuite(unittest.TestCase):
     def test_qr_reader_extract_prova_id_valid(self):
         """extract_prova_id extrai ID de texto QR válido."""
         from app.utils.qr_reader import extract_prova_id
+
         self.assertEqual(extract_prova_id("prova_id:42"), 42)
 
     def test_qr_reader_extract_prova_id_invalid(self):
         """extract_prova_id retorna None para entrada inválida."""
         from app.utils.qr_reader import extract_prova_id
+
         self.assertIsNone(extract_prova_id(None))
         self.assertIsNone(extract_prova_id(""))
 
@@ -186,8 +200,9 @@ class OMRTestSuite(unittest.TestCase):
 
     def test_omr_invalid_path(self):
         """cv2.imread retorna None para arquivo inexistente."""
-        from app.utils.omr import detect_answer_sheet
         from app.exceptions import ImageProcessingError
+        from app.utils.omr import detect_answer_sheet
+
         missing = cv2.imread("/nao/existe.jpg")
         if missing is None:
             with self.assertRaises(ImageProcessingError):
@@ -196,6 +211,7 @@ class OMRTestSuite(unittest.TestCase):
     def test_calcular_nota_empty_respostas(self):
         """calcular_nota retorna 0 para respostas vazias."""
         from app.utils.omr import calcular_nota
+
         nota, acertos = calcular_nota({}, {"1": "A"})
         self.assertEqual(nota, 0.0)
         self.assertEqual(acertos, 0)
@@ -204,9 +220,13 @@ class OMRTestSuite(unittest.TestCase):
 
     def _get_auth_headers(self, client) -> dict:
         """Helper: retorna headers JWT autenticado."""
-        resp = client.post("/api/v1/auth/login", json={
-            "username": "admin", "password": "admin123",
-        })
+        resp = client.post(
+            "/api/v1/auth/login",
+            json={
+                "username": "admin",
+                "password": "admin123",
+            },
+        )
         if resp.status_code == 200:
             token = resp.get_json()["access_token"]
             return {"Authorization": f"Bearer {token}"}
@@ -215,6 +235,7 @@ class OMRTestSuite(unittest.TestCase):
     def test_api_health(self):
         """GET /api/v1/health retorna status ok."""
         from app import create_app
+
         app = create_app("testing")
         client = app.test_client()
         r = client.get("/api/v1/health")
@@ -224,8 +245,10 @@ class OMRTestSuite(unittest.TestCase):
     def test_api_criar_prova(self):
         """POST /api/v1/provas cria prova com questões."""
         from app import create_app
+
         app = create_app("testing")
         from app.extensions import db
+
         with app.app_context():
             db.create_all()
         client = app.test_client()
@@ -233,10 +256,12 @@ class OMRTestSuite(unittest.TestCase):
         if not headers:
             self.skipTest("JWT auth não disponível")
         payload = {"nome": "Prova Teste"}
-        r = client.post("/api/v1/provas",
-                        data=json.dumps(payload),
-                        content_type="application/json",
-                        headers=headers)
+        r = client.post(
+            "/api/v1/provas",
+            data=json.dumps(payload),
+            content_type="application/json",
+            headers=headers,
+        )
         self.assertEqual(r.status_code, 201)
         data = r.get_json()
         self.assertEqual(data["nome"], "Prova Teste")
@@ -246,23 +271,29 @@ class OMRTestSuite(unittest.TestCase):
     def test_api_upload_no_image(self):
         """POST /api/v1/upload sem imagem retorna 400."""
         from app import create_app
+
         app = create_app("testing")
         from app.extensions import db
+
         with app.app_context():
             db.create_all()
         client = app.test_client()
         headers = self._get_auth_headers(client)
         if not headers:
             self.skipTest("JWT auth não disponível")
-        r = client.post("/api/v1/upload", data={},
-                        content_type="multipart/form-data",
-                        headers=headers)
+        r = client.post(
+            "/api/v1/upload",
+            data={},
+            content_type="multipart/form-data",
+            headers=headers,
+        )
         self.assertEqual(r.status_code, 400)
         data = r.get_json()
         self.assertIn("error", data)
 
 
 # ── AVALIADOR ─────────────────────────────────────────────
+
 
 class SystemEvaluator:
     """Auto-avaliador com loop de melhoria."""
@@ -288,8 +319,7 @@ class SystemEvaluator:
             names.add(tc._testMethodName)
         return names
 
-    def evaluate(self, result: unittest.TestResult,
-                 output: str) -> List[Dimension]:
+    def evaluate(self, result: unittest.TestResult, output: str) -> List[Dimension]:
         """Avalia cada dimensão com base nos resultados dos testes."""
         dims = [Dimension(d.name, d.weight) for d in DIMENSIONS]
         total_assertions = result.testsRun
@@ -322,7 +352,9 @@ class SystemEvaluator:
 
             elif d.name == "Cobertura de Testes":
                 d.details.append(f"{total_assertions} testes totais")
-                d.score = d.weight if total_assertions >= 15 else round(d.weight * 0.6, 2)
+                d.score = (
+                    d.weight if total_assertions >= 15 else round(d.weight * 0.6, 2)
+                )
 
             elif d.name == "Qualidade do Código":
                 d.score = d.weight if fail_count == 0 else round(d.weight * 0.5, 2)
@@ -364,29 +396,35 @@ class SystemEvaluator:
             if d.score < d.weight * 0.95:
                 if d.name == "Correção Funcional":
                     improvements.append(
-                        "Revisar pipeline OMR (detect_answer_sheet / calcular_nota)")
+                        "Revisar pipeline OMR (detect_answer_sheet / calcular_nota)"
+                    )
                 elif d.name == "Robustez / Edge Cases":
                     improvements.append(
-                        "Adicionar guards para inputs None/vazio em detect_answer_sheet")
+                        "Adicionar guards para inputs None/vazio em detect_answer_sheet"
+                    )
                 elif d.name == "Cobertura de Testes":
                     improvements.append(
-                        "Adicionar testes para imagem corrompida e múltiplas marcações")
+                        "Adicionar testes para imagem corrompida e múltiplas marcações"
+                    )
                 elif d.name == "Qualidade do Código":
                     improvements.append(
-                        "Refatorar detect_answer_sheet; adicionar docstrings")
+                        "Refatorar detect_answer_sheet; adicionar docstrings"
+                    )
                 elif d.name == "Tratamento de Erros":
                     improvements.append(
-                        "Envolver operações I/O em try-except com logging")
+                        "Envolver operações I/O em try-except com logging"
+                    )
                 elif d.name == "Integração API":
                     improvements.append(
-                        "Adicionar mais testes de integração para CRUD de provas")
+                        "Adicionar mais testes de integração para CRUD de provas"
+                    )
                 elif d.name == "Desempenho":
                     improvements.append(
-                        "Otimizar detecção de bolhas com processamento em lote")
+                        "Otimizar detecção de bolhas com processamento em lote"
+                    )
         return improvements
 
-    def print_report(self, dims: List[Dimension],
-                     total: float, iteration: int):
+    def print_report(self, dims: List[Dimension], total: float, iteration: int):
         bar = "─" * 58
         print(f"\n{'═'*58}")
         print(f"  AVALIAÇÃO DO SISTEMA OMR  │  Iteração {iteration:02d}")
@@ -396,8 +434,10 @@ class SystemEvaluator:
             fill = int(pct * 20)
             bar_str = "█" * fill + "░" * (20 - fill)
             status = "✓" if pct >= 0.99 else ("~" if pct >= 0.7 else "✗")
-            print(f"  {status} {d.name:<28} │ {bar_str} │ "
-                  f"{d.score:.2f}/{d.weight:.1f}")
+            print(
+                f"  {status} {d.name:<28} │ {bar_str} │ "
+                f"{d.score:.2f}/{d.weight:.1f}"
+            )
             for det in d.details:
                 print(f"      → {det}")
         print(bar)
@@ -412,11 +452,13 @@ class SystemEvaluator:
         # Melhoria: proteger detect_answer_sheet contra None
         try:
             from app.utils import omr as omr_module
+
             orig_detect = omr_module.detect_answer_sheet
 
             def safe_detect(image):
                 if image is None:
                     from app.exceptions import ImageProcessingError
+
                     raise ImageProcessingError("Imagem inválida para OMR.")
                 return orig_detect(image)
 
@@ -428,6 +470,7 @@ class SystemEvaluator:
         # Melhoria: proteger calcular_nota contra inputs vazios
         try:
             from app.utils import omr as omr_module
+
             orig_cn = omr_module.calcular_nota
 
             def safe_cn(respostas, gabarito, escala=10.0):
@@ -458,12 +501,16 @@ class SystemEvaluator:
             total = self.compute_total(dims)
 
             self.print_report(dims, total, iteration)
-            self.history.append({
-                "iteration": iteration,
-                "score": total,
-                "passed": result.testsRun - len(result.failures) - len(result.errors),
-                "total": result.testsRun,
-            })
+            self.history.append(
+                {
+                    "iteration": iteration,
+                    "score": total,
+                    "passed": result.testsRun
+                    - len(result.failures)
+                    - len(result.errors),
+                    "total": result.testsRun,
+                }
+            )
 
             if total >= TARGET_SCORE:
                 print("╔══════════════════════════════════════════════════════╗")
@@ -473,8 +520,10 @@ class SystemEvaluator:
 
             gaps = self.identify_improvements(dims)
             if not gaps:
-                print("⚠ Sem melhorias automáticas disponíveis; "
-                      "intervenção manual necessária.")
+                print(
+                    "⚠ Sem melhorias automáticas disponíveis; "
+                    "intervenção manual necessária."
+                )
                 break
 
             print(f"  ⚙ Aplicando {len(gaps)} melhoria(s):")
@@ -498,14 +547,18 @@ class SystemEvaluator:
         print("═" * 58)
         for h in self.history:
             bar = "█" * int(h["score"]) + "░" * (10 - int(h["score"]))
-            print(f"  It.{h['iteration']:02d} │ {bar} │ "
-                  f"{h['score']:5.2f}/10  "
-                  f"({h['passed']}/{h['total']} testes)")
+            print(
+                f"  It.{h['iteration']:02d} │ {bar} │ "
+                f"{h['score']:5.2f}/10  "
+                f"({h['passed']}/{h['total']} testes)"
+            )
         print("═" * 58)
         if self.history:
             delta = self.history[-1]["score"] - self.history[0]["score"]
-            print(f"  Melhoria total: +{delta:.2f} pontos ao longo de "
-                  f"{len(self.history)} iteração(ões).")
+            print(
+                f"  Melhoria total: +{delta:.2f} pontos ao longo de "
+                f"{len(self.history)} iteração(ões)."
+            )
         print("═" * 58 + "\n")
 
 

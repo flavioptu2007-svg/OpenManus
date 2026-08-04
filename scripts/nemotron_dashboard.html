@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nemotron — Dashboard (HistóriaIA Copilot)</title>
+<style>
+  :root{
+    --bg:#0f1420; --card:#1a2130; --card2:#222b3d; --texto:#e8ecf3;
+    --texto2:#9aa7bd; --verde:#34d399; --amarelo:#fbbf24; --vermelho:#f87171;
+    --azul:#60a5fa; --roxo:#a78bfa; --borda:#2c3650;
+  }
+  *{box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--texto);margin:0;padding:20px}
+  .wrap{max-width:1100px;margin:0 auto}
+  h1{font-size:1.4rem;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+  h1 .logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--verde),var(--azul));display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+  .sub{color:var(--texto2);font-size:.85rem;margin-bottom:18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:18px}
+  .card{background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:16px}
+  .card h3{margin:0 0 10px;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--texto2)}
+  .valor{font-size:1.6rem;font-weight:700}
+  .valor small{font-size:.8rem;color:var(--texto2);font-weight:400}
+  .ok{color:var(--verde)} .warn{color:var(--amarelo)} .erro{color:var(--vermelho)}
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;border:1px solid var(--borda)}
+  th,td{padding:10px 14px;text-align:left;font-size:.85rem}
+  th{background:var(--card2);color:var(--texto2);text-transform:uppercase;font-size:.72rem;letter-spacing:.05em}
+  td{border-top:1px solid var(--borda)}
+  .medalha{font-size:1.1rem}
+  .barra{background:#111827;border-radius:6px;height:8px;overflow:hidden;margin-top:4px}
+  .barra > div{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--verde),var(--azul))}
+  .footer{color:var(--texto2);font-size:.75rem;margin-top:18px;text-align:center}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:600}
+  .badge.local{background:#0f2a22;color:var(--verde)} .badge.remoto{background:#26204a;color:var(--roxo)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><span class="logo">🧠</span> Nemotron — Dashboard</h1>
+  <div class="sub">HistóriaIA Copilot · Monitoramento de modelos · atualizado por <code>nemotron_benchmark.py --json</code></div>
+
+  <div class="grid" id="cards">
+    <div class="card"><h3>Modelo ativo</h3><div class="valor" id="m-modelo">—</div></div>
+    <div class="card"><h3>Tempo médio</h3><div class="valor" id="m-tempo">— <small>s</small></div></div>
+    <div class="card"><h3>Tokens/s</h3><div class="valor" id="m-toks">—</div></div>
+    <div class="card"><h3>RAM sistema</h3><div class="valor" id="m-ram">— <small>GB</small></div></div>
+    <div class="card"><h3>CPU</h3><div class="valor" id="m-cpu">— <small>cores</small></div></div>
+    <div class="card"><h3>GPU / VRAM</h3><div class="valor" id="m-gpu">CPU</div></div>
+  </div>
+
+  <table>
+    <thead><tr><th>Rank</th><th>Modelo</th><th>Origem</th><th>Nota</th><th>Latência média</th><th>Tokens/s</th><th>Desempenho</th></tr></thead>
+    <tbody id="ranking"></tbody>
+  </table>
+
+  <div class="footer">Gere os dados: <code>unset PYTHONPATH && ./.venv/bin/python scripts/nemotron_benchmark.py --json &gt; scripts/nemotron_dados.json</code> · Health: <code>bash scripts/nemotron_health.sh --json</code></div>
+</div>
+
+<script>
+// =====================================================================
+// DADOS — edite aqui ou cole a saída do benchmark --json
+// =====================================================================
+const DADOS_BENCH = [
+  {"modelo":"nemotron-mini:latest","base":"local","latencia_media_s":12.3,"nota_media":8.6,"tokens_s":9.2},
+  {"modelo":"qwen3:14b","base":"local","latencia_media_s":18.5,"nota_media":9.1,"tokens_s":6.4},
+  {"modelo":"deepseek-r1:7b","base":"local","latencia_media_s":15.1,"nota_media":8.9,"tokens_s":7.8}
+];
+
+const DADOS_HEALTH = {
+  "model":"nemotron-mini:latest","status":"ok","porta":"11434 (ok)",
+  "latencia_api":"0.02s","tempo_resposta":"8.40s","tokens_s":"9.2",
+  "ram_modelo":"2.7GB","vram":"—","modelo_ativo":"nemotron-mini:latest",
+  "ram_total_gb":30,"ram_livre_gb":24
+};
+
+// =====================================================================
+// Render
+// =====================================================================
+const $ = id => document.getElementById(id);
+
+function render(){
+  const h = DADOS_HEALTH;
+  $('m-modelo').textContent = h.model || '—';
+  $('m-tempo').innerHTML = (h.tempo_resposta || '—') + ' <small>s</small>';
+  $('m-toks').textContent = h.tokens_s || '—';
+  $('m-ram').innerHTML = (h.ram_livre_gb ?? '—') + ' <small>GB livres</small>';
+  $('m-cpu').innerHTML = (navigator.hardwareConcurrency || '—') + ' <small>cores</small>';
+  $('m-gpu').textContent = (h.vram && h.vram !== '—') ? 'NVIDIA · ' + h.vram : 'CPU (sem GPU NVIDIA)';
+
+  const tbody = $('ranking');
+  const data = [...DADOS_BENCH].sort((a,b) => b.nota_media - a.nota_media || a.latencia_media_s - b.latencia_media_s);
+  const maxNota = Math.max(1, ...data.map(d => d.nota_media));
+  tbody.innerHTML = data.map((d,i) => {
+    const medalha = ['🥇','🥈','🥉'][i] || '  ';
+    const badge = d.base === 'remoto' ? '<span class="badge remoto">remoto</span>' : '<span class="badge local">local</span>';
+    const pct = Math.round(d.nota_media / maxNota * 100);
+    return `<tr>
+      <td><span class="medalha">${medalha}</span> #${i+1}</td>
+      <td><b>${d.modelo}</b></td>
+      <td>${badge}</td>
+      <td><b>${d.nota_media.toFixed(1)}</b>/10</td>
+      <td>${d.latencia_media_s.toFixed(1)} s</td>
+      <td>~${d.tokens_s}</td>
+      <td style="min-width:120px"><div class="barra"><div style="width:${pct}%"></div></div></td>
+    </tr>`;
+  }).join('');
+}
+
+render();
+</script>
+</body>
+</html>

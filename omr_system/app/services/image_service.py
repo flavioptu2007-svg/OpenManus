@@ -1,14 +1,16 @@
 """Serviço de imagem — salva e processa usando OMR avançado."""
-import os
+
 import logging
+import os
 
 import cv2
 from werkzeug.datastructures import FileStorage
 
-from app.exceptions import ValidationError, ImageProcessingError, StorageError
-from app.utils.validators import validate_image_file, make_secure_filename
+from app.exceptions import ImageProcessingError, StorageError
 from app.utils.omr import detect_answer_sheet
 from app.utils.qr_reader import decode_qr_codes
+from app.utils.validators import make_secure_filename, validate_image_file
+
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +40,9 @@ class ImageService:
 
         qr_data = decode_qr_codes(image)
         result = detect_answer_sheet(image)
-        logger.info(f"Imagem processada: {result['marked_count']} marcações | conf={result['confidence']}")
+        logger.info(
+            f"Imagem processada: {result['marked_count']} marcações | conf={result['confidence']}"
+        )
 
         return {
             "qr_data": qr_data,

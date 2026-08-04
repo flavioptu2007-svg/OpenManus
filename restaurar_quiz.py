@@ -2,6 +2,7 @@
 """Append missing React components to quiz_historico.html after corruption."""
 import re
 
+
 html_path = "/home/flavio/OpenManus/quiz_historico.html"
 
 with open(html_path, "r", encoding="utf-8") as f:
@@ -319,6 +320,8 @@ with open(html_path, "r+", encoding="utf-8") as f:
     if content.rstrip().endswith("];"):
         f.write(CODA)
         print(f"✅ Appended {len(CODA)} chars of React components")
-        print(f"   File now has {len(re.findall(r'id:\"q\\d+\"', content + CODA))} questions")
+        print(
+            f"   File now has {len(re.findall(r'id:\"q\\d+\"', content + CODA))} questions"
+        )
     else:
         print("ERROR: File does not end with ]; - unexpected format")

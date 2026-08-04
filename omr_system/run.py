@@ -1,8 +1,10 @@
 """Entry point WSGI do servidor OMR — usado pelo Dockerfile/Docker Compose."""
+
 import os
 
 from app import create_app
 from app.tasks.image_tasks import make_celery, register_tasks
+
 
 app = create_app()
 celery = make_celery(app)

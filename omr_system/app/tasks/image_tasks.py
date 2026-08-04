@@ -1,9 +1,9 @@
 """Tarefas Celery para processamento assíncrono de imagens."""
-import logging
 
 import requests
 from celery import Celery
 from celery.utils.log import get_task_logger
+
 
 logger = get_task_logger(__name__)
 
@@ -35,10 +35,11 @@ def register_tasks(celery):
         Task assíncrona para processar imagem de gabarito.
         Atualiza o status da Prova no banco ao concluir.
         """
+        import cv2
+
+        from app.repositories.exam_repositories import prova_repo
         from app.utils.omr import detect_answer_sheet
         from app.utils.qr_reader import decode_qr_codes
-        from app.repositories.exam_repositories import prova_repo
-        import cv2
 
         try:
             logger.info(f"Iniciando processamento | prova_id={prova_id}")
@@ -54,12 +55,15 @@ def register_tasks(celery):
                 prova.marked_answers = result["marked_count"]
                 prova.status = "done"
                 from app.extensions import db
+
                 db.session.commit()
 
                 if prova.webhook_url:
                     _notify_webhook(prova.webhook_url, prova.to_dict())
 
-            logger.info(f"Prova {prova_id} processada | marcações={result['marked_count']}")
+            logger.info(
+                f"Prova {prova_id} processada | marcações={result['marked_count']}"
+            )
             return result
 
         except Exception as exc:

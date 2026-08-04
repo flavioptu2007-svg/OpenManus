@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+
 # ---------------------------------------------------------------------------
 # Mock heavy / optional dependencies before any app imports so the test suite
 # can load even when only a subset of packages is installed.
@@ -13,6 +14,7 @@ def _ensure_mock(name: str) -> None:
     """Insert a MagicMock into sys.modules if the module is not already loaded."""
     if name not in sys.modules:
         sys.modules[name] = MagicMock()
+
 
 # AWS Bedrock (optional provider)
 _ensure_mock("boto3")

@@ -1,9 +1,16 @@
 """Error handlers globais da aplicação."""
+
 import logging
 
 from flask import jsonify
 
-from app.exceptions import ValidationError, NotFoundError, ImageProcessingError, StorageError
+from app.exceptions import (
+    ImageProcessingError,
+    NotFoundError,
+    StorageError,
+    ValidationError,
+)
+
 
 logger = logging.getLogger(__name__)
 

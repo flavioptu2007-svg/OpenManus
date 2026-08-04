@@ -1,11 +1,12 @@
 """Validadores para arquivos de imagem."""
-import os
+
 import logging
 from datetime import datetime
 
 from werkzeug.utils import secure_filename
 
 from app.exceptions import ValidationError
+
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,11 @@ def validate_image_file(file) -> None:
         )
 
     # Validar tamanho
-    if hasattr(file, "content_length") and file.content_length and file.content_length > MAX_FILE_SIZE:
+    if (
+        hasattr(file, "content_length")
+        and file.content_length
+        and file.content_length > MAX_FILE_SIZE
+    ):
         raise ValidationError(
             f"Arquivo excede o limite de {MAX_FILE_SIZE // 1024 // 1024} MB."
         )

@@ -1,4 +1,5 @@
 """Repository para operações com Prova."""
+
 from datetime import date
 from typing import Optional
 
@@ -23,9 +24,11 @@ class ProvaRepository:
 
     @staticmethod
     def list_by_nome(query: str) -> list[Prova]:
-        return Prova.query.filter(Prova.nome.ilike(f"%{query}%")).order_by(
-            Prova.created_at.desc()
-        ).all()
+        return (
+            Prova.query.filter(Prova.nome.ilike(f"%{query}%"))
+            .order_by(Prova.created_at.desc())
+            .all()
+        )
 
     @staticmethod
     def create(nome: str, data_prova: Optional[str] = None) -> Prova:
@@ -63,8 +66,9 @@ class ProvaRepository:
         return True
 
     @staticmethod
-    def add_questao(prova_id: int, texto: str,
-                    habilidade: str = "", dificuldade: str = "") -> Questao:
+    def add_questao(
+        prova_id: int, texto: str, habilidade: str = "", dificuldade: str = ""
+    ) -> Questao:
         prova = Prova.query.get_or_404(prova_id)
         questao = Questao(
             texto=texto,

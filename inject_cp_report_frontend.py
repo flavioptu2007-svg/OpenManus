@@ -7,25 +7,27 @@ Injeta relatório de desempenho do Caça-Palavras no frontend v3.0.
 """
 
 import os
-import re
 
-home = os.path.expanduser('~')
-V3_PATH = os.path.join(home, 'Secret\u00e1ria', 'Download', 'planejador-escolar-v3.0.html')
 
-with open(V3_PATH, 'r', encoding='utf-8') as f:
+home = os.path.expanduser("~")
+V3_PATH = os.path.join(
+    home, "Secret\u00e1ria", "Download", "planejador-escolar-v3.0.html"
+)
+
+with open(V3_PATH, "r", encoding="utf-8") as f:
     html = f.read()
 
 # Backup
-bak = V3_PATH + '.bak_cp_report'
-with open(bak, 'w', encoding='utf-8') as f:
+bak = V3_PATH + ".bak_cp_report"
+with open(bak, "w", encoding="utf-8") as f:
     f.write(html)
-print(f'Backup: {bak}')
+print(f"Backup: {bak}")
 
 # ═══════════════════════════════════════════════════════════════
 # CSS para o painel de histórico
 # ═══════════════════════════════════════════════════════════════
 
-report_css = '''
+report_css = """
 /* ── CP REPORT ── */
 #jogos .cp-report-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0 16px; padding: 8px 16px; background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 8px; font-size: .82rem; }
 #jogos .cp-report-bar .cp-rb-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -42,13 +44,13 @@ report_css = '''
 #jogos .cp-report-table td { padding: 7px 10px; border-bottom: 1px solid var(--cp-border); }
 #jogos .cp-report-table tr:hover td { background: var(--cp-card); }
 #jogos .cp-report-table .cp-record-badge { display: inline-block; padding: 1px 6px; border-radius: 4px; background: rgba(255,215,0,.2); color: var(--cp-gold); font-size: .7rem; font-weight: 700; }
-'''
+"""
 
 # ═══════════════════════════════════════════════════════════════
 # HTML para o painel de histórico
 # ═══════════════════════════════════════════════════════════════
 
-report_html = '''
+report_html = """
 <div class="cp-report-bar" id="cp-reportBar">
   <span class="cp-rb-dot offline" id="cp-rb-dot"></span>
   <span id="cp-rb-status">Servidor OMR: desconectado</span>
@@ -71,13 +73,13 @@ report_html = '''
   </div>
   <button class="cp-btn" onclick="document.getElementById('cp-reportPanel').style.display='none'" style="margin-top:10px;padding:4px 12px;font-size:.75rem">✕ Fechar</button>
 </div>
-'''
+"""
 
 # ═══════════════════════════════════════════════════════════════
 # JS: relatório ao completar + histórico
 # ═══════════════════════════════════════════════════════════════
 
-report_js = '''
+report_js = """
 // ══════════════════════════════════════════════════════════
 //  CP REPORT — Desempenho do Caça-Palavras
 // ══════════════════════════════════════════════════════════
@@ -188,40 +190,40 @@ function cpCarregarHistorico() {
 
 // Check server status on load
 setTimeout(cpAtualizarStatusServidor, 2000);
-'''
+"""
 
 # ═══════════════════════════════════════════════════════════════
 # INJEÇÃO
 # ═══════════════════════════════════════════════════════════════
 
 # 1. CSS
-idx = html.rfind('</style>')
+idx = html.rfind("</style>")
 if idx >= 0:
-    html = html[:idx] + report_css + '\n' + html[idx:]
-    print('✅ CSS injected')
+    html = html[:idx] + report_css + "\n" + html[idx:]
+    print("✅ CSS injected")
 
 # 2. HTML (antes do fechamento do container)
 idx = html.find('<div class="cp-trophy"')
 if idx >= 0:
-    html = html[:idx] + report_html + '\n' + html[idx:]
-    print('✅ HTML injected')
+    html = html[:idx] + report_html + "\n" + html[idx:]
+    print("✅ HTML injected")
 else:
     # Try alternative: before the cp-trophy div
-    backup = html.find('cp-confetti-container')
+    backup = html.find("cp-confetti-container")
     if backup >= 0:
-        html = html[:backup] + report_html + '\n' + html[backup:]
-        print('✅ HTML injected (alt)')
+        html = html[:backup] + report_html + "\n" + html[backup:]
+        print("✅ HTML injected (alt)")
 
 # 3. JS (antes do último event listener)
 # Find the CP-specific JS section end - inject before the last cpToast/cpPrint
-markers = ['function cpPrintableArea', 'function cpToast(', '// ═══════════════════']
+markers = ["function cpPrintableArea", "function cpToast(", "// ═══════════════════"]
 for marker in markers:
     idx = html.find(marker)
     if idx >= 0:
-        html = html[:idx] + report_js + '\n\n' + html[idx:]
+        html = html[:idx] + report_js + "\n\n" + html[idx:]
         print(f'✅ JS injected before "{marker[:30]}"')
         break
 
-with open(V3_PATH, 'w', encoding='utf-8') as f:
+with open(V3_PATH, "w", encoding="utf-8") as f:
     f.write(html)
-print(f'\n✅ Done! File size: {len(html)} chars')
+print(f"\n✅ Done! File size: {len(html)} chars")

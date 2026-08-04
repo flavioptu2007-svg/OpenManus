@@ -2,12 +2,15 @@
 OMR — Optical Mark Recognition avançado.
 Detecta marcações em gabaritos com correção de perspectiva e análise de bolhas.
 """
+
+import logging
+from typing import Any, Dict, List, Tuple
+
 import cv2
 import numpy as np
-import logging
-from typing import List, Tuple, Dict, Any
 
 from app.exceptions import ImageProcessingError
+
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +36,17 @@ def detect_answer_sheet(image: np.ndarray) -> Dict[str, Any]:
     try:
         preprocessed = _preprocess(image)
         sheet_region = _find_answer_sheet(preprocessed, image)
-        bubbles = _detect_bubbles(sheet_region if sheet_region is not None else preprocessed)
-        marked = _classify_marked(sheet_region if sheet_region is not None else preprocessed, bubbles)
+        bubbles = _detect_bubbles(
+            sheet_region if sheet_region is not None else preprocessed
+        )
+        marked = _classify_marked(
+            sheet_region if sheet_region is not None else preprocessed, bubbles
+        )
         confidence = _compute_confidence(bubbles, marked)
 
-        logger.info(f"OMR: {len(marked)} marcações detectadas | {len(bubbles)} bolhas | conf={confidence:.2f}")
+        logger.info(
+            f"OMR: {len(marked)} marcações detectadas | {len(bubbles)} bolhas | conf={confidence:.2f}"
+        )
 
         return {
             "marked_count": len(marked),
@@ -56,9 +65,12 @@ def _preprocess(image: np.ndarray) -> np.ndarray:
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     thresh = cv2.adaptiveThreshold(
-        blurred, 255,
+        blurred,
+        255,
         cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv2.THRESH_BINARY_INV, 11, 2,
+        cv2.THRESH_BINARY_INV,
+        11,
+        2,
     )
     return thresh
 
@@ -84,7 +96,10 @@ def _four_point_transform(image: np.ndarray, pts: np.ndarray) -> np.ndarray:
     width = max(int(np.linalg.norm(br - bl)), int(np.linalg.norm(tr - tl)))
     height = max(int(np.linalg.norm(tr - br)), int(np.linalg.norm(tl - bl)))
 
-    dst = np.array([[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]], dtype="float32")
+    dst = np.array(
+        [[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]],
+        dtype="float32",
+    )
     M = cv2.getPerspectiveTransform(rect.astype("float32"), dst)
     return cv2.warpPerspective(image, M, (width, height))
 
@@ -105,8 +120,12 @@ def _detect_bubbles(image: np.ndarray) -> List[Tuple]:
     if len(image.shape) == 3:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         thresh = cv2.adaptiveThreshold(
-            gray, 255,
-            cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2,
+            gray,
+            255,
+            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            cv2.THRESH_BINARY_INV,
+            11,
+            2,
         )
     else:
         thresh = image
@@ -135,7 +154,7 @@ def _classify_marked(image: np.ndarray, bubbles: List[Tuple]) -> List[int]:
         img = image
 
     fill_ratios = []
-    for (_x, _y, _r, contour) in bubbles:
+    for _x, _y, _r, contour in bubbles:
         mask = np.zeros(img.shape, dtype="uint8")
         cv2.drawContours(mask, [contour], -1, 255, -1)
         total = cv2.countNonZero(mask)
@@ -160,7 +179,8 @@ def calcular_nota(respostas: dict, gabarito: dict, escala: float = 10.0) -> tupl
     if not respostas:
         return 0.0, 0
     acertos = sum(
-        1 for q, r in respostas.items()
+        1
+        for q, r in respostas.items()
         if r != "ANULADA" and gabarito.get(q, "").upper() == r.upper()
     )
     nota = round((acertos / len(gabarito)) * escala, 2)

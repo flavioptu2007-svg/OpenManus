@@ -1,7 +1,10 @@
 """QR code reader utilities."""
-import cv2
-import re
+
 import logging
+import re
+
+import cv2
+
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +27,10 @@ def extract_qr_info(image_path: str) -> str | None:
         # Tentativa 2: pyzbar
         try:
             from pyzbar.pyzbar import decode
+
             for obj in decode(gray):
-                text = obj.data.decode('utf-8')
-                if 'prova_id:' in text:
+                text = obj.data.decode("utf-8")
+                if "prova_id:" in text:
                     return text
         except ImportError:
             logger.warning("pyzbar não instalado; pulando fallback.")
@@ -44,7 +48,7 @@ def extract_prova_id(qr_info: str) -> int | None:
     if not qr_info:
         return None
     try:
-        match = re.search(r'prova_id[:\s]+(\d+)', qr_info, re.IGNORECASE)
+        match = re.search(r"prova_id[:\s]+(\d+)", qr_info, re.IGNORECASE)
         if match:
             return int(match.group(1))
         logger.warning(f"Formato QR inválido: {qr_info}")
@@ -60,6 +64,7 @@ def decode_qr_codes(image) -> list:
     Retorna lista de strings decodificadas.
     """
     import numpy as np
+
     if image is None or (isinstance(image, np.ndarray) and image.size == 0):
         logger.warning("Imagem inválida para decode_qr_codes")
         return []
@@ -67,7 +72,9 @@ def decode_qr_codes(image) -> list:
     try:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     except Exception:
-        gray = image if len(image.shape) == 2 else cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray = (
+            image if len(image.shape) == 2 else cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        )
 
     results = []
 
@@ -80,8 +87,9 @@ def decode_qr_codes(image) -> list:
     # Tentativa 2: pyzbar (detecta múltiplos QR codes)
     try:
         from pyzbar.pyzbar import decode
+
         for obj in decode(gray):
-            text = obj.data.decode('utf-8')
+            text = obj.data.decode("utf-8")
             if text not in results:
                 results.append(text)
     except ImportError:

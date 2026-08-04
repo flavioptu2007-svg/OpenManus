@@ -1,4 +1,5 @@
 """Modelo CPReport — relatório de desempenho do Caça-Palavras."""
+
 import json
 from datetime import datetime
 

@@ -4,14 +4,17 @@
 import os
 import re
 
-home = os.path.expanduser('~')
-V3_PATH = os.path.join(home, 'Secret\u00e1ria', 'Download', 'planejador-escolar-v3.0.html')
 
-with open(V3_PATH, 'r', encoding='utf-8') as f:
+home = os.path.expanduser("~")
+V3_PATH = os.path.join(
+    home, "Secret\u00e1ria", "Download", "planejador-escolar-v3.0.html"
+)
+
+with open(V3_PATH, "r", encoding="utf-8") as f:
     content = f.read()
 
 # Find all 'let omr' declarations
-pattern = r'let (omr[A-Za-z0-9_]+)\s*=\s*'
+pattern = r"let (omr[A-Za-z0-9_]+)\s*=\s*"
 matches = list(re.finditer(pattern, content))
 
 # Group by variable name
@@ -32,9 +35,9 @@ for var, positions in vars_found.items():
     if len(positions) > 1:
         for pos in positions[1:]:
             # Replace 'let varName =' with 'varName = varName ||'
-            old = content[pos:pos + len(f'let {var} =')]
-            new = f'{var} = {var} ||'
-            content = content[:pos] + new + content[pos + len(old):]
+            old = content[pos : pos + len(f"let {var} =")]
+            new = f"{var} = {var} ||"
+            content = content[:pos] + new + content[pos + len(old) :]
             total_fixed += 1
             print(f"  Fixed {var} at {pos}: {old} -> {new}")
 
@@ -55,6 +58,6 @@ if still_dup:
 else:
     print(f"\n✅ All OMR variables are unique now!")
 
-with open(V3_PATH, 'w', encoding='utf-8') as f:
+with open(V3_PATH, "w", encoding="utf-8") as f:
     f.write(content)
 print(f"File saved: {len(content)} chars")

@@ -1,0 +1,23 @@
+proton-vpn-api-core 5.2.5 requires proton-vpn-local-agent, which is not installed.
+llama-index-core 0.14.23 has requirement setuptools>=80.9.0, but you have setuptools 78.1.0.
+nncf 3.2.0 has requirement networkx<3.5.0,>=2.6, but you have networkx 3.6.1.
+historiaia 0.1.0 has requirement redis>=5.0.0, but you have redis 4.5.4.
+kubernetes 36.0.2 has requirement aiohttp<4.0.0,>=3.13.5, but you have aiohttp 3.13.4.
+opentelemetry-instrumentation-threading 0.58b0 has requirement opentelemetry-instrumentation==0.58b0, but you have opentelemetry-instrumentation 0.65b0.
+browser-use 0.13.6 has requirement pydantic==2.12.5, but you have pydantic 2.13.4.
+browser-use 0.13.6 has requirement python-dotenv==1.2.2, but you have python-dotenv 1.0.0.
+browser-use 0.13.6 has requirement rich==14.3.1, but you have rich 13.9.4.
+optimum-onnx 0.1.0 has requirement optimum~=2.1.0, but you have optimum 2.2.0.
+opentelemetry-exporter-otlp-proto-grpc 1.43.0 has requirement opentelemetry-exporter-otlp-proto-common==1.43.0, but you have opentelemetry-exporter-otlp-proto-common 1.44.0.
+opentelemetry-exporter-otlp-proto-grpc 1.43.0 has requirement opentelemetry-proto==1.43.0, but you have opentelemetry-proto 1.44.0.
+opentelemetry-exporter-otlp-proto-grpc 1.43.0 has requirement opentelemetry-sdk~=1.43.0, but you have opentelemetry-sdk 1.44.0.
+semgrep 1.169.0 has requirement click~=8.1.8, but you have click 8.3.1.
+semgrep 1.169.0 has requirement mcp==1.23.3, but you have mcp 1.26.0.
+semgrep 1.169.0 has requirement opentelemetry-api~=1.37.0, but you have opentelemetry-api 1.44.0.
+semgrep 1.169.0 has requirement opentelemetry-exporter-otlp-proto-http~=1.37.0, but you have opentelemetry-exporter-otlp-proto-http 1.44.0.
+semgrep 1.169.0 has requirement opentelemetry-sdk~=1.37.0, but you have opentelemetry-sdk 1.44.0.
+opentelemetry-instrumentation-requests 0.58b0 has requirement opentelemetry-instrumentation==0.58b0, but you have opentelemetry-instrumentation 0.65b0.
+opentelemetry-instrumentation-requests 0.58b0 has requirement opentelemetry-semantic-conventions==0.58b0, but you have opentelemetry-semantic-conventions 0.65b0.
+opentelemetry-instrumentation-requests 0.58b0 has requirement opentelemetry-util-http==0.58b0, but you have opentelemetry-util-http 0.65b0.
+pycares 5.0.1 is not supported on this platform
+PyNaCl 1.5.0 is not supported on this platform

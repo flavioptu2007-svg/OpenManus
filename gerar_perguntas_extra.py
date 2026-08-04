@@ -569,13 +569,18 @@ NOVAS_PERGUNTAS = """
 
 if __name__ == "__main__":
     import sys
-    html_path = sys.argv[1] if len(sys.argv) > 1 else "/home/flavio/OpenManus/quiz_historico.html"
+
+    html_path = (
+        sys.argv[1]
+        if len(sys.argv) > 1
+        else "/home/flavio/OpenManus/quiz_historico.html"
+    )
 
     with open(html_path, "r", encoding="utf-8") as f:
         content = f.read()
 
     # Find the ]; that closes PERGUNTAS array
-    target = "      { id:\"q107\","
+    target = '      { id:"q107",'
     pos = content.find(target)
     if pos == -1:
         print("ERROR: Could not find q107 insertion point")
@@ -595,6 +600,9 @@ if __name__ == "__main__":
 
     # Count questions
     import re
+
     q_count = len(re.findall(r'id:"q\d+"', new_content))
     print(f"✅ {q_count} perguntas totais no arquivo!")
-    print(f"   Inseridas {len(re.findall(r'id:"q\d+"', NOVAS_PERGUNTAS))} novas perguntas")
+    print(
+        f"   Inseridas {len(re.findall(r'id:"q\d+"', NOVAS_PERGUNTAS))} novas perguntas"
+    )

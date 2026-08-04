@@ -1,6 +1,9 @@
 """Repositório base genérico com operações CRUD."""
-from typing import Generic, TypeVar, List, Optional, Type
+
+from typing import Generic, List, Optional, Type, TypeVar
+
 from app.extensions import db
+
 
 T = TypeVar("T")
 
@@ -19,8 +22,7 @@ class BaseRepository(Generic[T]):
 
     def paginate(self, page: int, per_page: int):
         return (
-            self.model.query
-            .filter_by(deleted_at=None)
+            self.model.query.filter_by(deleted_at=None)
             .order_by(self.model.id.desc())
             .paginate(page=page, per_page=per_page, error_out=False)
         )

@@ -1,5 +1,5 @@
 """Fixtures do pytest para o sistema OMR."""
-import os
+
 import tempfile
 
 import pytest
@@ -20,6 +20,7 @@ def app():
 
     with app.app_context():
         from app.extensions import db
+
         db.create_all()
 
     yield app

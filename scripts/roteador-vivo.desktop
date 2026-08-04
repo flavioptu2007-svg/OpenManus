@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Painel do Roteador (Vivo)
+Comment=Abrir o painel de configuração do roteador em http://192.168.15.1
+Exec=xdg-open http://192.168.15.1
+Icon=network-wired
+Terminal=false
+Categories=Network;System;
+StartupNotify=false

@@ -1,7 +1,5 @@
-import os
-
 # ===== CSS =====
-css = '''
+css = """
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
@@ -415,249 +413,723 @@ css = '''
     .activity-card { box-shadow: none; padding: 1rem; max-width: 100%; }
     .topbar { background: #1a2a4a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
-'''
+"""
 
 # ===== SYNDROME DATA =====
 syndromes = [
     {
-        "id": "tea", "name": "TEA (Autismo)", "icon": "🧩",
-        "colors": {"primary": "#4a7db5", "bg": "#f5f8ff", "bgSoft": "#eef4fa", "accent": "#3a6da5", "border": "#d8e2ef", "textMuted": "#6a7a9a"},
-        "adaptations": ["Linguagem literal", "Rotina visual", "Sem estímulos sensoriais excessivos", "Estrutura previsível"],
+        "id": "tea",
+        "name": "TEA (Autismo)",
+        "icon": "🧩",
+        "colors": {
+            "primary": "#4a7db5",
+            "bg": "#f5f8ff",
+            "bgSoft": "#eef4fa",
+            "accent": "#3a6da5",
+            "border": "#d8e2ef",
+            "textMuted": "#6a7a9a",
+        },
+        "adaptations": [
+            "Linguagem literal",
+            "Rotina visual",
+            "Sem estímulos sensoriais excessivos",
+            "Estrutura previsível",
+        ],
         "levels": [
-            {"id": 1, "label": "Suporte Leve", "fontSize": "1rem", "density": "normal", "contrast": "normal", "spacing": "1.6", "actionH": "120px"},
-            {"id": 2, "label": "Suporte Moderado", "fontSize": "1.1rem", "density": "reduced", "contrast": "high", "spacing": "1.8", "actionH": "100px"},
-            {"id": 3, "label": "Suporte Substancial", "fontSize": "1.25rem", "density": "minimal", "contrast": "very-high", "spacing": "2.0", "actionH": "80px"}
-        ]
+            {
+                "id": 1,
+                "label": "Suporte Leve",
+                "fontSize": "1rem",
+                "density": "normal",
+                "contrast": "normal",
+                "spacing": "1.6",
+                "actionH": "120px",
+            },
+            {
+                "id": 2,
+                "label": "Suporte Moderado",
+                "fontSize": "1.1rem",
+                "density": "reduced",
+                "contrast": "high",
+                "spacing": "1.8",
+                "actionH": "100px",
+            },
+            {
+                "id": 3,
+                "label": "Suporte Substancial",
+                "fontSize": "1.25rem",
+                "density": "minimal",
+                "contrast": "very-high",
+                "spacing": "2.0",
+                "actionH": "80px",
+            },
+        ],
     },
     {
-        "id": "down", "name": "Síndrome de Down", "icon": "💛",
-        "colors": {"primary": "#d4a017", "bg": "#fffcf0", "bgSoft": "#fef8e0", "accent": "#b88910", "border": "#f0e4c0", "textMuted": "#7a6a4a"},
-        "adaptations": ["Fotos reais", "Fonte grande", "Alto contraste", "Instruções curtas", "Repetição"],
+        "id": "down",
+        "name": "Síndrome de Down",
+        "icon": "💛",
+        "colors": {
+            "primary": "#d4a017",
+            "bg": "#fffcf0",
+            "bgSoft": "#fef8e0",
+            "accent": "#b88910",
+            "border": "#f0e4c0",
+            "textMuted": "#7a6a4a",
+        },
+        "adaptations": [
+            "Fotos reais",
+            "Fonte grande",
+            "Alto contraste",
+            "Instruções curtas",
+            "Repetição",
+        ],
         "levels": [
-            {"id": 1, "label": "Suporte Leve", "fontSize": "1.05rem", "density": "normal", "contrast": "high", "spacing": "1.7", "actionH": "130px"},
-            {"id": 2, "label": "Suporte Moderado", "fontSize": "1.2rem", "density": "reduced", "contrast": "high", "spacing": "1.9", "actionH": "110px"},
-            {"id": 3, "label": "Suporte Substancial", "fontSize": "1.35rem", "density": "minimal", "contrast": "very-high", "spacing": "2.1", "actionH": "90px"}
-        ]
+            {
+                "id": 1,
+                "label": "Suporte Leve",
+                "fontSize": "1.05rem",
+                "density": "normal",
+                "contrast": "high",
+                "spacing": "1.7",
+                "actionH": "130px",
+            },
+            {
+                "id": 2,
+                "label": "Suporte Moderado",
+                "fontSize": "1.2rem",
+                "density": "reduced",
+                "contrast": "high",
+                "spacing": "1.9",
+                "actionH": "110px",
+            },
+            {
+                "id": 3,
+                "label": "Suporte Substancial",
+                "fontSize": "1.35rem",
+                "density": "minimal",
+                "contrast": "very-high",
+                "spacing": "2.1",
+                "actionH": "90px",
+            },
+        ],
     },
     {
-        "id": "xfragil", "name": "X-Frágil", "icon": "🧬",
-        "colors": {"primary": "#7a8ab5", "bg": "#f8f9fc", "bgSoft": "#eef0f8", "accent": "#5a6a95", "border": "#dde0ee", "textMuted": "#6a7a8a"},
-        "adaptations": ["Ambiente calmo", "Cores neutras", "Evitar surpresas", "Rotina previsível", "Redução de ruído visual"],
+        "id": "xfragil",
+        "name": "X-Frágil",
+        "icon": "🧬",
+        "colors": {
+            "primary": "#7a8ab5",
+            "bg": "#f8f9fc",
+            "bgSoft": "#eef0f8",
+            "accent": "#5a6a95",
+            "border": "#dde0ee",
+            "textMuted": "#6a7a8a",
+        },
+        "adaptations": [
+            "Ambiente calmo",
+            "Cores neutras",
+            "Evitar surpresas",
+            "Rotina previsível",
+            "Redução de ruído visual",
+        ],
         "levels": [
-            {"id": 1, "label": "Suporte Leve", "fontSize": "0.95rem", "density": "reduced", "contrast": "normal", "spacing": "1.7", "actionH": "120px"},
-            {"id": 2, "label": "Suporte Moderado", "fontSize": "1.05rem", "density": "reduced", "contrast": "normal", "spacing": "1.9", "actionH": "100px"},
-            {"id": 3, "label": "Suporte Substancial", "fontSize": "1.15rem", "density": "minimal", "contrast": "high", "spacing": "2.1", "actionH": "80px"}
-        ]
+            {
+                "id": 1,
+                "label": "Suporte Leve",
+                "fontSize": "0.95rem",
+                "density": "reduced",
+                "contrast": "normal",
+                "spacing": "1.7",
+                "actionH": "120px",
+            },
+            {
+                "id": 2,
+                "label": "Suporte Moderado",
+                "fontSize": "1.05rem",
+                "density": "reduced",
+                "contrast": "normal",
+                "spacing": "1.9",
+                "actionH": "100px",
+            },
+            {
+                "id": 3,
+                "label": "Suporte Substancial",
+                "fontSize": "1.15rem",
+                "density": "minimal",
+                "contrast": "high",
+                "spacing": "2.1",
+                "actionH": "80px",
+            },
+        ],
     },
     {
-        "id": "pwilli", "name": "Prader-Willi", "icon": "⭐",
-        "colors": {"primary": "#5a8a7a", "bg": "#f5faf8", "bgSoft": "#e8f4ee", "accent": "#3a7a5a", "border": "#d4e8de", "textMuted": "#5a7a6a"},
-        "adaptations": ["Rotina rígida", "Estrutura clara", "Limites visuais", "Sequências lineares", "Previsibilidade"],
+        "id": "pwilli",
+        "name": "Prader-Willi",
+        "icon": "⭐",
+        "colors": {
+            "primary": "#5a8a7a",
+            "bg": "#f5faf8",
+            "bgSoft": "#e8f4ee",
+            "accent": "#3a7a5a",
+            "border": "#d4e8de",
+            "textMuted": "#5a7a6a",
+        },
+        "adaptations": [
+            "Rotina rígida",
+            "Estrutura clara",
+            "Limites visuais",
+            "Sequências lineares",
+            "Previsibilidade",
+        ],
         "levels": [
-            {"id": 1, "label": "Suporte Leve", "fontSize": "1rem", "density": "normal", "contrast": "normal", "spacing": "1.6", "actionH": "120px"},
-            {"id": 2, "label": "Suporte Moderado", "fontSize": "1.1rem", "density": "reduced", "contrast": "high", "spacing": "1.8", "actionH": "100px"},
-            {"id": 3, "label": "Suporte Substancial", "fontSize": "1.2rem", "density": "minimal", "contrast": "very-high", "spacing": "2.0", "actionH": "80px"}
-        ]
+            {
+                "id": 1,
+                "label": "Suporte Leve",
+                "fontSize": "1rem",
+                "density": "normal",
+                "contrast": "normal",
+                "spacing": "1.6",
+                "actionH": "120px",
+            },
+            {
+                "id": 2,
+                "label": "Suporte Moderado",
+                "fontSize": "1.1rem",
+                "density": "reduced",
+                "contrast": "high",
+                "spacing": "1.8",
+                "actionH": "100px",
+            },
+            {
+                "id": 3,
+                "label": "Suporte Substancial",
+                "fontSize": "1.2rem",
+                "density": "minimal",
+                "contrast": "very-high",
+                "spacing": "2.0",
+                "actionH": "80px",
+            },
+        ],
     },
     {
-        "id": "angelman", "name": "Angelman", "icon": "😊",
-        "colors": {"primary": "#b57a9a", "bg": "#fdf8fb", "bgSoft": "#f8eef4", "accent": "#9a5a7a", "border": "#eedee8", "textMuted": "#8a6a7a"},
-        "adaptations": ["Estimulação sensorial básica", "Alto contraste", "Imagens grandes", "Apoio motor", "Comunicação alternativa"],
+        "id": "angelman",
+        "name": "Angelman",
+        "icon": "😊",
+        "colors": {
+            "primary": "#b57a9a",
+            "bg": "#fdf8fb",
+            "bgSoft": "#f8eef4",
+            "accent": "#9a5a7a",
+            "border": "#eedee8",
+            "textMuted": "#8a6a7a",
+        },
+        "adaptations": [
+            "Estimulação sensorial básica",
+            "Alto contraste",
+            "Imagens grandes",
+            "Apoio motor",
+            "Comunicação alternativa",
+        ],
         "levels": [
-            {"id": 1, "label": "Suporte Leve", "fontSize": "1.1rem", "density": "reduced", "contrast": "high", "spacing": "1.8", "actionH": "100px"},
-            {"id": 2, "label": "Suporte Moderado", "fontSize": "1.25rem", "density": "minimal", "contrast": "high", "spacing": "2.0", "actionH": "80px"},
-            {"id": 3, "label": "Suporte Substancial", "fontSize": "1.4rem", "density": "minimal", "contrast": "very-high", "spacing": "2.2", "actionH": "70px"}
-        ]
+            {
+                "id": 1,
+                "label": "Suporte Leve",
+                "fontSize": "1.1rem",
+                "density": "reduced",
+                "contrast": "high",
+                "spacing": "1.8",
+                "actionH": "100px",
+            },
+            {
+                "id": 2,
+                "label": "Suporte Moderado",
+                "fontSize": "1.25rem",
+                "density": "minimal",
+                "contrast": "high",
+                "spacing": "2.0",
+                "actionH": "80px",
+            },
+            {
+                "id": 3,
+                "label": "Suporte Substancial",
+                "fontSize": "1.4rem",
+                "density": "minimal",
+                "contrast": "very-high",
+                "spacing": "2.2",
+                "actionH": "70px",
+            },
+        ],
     },
     {
-        "id": "williams", "name": "Williams", "icon": "🎵",
-        "colors": {"primary": "#8aaa5a", "bg": "#f8fcf4", "bgSoft": "#eef8e4", "accent": "#6a8a3a", "border": "#dce8ce", "textMuted": "#6a7a5a"},
-        "adaptations": ["Imagens de pessoas", "Cores alegres", "Formas simples", "Instruções elaboradas", "Evitar sons abruptos"],
+        "id": "williams",
+        "name": "Williams",
+        "icon": "🎵",
+        "colors": {
+            "primary": "#8aaa5a",
+            "bg": "#f8fcf4",
+            "bgSoft": "#eef8e4",
+            "accent": "#6a8a3a",
+            "border": "#dce8ce",
+            "textMuted": "#6a7a5a",
+        },
+        "adaptations": [
+            "Imagens de pessoas",
+            "Cores alegres",
+            "Formas simples",
+            "Instruções elaboradas",
+            "Evitar sons abruptos",
+        ],
         "levels": [
-            {"id": 1, "label": "Suporte Leve", "fontSize": "1rem", "density": "normal", "contrast": "normal", "spacing": "1.6", "actionH": "120px"},
-            {"id": 2, "label": "Suporte Moderado", "fontSize": "1.1rem", "density": "reduced", "contrast": "normal", "spacing": "1.8", "actionH": "100px"},
-            {"id": 3, "label": "Suporte Substancial", "fontSize": "1.2rem", "density": "reduced", "contrast": "high", "spacing": "2.0", "actionH": "90px"}
-        ]
+            {
+                "id": 1,
+                "label": "Suporte Leve",
+                "fontSize": "1rem",
+                "density": "normal",
+                "contrast": "normal",
+                "spacing": "1.6",
+                "actionH": "120px",
+            },
+            {
+                "id": 2,
+                "label": "Suporte Moderado",
+                "fontSize": "1.1rem",
+                "density": "reduced",
+                "contrast": "normal",
+                "spacing": "1.8",
+                "actionH": "100px",
+            },
+            {
+                "id": 3,
+                "label": "Suporte Substancial",
+                "fontSize": "1.2rem",
+                "density": "reduced",
+                "contrast": "high",
+                "spacing": "2.0",
+                "actionH": "90px",
+            },
+        ],
     },
     {
-        "id": "cri-du-chat", "name": "5p- (Cri-du-Chat)", "icon": "🐱",
-        "colors": {"primary": "#c4805a", "bg": "#fcf8f5", "bgSoft": "#f8f0e8", "accent": "#a4603a", "border": "#eedcc8", "textMuted": "#8a7a6a"},
-        "adaptations": ["1 conceito por vez", "Contraste elevado", "Rotina consistente", "Peças grandes", "Apoio motor intensivo"],
+        "id": "cri-du-chat",
+        "name": "5p- (Cri-du-Chat)",
+        "icon": "🐱",
+        "colors": {
+            "primary": "#c4805a",
+            "bg": "#fcf8f5",
+            "bgSoft": "#f8f0e8",
+            "accent": "#a4603a",
+            "border": "#eedcc8",
+            "textMuted": "#8a7a6a",
+        },
+        "adaptations": [
+            "1 conceito por vez",
+            "Contraste elevado",
+            "Rotina consistente",
+            "Peças grandes",
+            "Apoio motor intensivo",
+        ],
         "levels": [
-            {"id": 1, "label": "Suporte Leve", "fontSize": "1.1rem", "density": "reduced", "contrast": "high", "spacing": "1.8", "actionH": "100px"},
-            {"id": 2, "label": "Suporte Moderado", "fontSize": "1.25rem", "density": "minimal", "contrast": "high", "spacing": "2.0", "actionH": "85px"},
-            {"id": 3, "label": "Suporte Substancial", "fontSize": "1.4rem", "density": "minimal", "contrast": "very-high", "spacing": "2.2", "actionH": "70px"}
-        ]
+            {
+                "id": 1,
+                "label": "Suporte Leve",
+                "fontSize": "1.1rem",
+                "density": "reduced",
+                "contrast": "high",
+                "spacing": "1.8",
+                "actionH": "100px",
+            },
+            {
+                "id": 2,
+                "label": "Suporte Moderado",
+                "fontSize": "1.25rem",
+                "density": "minimal",
+                "contrast": "high",
+                "spacing": "2.0",
+                "actionH": "85px",
+            },
+            {
+                "id": 3,
+                "label": "Suporte Substancial",
+                "fontSize": "1.4rem",
+                "density": "minimal",
+                "contrast": "very-high",
+                "spacing": "2.2",
+                "actionH": "70px",
+            },
+        ],
     },
     {
-        "id": "klinefelter", "name": "Klinefelter", "icon": "🧬",
-        "colors": {"primary": "#5a7a9a", "bg": "#f5f8fa", "bgSoft": "#e8eef5", "accent": "#3a5a7a", "border": "#d4dee8", "textMuted": "#5a6a7a"},
-        "adaptations": ["Apoio visual para atenção", "Estrutura organizada", "Instruções claras", "Estímulo à linguagem"],
+        "id": "klinefelter",
+        "name": "Klinefelter",
+        "icon": "🧬",
+        "colors": {
+            "primary": "#5a7a9a",
+            "bg": "#f5f8fa",
+            "bgSoft": "#e8eef5",
+            "accent": "#3a5a7a",
+            "border": "#d4dee8",
+            "textMuted": "#5a6a7a",
+        },
+        "adaptations": [
+            "Apoio visual para atenção",
+            "Estrutura organizada",
+            "Instruções claras",
+            "Estímulo à linguagem",
+        ],
         "levels": [
-            {"id": 1, "label": "Suporte Leve", "fontSize": "1rem", "density": "normal", "contrast": "normal", "spacing": "1.6", "actionH": "130px"},
-            {"id": 2, "label": "Suporte Moderado", "fontSize": "1.1rem", "density": "reduced", "contrast": "normal", "spacing": "1.8", "actionH": "110px"},
-            {"id": 3, "label": "Suporte Substancial", "fontSize": "1.2rem", "density": "reduced", "contrast": "high", "spacing": "2.0", "actionH": "90px"}
-        ]
+            {
+                "id": 1,
+                "label": "Suporte Leve",
+                "fontSize": "1rem",
+                "density": "normal",
+                "contrast": "normal",
+                "spacing": "1.6",
+                "actionH": "130px",
+            },
+            {
+                "id": 2,
+                "label": "Suporte Moderado",
+                "fontSize": "1.1rem",
+                "density": "reduced",
+                "contrast": "normal",
+                "spacing": "1.8",
+                "actionH": "110px",
+            },
+            {
+                "id": 3,
+                "label": "Suporte Substancial",
+                "fontSize": "1.2rem",
+                "density": "reduced",
+                "contrast": "high",
+                "spacing": "2.0",
+                "actionH": "90px",
+            },
+        ],
     },
     {
-        "id": "patau", "name": "Trissomia 13 (Patau)", "icon": "❤️",
-        "colors": {"primary": "#c47070", "bg": "#fcf8f8", "bgSoft": "#f8eeee", "accent": "#a05050", "border": "#eed8d8", "textMuted": "#8a6a6a"},
-        "adaptations": ["Estimulação sensorial básica", "1 elemento por página", "Altíssimo contraste", "Atividades sensoriais"],
+        "id": "patau",
+        "name": "Trissomia 13 (Patau)",
+        "icon": "❤️",
+        "colors": {
+            "primary": "#c47070",
+            "bg": "#fcf8f8",
+            "bgSoft": "#f8eeee",
+            "accent": "#a05050",
+            "border": "#eed8d8",
+            "textMuted": "#8a6a6a",
+        },
+        "adaptations": [
+            "Estimulação sensorial básica",
+            "1 elemento por página",
+            "Altíssimo contraste",
+            "Atividades sensoriais",
+        ],
         "levels": [
-            {"id": 1, "label": "Suporte Leve", "fontSize": "1.2rem", "density": "minimal", "contrast": "very-high", "spacing": "2.0", "actionH": "80px"},
-            {"id": 2, "label": "Suporte Moderado", "fontSize": "1.35rem", "density": "minimal", "contrast": "very-high", "spacing": "2.2", "actionH": "70px"},
-            {"id": 3, "label": "Suporte Substancial", "fontSize": "1.5rem", "density": "minimal", "contrast": "very-high", "spacing": "2.4", "actionH": "60px"}
-        ]
+            {
+                "id": 1,
+                "label": "Suporte Leve",
+                "fontSize": "1.2rem",
+                "density": "minimal",
+                "contrast": "very-high",
+                "spacing": "2.0",
+                "actionH": "80px",
+            },
+            {
+                "id": 2,
+                "label": "Suporte Moderado",
+                "fontSize": "1.35rem",
+                "density": "minimal",
+                "contrast": "very-high",
+                "spacing": "2.2",
+                "actionH": "70px",
+            },
+            {
+                "id": 3,
+                "label": "Suporte Substancial",
+                "fontSize": "1.5rem",
+                "density": "minimal",
+                "contrast": "very-high",
+                "spacing": "2.4",
+                "actionH": "60px",
+            },
+        ],
     },
     {
-        "id": "edwards", "name": "Trissomia 18 (Edwards)", "icon": "💜",
-        "colors": {"primary": "#9a7aba", "bg": "#faf8fc", "bgSoft": "#f2eef8", "accent": "#7a5a9a", "border": "#e4deee", "textMuted": "#7a6a8a"},
-        "adaptations": ["Multissensorial básico", "Atividades simplificadas", "Estimulação tátil", "Apoio motor completo"],
+        "id": "edwards",
+        "name": "Trissomia 18 (Edwards)",
+        "icon": "💜",
+        "colors": {
+            "primary": "#9a7aba",
+            "bg": "#faf8fc",
+            "bgSoft": "#f2eef8",
+            "accent": "#7a5a9a",
+            "border": "#e4deee",
+            "textMuted": "#7a6a8a",
+        },
+        "adaptations": [
+            "Multissensorial básico",
+            "Atividades simplificadas",
+            "Estimulação tátil",
+            "Apoio motor completo",
+        ],
         "levels": [
-            {"id": 1, "label": "Suporte Leve", "fontSize": "1.2rem", "density": "minimal", "contrast": "high", "spacing": "2.0", "actionH": "80px"},
-            {"id": 2, "label": "Suporte Moderado", "fontSize": "1.35rem", "density": "minimal", "contrast": "very-high", "spacing": "2.2", "actionH": "70px"},
-            {"id": 3, "label": "Suporte Substancial", "fontSize": "1.5rem", "density": "minimal", "contrast": "very-high", "spacing": "2.4", "actionH": "60px"}
-        ]
+            {
+                "id": 1,
+                "label": "Suporte Leve",
+                "fontSize": "1.2rem",
+                "density": "minimal",
+                "contrast": "high",
+                "spacing": "2.0",
+                "actionH": "80px",
+            },
+            {
+                "id": 2,
+                "label": "Suporte Moderado",
+                "fontSize": "1.35rem",
+                "density": "minimal",
+                "contrast": "very-high",
+                "spacing": "2.2",
+                "actionH": "70px",
+            },
+            {
+                "id": 3,
+                "label": "Suporte Substancial",
+                "fontSize": "1.5rem",
+                "density": "minimal",
+                "contrast": "very-high",
+                "spacing": "2.4",
+                "actionH": "60px",
+            },
+        ],
     },
     {
-        "id": "turner", "name": "Turner", "icon": "🌸",
-        "colors": {"primary": "#b58aaa", "bg": "#fdf8fc", "bgSoft": "#f8eef6", "accent": "#9a6a8a", "border": "#eedee8", "textMuted": "#8a7a8a"},
-        "adaptations": ["Apoio visuoespacial", "Design limpo", "Instruções verbais claras", "Organização visual"],
+        "id": "turner",
+        "name": "Turner",
+        "icon": "🌸",
+        "colors": {
+            "primary": "#b58aaa",
+            "bg": "#fdf8fc",
+            "bgSoft": "#f8eef6",
+            "accent": "#9a6a8a",
+            "border": "#eedee8",
+            "textMuted": "#8a7a8a",
+        },
+        "adaptations": [
+            "Apoio visuoespacial",
+            "Design limpo",
+            "Instruções verbais claras",
+            "Organização visual",
+        ],
         "levels": [
-            {"id": 1, "label": "Suporte Leve", "fontSize": "1rem", "density": "normal", "contrast": "normal", "spacing": "1.6", "actionH": "130px"},
-            {"id": 2, "label": "Suporte Moderado", "fontSize": "1.1rem", "density": "reduced", "contrast": "normal", "spacing": "1.8", "actionH": "110px"},
-            {"id": 3, "label": "Suporte Substancial", "fontSize": "1.2rem", "density": "reduced", "contrast": "high", "spacing": "2.0", "actionH": "90px"}
-        ]
-    }
+            {
+                "id": 1,
+                "label": "Suporte Leve",
+                "fontSize": "1rem",
+                "density": "normal",
+                "contrast": "normal",
+                "spacing": "1.6",
+                "actionH": "130px",
+            },
+            {
+                "id": 2,
+                "label": "Suporte Moderado",
+                "fontSize": "1.1rem",
+                "density": "reduced",
+                "contrast": "normal",
+                "spacing": "1.8",
+                "actionH": "110px",
+            },
+            {
+                "id": 3,
+                "label": "Suporte Substancial",
+                "fontSize": "1.2rem",
+                "density": "reduced",
+                "contrast": "high",
+                "spacing": "2.0",
+                "actionH": "90px",
+            },
+        ],
+    },
 ]
 
 # ===== ACTIVITIES =====
 activities = [
     {
-        "id": "artefatos", "icon": "🖐️", "name": "Artefatos Indígenas",
+        "id": "artefatos",
+        "icon": "🖐️",
+        "name": "Artefatos Indígenas",
         "desc": "Explore texturas e elementos da cultura indígena pelo tato e visão",
-        "steps": ["Toque cada textura com os dedos", "Observe as cores e formas", "Conte o que você sentiu"],
+        "steps": [
+            "Toque cada textura com os dedos",
+            "Observe as cores e formas",
+            "Conte o que você sentiu",
+        ],
         "cards": [
             {"svg": "ceramic", "label": "Cerâmica", "sub": "Textura áspera e macia"},
             {"svg": "feather", "label": "Penas", "sub": "Texturas leves e macias"},
             {"svg": "shine", "label": "Brilho", "sub": "Elementos reflexivos"},
-            {"svg": "pattern", "label": "Padrões", "sub": "Geometria indígena"}
-        ]
+            {"svg": "pattern", "label": "Padrões", "sub": "Geometria indígena"},
+        ],
     },
     {
-        "id": "simbolos", "icon": "🧩", "name": "Símbolos Nacionais",
+        "id": "simbolos",
+        "icon": "🧩",
+        "name": "Símbolos Nacionais",
         "desc": "Monte o quebra-cabeça da bandeira do Brasil",
-        "steps": ["Observe as peças do quebra-cabeça", "Monte a bandeira no lugar certo", "Mostre para o professor"],
+        "steps": [
+            "Observe as peças do quebra-cabeça",
+            "Monte a bandeira no lugar certo",
+            "Mostre para o professor",
+        ],
         "cards": [
             {"svg": "flag1", "label": "Bandeira", "sub": "6-8 peças grandes"},
             {"svg": "puzzle", "label": "Base pontilhada", "sub": "Contorno GROSSO"},
             {"svg": "hands", "label": "Alças", "sub": "Fácil de segurar"},
-            {"svg": "star", "label": "Recompensa", "sub": "Escolha um adesivo"}
-        ]
+            {"svg": "star", "label": "Recompensa", "sub": "Escolha um adesivo"},
+        ],
     },
     {
-        "id": "hieroglifos", "icon": "📜", "name": "Desvendando Hieróglifos",
+        "id": "hieroglifos",
+        "icon": "📜",
+        "name": "Desvendando Hieróglifos",
         "desc": "Decifre símbolos do Egito Antigo",
-        "steps": ["Olhe os símbolos egípcios", "Compare com a tabela", "Escreva a tradução"],
+        "steps": [
+            "Olhe os símbolos egípcios",
+            "Compare com a tabela",
+            "Escreva a tradução",
+        ],
         "cards": [
             {"svg": "hieroglyph1", "label": "Símbolos", "sub": "6-8 por página"},
             {"svg": "hieroglyph2", "label": "Mensagem", "sub": "Bem espaçada"},
             {"svg": "hieroglyph3", "label": "Tradução", "sub": "Linhas guia"},
-            {"svg": "hieroglyph4", "label": "Pausa", "sub": "Respire fundo"}
-        ]
+            {"svg": "hieroglyph4", "label": "Pausa", "sub": "Respire fundo"},
+        ],
     },
     {
-        "id": "povos", "icon": "🏠", "name": "Povos e suas Casas",
+        "id": "povos",
+        "icon": "🏠",
+        "name": "Povos e suas Casas",
         "desc": "Ligue cada povo ao tipo de moradia",
-        "steps": ["Olhe as pessoas", "Veja as casas", "Ligue cada povo à casa", "Pinte as moradias"],
+        "steps": [
+            "Olhe as pessoas",
+            "Veja as casas",
+            "Ligue cada povo à casa",
+            "Pinte as moradias",
+        ],
         "cards": [
             {"svg": "indigena", "label": "Indígenas", "sub": "Ocas"},
             {"svg": "esquimo", "label": "Esquimós", "sub": "Iglus"},
             {"svg": "beduino", "label": "Beduínos", "sub": "Tendas"},
-            {"svg": "casa", "label": "Casas", "sub": "Contorno reforçado"}
-        ]
+            {"svg": "casa", "label": "Casas", "sub": "Contorno reforçado"},
+        ],
     },
     {
-        "id": "labirinto", "icon": "🌳", "name": "Labirinto da Aldeia",
+        "id": "labirinto",
+        "icon": "🌳",
+        "name": "Labirinto da Aldeia",
         "desc": "Siga o caminho até a oca do pajé",
-        "steps": ["Siga o caminho", "Não ultrapasse as linhas", "Chegue até a oca", "Marque X na oca"],
+        "steps": [
+            "Siga o caminho",
+            "Não ultrapasse as linhas",
+            "Chegue até a oca",
+            "Marque X na oca",
+        ],
         "cards": [
             {"svg": "maze1", "label": "Caminho largo", "sub": "Bem definido"},
             {"svg": "maze2", "label": "Cores únicas", "sub": "Sem padrões"},
             {"svg": "maze3", "label": "Entrada", "sub": "Início claro"},
-            {"svg": "maze4", "label": "Oca do Pajé", "sub": "Ponto de chegada"}
-        ]
+            {"svg": "maze4", "label": "Oca do Pajé", "sub": "Ponto de chegada"},
+        ],
     },
     {
-        "id": "historia", "icon": "👤", "name": "Minha História Pessoal",
+        "id": "historia",
+        "icon": "👤",
+        "name": "Minha História Pessoal",
         "desc": "Trace sua linha do tempo com fotos e palavras",
-        "steps": ["Trace a linha pontilhada", "Cole suas fotos", "Pule 5 vezes (pausa)", "Escreva uma palavra"],
+        "steps": [
+            "Trace a linha pontilhada",
+            "Cole suas fotos",
+            "Pule 5 vezes (pausa)",
+            "Escreva uma palavra",
+        ],
         "cards": [
             {"svg": "timeline1", "label": "Pontilhados", "sub": "Cores alternadas"},
             {"svg": "timeline2", "label": "Fotos", "sub": "4 marcos importantes"},
             {"svg": "timeline3", "label": "Pausa Ativa", "sub": "Pule 5 vezes"},
-            {"svg": "timeline4", "label": "Palavras", "sub": "Descreva cada momento"}
-        ]
+            {"svg": "timeline4", "label": "Palavras", "sub": "Descreva cada momento"},
+        ],
     },
     {
-        "id": "debate", "icon": "💬", "name": "Debate Argumentativo",
+        "id": "debate",
+        "icon": "💬",
+        "name": "Debate Argumentativo",
         "desc": "Organize argumentos a favor e contra um tema",
-        "steps": ["Escreva o tema", "Liste argumentos (prós e contras)", "Escolha sua posição", "Justifique"],
+        "steps": [
+            "Escreva o tema",
+            "Liste argumentos (prós e contras)",
+            "Escolha sua posição",
+            "Justifique",
+        ],
         "cards": [
             {"svg": "debate1", "label": "Tema", "sub": "Defina o assunto"},
             {"svg": "debate2", "label": "A Favor", "sub": "3 argumentos"},
             {"svg": "debate3", "label": "Contra", "sub": "3 argumentos"},
-            {"svg": "debate4", "label": "Conclusão", "sub": "Posição e justificativa"}
-        ]
-    }
+            {"svg": "debate4", "label": "Conclusão", "sub": "Posição e justificativa"},
+        ],
+    },
 ]
 
 # ===== SVGs =====
 svgs = {
-    "ceramic": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><ellipse cx="60" cy="58" rx="28" ry="30" fill="#c47a3a" opacity="0.7"/><ellipse cx="60" cy="42" rx="20" ry="8" fill="#b06a2a" opacity="0.5"/><ellipse cx="60" cy="68" rx="16" ry="12" fill="#d48a4a" opacity="0.4"/><path d="M40 50 Q50 44 60 50 Q70 56 80 50" stroke="#8a5a2a" fill="none" stroke-width="1.5" opacity="0.5"/><path d="M42 60 Q52 54 60 60 Q68 66 78 60" stroke="#8a5a2a" fill="none" stroke-width="1.5" opacity="0.5"/></svg>''',
-    "feather": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><path d="M60 15 Q40 40 45 75 Q55 80 65 75 Q55 55 60 40 Q65 30 60 15Z" fill="#d4553a" opacity="0.7"/><path d="M60 15 Q50 35 52 55 Q60 50 65 40 Q63 25 60 15Z" fill="#e87055" opacity="0.5"/><line x1="58" y1="20" x2="55" y2="72" stroke="#5a3a2a" stroke-width="1" opacity="0.3"/></svg>''',
-    "shine": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><circle cx="50" cy="45" r="18" fill="#f0d050" opacity="0.6"/><circle cx="50" cy="45" r="10" fill="#f8e880" opacity="0.5"/><circle cx="50" cy="45" r="4" fill="#fff8b0" opacity="0.8"/><circle cx="78" cy="60" r="8" fill="#e8c040" opacity="0.4"/><circle cx="35" cy="68" r="5" fill="#e8c040" opacity="0.3"/><line x1="50" y1="20" x2="50" y2="28" stroke="#f0d050" stroke-width="1.5" opacity="0.6"/><line x1="50" y1="62" x2="50" y2="70" stroke="#f0d050" stroke-width="1.5" opacity="0.6"/></svg>''',
-    "pattern": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><path d="M20 20 L30 10 L40 20 L30 30Z" fill="#c43a2a" opacity="0.5"/><path d="M60 20 L70 10 L80 20 L70 30Z" fill="#3a7a5a" opacity="0.5"/><path d="M40 50 L50 40 L60 50 L50 60Z" fill="#d4a017" opacity="0.5"/><path d="M20 60 L30 50 L40 60 L30 70Z" fill="#3a5a8a" opacity="0.5"/><path d="M70 55 L80 45 L90 55 L80 65Z" fill="#8a3a5a" opacity="0.5"/><line x1="10" y1="85" x2="110" y2="85" stroke="#8a5a2a" stroke-width="2" stroke-dasharray="4 4" opacity="0.3"/></svg>''',
-    "flag1": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="10" y="15" width="100" height="70" fill="#2a8a2a" rx="4" opacity="0.7"/><polygon points="60,20 65,38 85,38 68,50 73,68 60,56 47,68 52,50 35,38 55,38" fill="#f0d020" opacity="0.7"/><circle cx="60" cy="44" r="8" fill="#2a4a7a" opacity="0.6"/><rect x="10" y="15" width="100" height="70" fill="none" stroke="#1a6a1a" stroke-width="2" rx="4" opacity="0.5"/></svg>''',
-    "puzzle": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="15" y="15" width="90" height="70" fill="none" stroke="#3a7bd5" stroke-width="2" stroke-dasharray="6 4" rx="6" opacity="0.6"/><path d="M15 40 L105 40 M15 60 L105 60 M55 15 L55 85" stroke="#3a7bd5" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.4"/><rect x="15" y="15" width="90" height="70" fill="none" stroke="#2a5aA5" stroke-width="3" rx="6" opacity="0.4"/><circle cx="60" cy="45" r="12" fill="#3a7bd5" opacity="0.15"/></svg>''',
-    "hands": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="10" y="60" width="100" height="30" fill="#d4a017" rx="8" opacity="0.4"/><ellipse cx="40" cy="40" rx="14" ry="18" fill="#e8c880" opacity="0.6"/><ellipse cx="80" cy="40" rx="14" ry="18" fill="#e8c880" opacity="0.6"/><circle cx="40" cy="35" r="6" fill="#d4a017" opacity="0.4"/><circle cx="80" cy="35" r="6" fill="#d4a017" opacity="0.4"/><rect x="10" y="60" width="100" height="30" fill="none" stroke="#b88910" stroke-width="2" rx="8" opacity="0.5"/></svg>''',
-    "star": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><polygon points="60,10 68,35 95,35 72,52 80,80 60,62 40,80 48,52 25,35 52,35" fill="#f0d020" opacity="0.6" stroke="#d4a017" stroke-width="1.5"/><circle cx="60" cy="45" r="4" fill="#fff8e0" opacity="0.8"/></svg>''',
-    "hieroglyph1": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><text x="18" y="35" font-size="22" fill="#5a3a2a" opacity="0.7" font-family="serif">\u2625</text><text x="48" y="35" font-size="22" fill="#5a3a2a" opacity="0.7" font-family="serif">\u2626</text><text x="78" y="35" font-size="22" fill="#5a3a2a" opacity="0.7" font-family="serif">\u262f</text><text x="18" y="68" font-size="22" fill="#5a3a2a" opacity="0.7" font-family="serif">\u262a</text><text x="48" y="68" font-size="22" fill="#5a3a2a" opacity="0.7" font-family="serif">\u262b</text><text x="78" y="68" font-size="22" fill="#5a3a2a" opacity="0.7" font-family="serif">\u262c</text></svg>''',
-    "hieroglyph2": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><text x="10" y="35" font-size="20" fill="#6a4a2a" opacity="0.7" font-family="serif">\u2625</text><text x="35" y="35" font-size="20" fill="#6a4a2a" opacity="0.7" font-family="serif">\u2626</text><text x="60" y="35" font-size="20" fill="#6a4a2a" opacity="0.7" font-family="serif">\u262f</text><text x="85" y="35" font-size="20" fill="#6a4a2a" opacity="0.7" font-family="serif">\u262a</text><line x1="10" y1="65" x2="110" y2="65" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5"/><line x1="10" y1="75" x2="110" y2="75" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5"/></svg>''',
-    "hieroglyph3": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><line x1="10" y1="35" x2="110" y2="35" stroke="#aaa" stroke-width="2" opacity="0.4"/><line x1="10" y1="50" x2="110" y2="50" stroke="#aaa" stroke-width="2" opacity="0.4"/><line x1="10" y1="65" x2="110" y2="65" stroke="#aaa" stroke-width="2" opacity="0.4"/><line x1="10" y1="80" x2="110" y2="80" stroke="#aaa" stroke-width="2" opacity="0.4"/><text x="12" y="33" font-size="11" fill="#8a7a5a" opacity="0.6" font-family="serif">__ __ __</text><text x="12" y="48" font-size="11" fill="#8a7a5a" opacity="0.6" font-family="serif">__ __ __</text><text x="12" y="63" font-size="11" fill="#8a7a5a" opacity="0.6" font-family="serif">__ __ __</text></svg>''',
-    "hieroglyph4": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><circle cx="35" cy="40" r="14" fill="#8aba8a" opacity="0.4"/><circle cx="60" cy="40" r="14" fill="#8aba8a" opacity="0.4"/><circle cx="85" cy="40" r="14" fill="#8aba8a" opacity="0.4"/><circle cx="35" cy="40" r="14" fill="none" stroke="#5a9a5a" stroke-width="2" opacity="0.5"/><circle cx="35" cy="40" r="14" fill="none" stroke="#5a9a5a" stroke-width="2" opacity="0.5"/><text x="30" y="44" font-size="13" fill="#3a7a3a" opacity="0.7">1</text><text x="55" y="44" font-size="13" fill="#3a7a3a" opacity="0.7">2</text><text x="80" y="44" font-size="13" fill="#3a7a3a" opacity="0.7">3</text><text x="32" y="72" font-size="9" fill="#5a9a5a" opacity="0.5" text-anchor="middle">respire</text><text x="60" y="72" font-size="9" fill="#5a9a5a" opacity="0.5" text-anchor="middle">fundo</text><text x="88" y="72" font-size="9" fill="#5a9a5a" opacity="0.5" text-anchor="middle">3x</text></svg>''',
-    "indigena": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><circle cx="60" cy="28" r="12" fill="#c4804a" opacity="0.7"/><path d="M48 40 Q60 35 72 40 L75 75 Q60 80 45 75Z" fill="#d49a5a" opacity="0.6"/><line x1="68" y1="48" x2="82" y2="38" stroke="#a46a2a" stroke-width="2" opacity="0.5"/><line x1="65" y1="50" x2="78" y2="52" stroke="#a46a2a" stroke-width="1.5" opacity="0.3"/><circle cx="56" cy="28" r="2" fill="#4a2a1a" opacity="0.6"/><circle cx="64" cy="28" r="2" fill="#4a2a1a" opacity="0.6"/><path d="M57 34 Q60 38 63 34" stroke="#6a3a1a" fill="none" stroke-width="1.5" opacity="0.5"/><path d="M75 55 Q100 50 105 65 Q95 70 75 65Z" fill="#d4a83a" opacity="0.4"/></svg>''',
-    "esquimo": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><circle cx="60" cy="28" r="11" fill="#e8d8b8" opacity="0.7"/><path d="M50 38 Q60 34 70 38 L72 65 Q60 70 48 65Z" fill="#d4c8a8" opacity="0.6" stroke="#b8a888" stroke-width="1"/><path d="M10 62 Q60 40 110 62L110 75 L10 75Z" fill="#c8e0f0" opacity="0.4" stroke="#a8c8d8" stroke-width="1.5"/><path d="M20 65 Q60 48 100 65" stroke="#a8c8d8" stroke-width="1" fill="none" opacity="0.3"/><circle cx="20" cy="75" r="9" fill="#c8e0f0" opacity="0.3" stroke="#a8c8d8" stroke-width="1"/><circle cx="100" cy="75" r="9" fill="#c8e0f0" opacity="0.3" stroke="#a8c8d8" stroke-width="1"/></svg>''',
-    "beduino": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><polygon points="10,70 60,30 110,70" fill="#d4a040" opacity="0.4" stroke="#b88830" stroke-width="1.5"/><polygon points="30,70 60,40 90,70" fill="#e8b850" opacity="0.3"/><line x1="10" y1="70" x2="110" y2="70" stroke="#b88830" stroke-width="2" opacity="0.5"/><circle cx="60" cy="45" r="8" fill="#c4804a" opacity="0.6"/><path d="M54 48 Q60 52 66 48" stroke="#8a5a2a" fill="none" stroke-width="1.2" opacity="0.5"/><circle cx="58" cy="44" r="1.5" fill="#3a2a1a" opacity="0.5"/><circle cx="62" cy="44" r="1.5" fill="#3a2a1a" opacity="0.5"/></svg>''',
-    "casa": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="20" y="55" width="80" height="35" fill="#e8d8b8" rx="2" opacity="0.5" stroke="#c8a870" stroke-width="2"/><polygon points="10,58 60,25 110,58" fill="#c84020" opacity="0.4" stroke="#a83010" stroke-width="2"/><rect x="50" y="65" width="20" height="25" fill="#a07040" rx="1" opacity="0.5" stroke="#806030" stroke-width="1.5"/><rect x="30" y="60" width="10" height="10" fill="#88b8e8" opacity="0.4" stroke="#6898c8" stroke-width="1.5"/><rect x="80" y="60" width="10" height="10" fill="#88b8e8" opacity="0.4" stroke="#6898c8" stroke-width="1.5"/></svg>''',
-    "maze1": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="5" y="5" width="110" height="90" fill="none" stroke="#4a6a4a" stroke-width="3" rx="4"/><rect x="15" y="15" width="90" height="70" fill="var(--bg-soft)" rx="2"/><path d="M15 25 L60 25 L60 75" stroke="#3a5a3a" stroke-width="3" fill="none" opacity="0.7"/><path d="M105 75 L60 75 L60 25" stroke="#3a5a3a" stroke-width="3" fill="none" opacity="0.7"/><path d="M15 25 L105 25 L105 75 L15 75Z" fill="none" stroke="#5a8a5a" stroke-width="2" opacity="0.3"/><circle cx="12" cy="25" r="4" fill="#3a7a3a" opacity="0.6"/><text x="6" y="28" font-size="7" fill="#3a7a3a" opacity="0.6">IN\u00cdCIO</text></svg>''',
-    "maze2": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="5" y="5" width="110" height="90" fill="#e8f0e8" rx="4" opacity="0.5"/><rect x="10" y="10" width="35" height="35" fill="#d4e8d4" rx="4" opacity="0.6"/><rect x="55" y="10" width="55" height="35" fill="#d4e0f0" rx="4" opacity="0.6"/><rect x="10" y="55" width="55" height="35" fill="#f0e8d4" rx="4" opacity="0.6"/><rect x="75" y="55" width="35" height="35" fill="#f0d4d4" rx="4" opacity="0.6"/><circle cx="15" cy="15" r="3" fill="#3a7a3a" opacity="0.5"/></svg>''',
-    "maze3": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><path d="M10 40 Q20 15 40 25 Q60 35 55 55 Q50 75 70 70 Q90 65 105 45" stroke="#4a7a4a" stroke-width="3" fill="none" opacity="0.6"/><circle cx="10" cy="40" r="5" fill="#3a7a3a" opacity="0.7"/><text x="2" y="55" font-size="7" fill="#3a7a3a" opacity="0.5">SA\u00cdDA</text><circle cx="105" cy="45" r="5" fill="#c84020" opacity="0.7"/><path d="M96 36 L114 54 M114 36 L96 54" stroke="#c84020" stroke-width="2" opacity="0.6"/></svg>''',
-    "maze4": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><path d="M35 50 L60 30 L85 50 L75 85 L45 85Z" fill="#c4804a" opacity="0.5" stroke="#8a5a2a" stroke-width="2"/><path d="M45 50 L60 38 L75 50" stroke="#8a5a2a" stroke-width="1.5" fill="none" opacity="0.4"/><circle cx="60" cy="62" r="4" fill="#8a5a2a" opacity="0.3"/><path d="M20 15 L45 15 L45 25 L20 25Z" fill="#5a8a3a" opacity="0.3" stroke="#3a6a1a" stroke-width="1.5" rx="2"/><text x="14" y="12" font-size="6" fill="#3a6a1a" opacity="0.5">CHEGADA</text></svg>''',
-    "timeline1": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><line x1="10" y1="50" x2="110" y2="50" stroke="#3a7bd5" stroke-width="2.5" stroke-dasharray="6 4" opacity="0.6"/><line x1="10" y1="50" x2="40" y2="50" stroke="#c84040" stroke-width="3" stroke-dasharray="8 5" opacity="0.6"/><line x1="40" y1="50" x2="75" y2="50" stroke="#d4a017" stroke-width="3" stroke-dasharray="8 5" opacity="0.6"/><line x1="75" y1="50" x2="110" y2="50" stroke="#2e7d5e" stroke-width="3" stroke-dasharray="8 5" opacity="0.6"/></svg>''',
-    "timeline2": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="8" y="15" width="22" height="28" fill="#f0f4ff" stroke="#3a7bd5" stroke-width="1.5" rx="3" stroke-dasharray="3 2" opacity="0.7"/><rect x="38" y="15" width="22" height="28" fill="#f0f4ff" stroke="#3a7bd5" stroke-width="1.5" rx="3" stroke-dasharray="3 2" opacity="0.7"/><rect x="68" y="15" width="22" height="28" fill="#f0f4ff" stroke="#3a7bd5" stroke-width="1.5" rx="3" stroke-dasharray="3 2" opacity="0.7"/><rect x="98" y="15" width="15" height="28" fill="#f0f4ff" stroke="#3a7bd5" stroke-width="1.5" rx="3" stroke-dasharray="3 2" opacity="0.7"/><text x="10" y="68" font-size="7" fill="#5a7a9a" opacity="0.6">NASCEU</text><text x="36" y="68" font-size="7" fill="#5a7a9a" opacity="0.6">PASSOS</text><text x="64" y="68" font-size="7" fill="#5a7a9a" opacity="0.6">ESCOLA</text><text x="94" y="68" font-size="7" fill="#5a7a9a" opacity="0.6">EVENTO</text></svg>''',
-    "timeline3": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><text x="25" y="30" font-size="13" fill="#5a8a5a" opacity="0.7">\u2b07</text><text x="50" y="30" font-size="13" fill="#5a8a5a" opacity="0.7">\u2b07</text><text x="75" y="30" font-size="13" fill="#5a8a5a" opacity="0.7">\u2b07</text><text x="35" y="55" font-size="13" fill="#5a8a5a" opacity="0.7">\u2b07</text><text x="60" y="55" font-size="13" fill="#5a8a5a" opacity="0.7">\u2b07</text><text x="48" y="80" font-size="13" fill="#3a7a3a" opacity="0.8">\u2705</text><text x="30" y="95" font-size="8" fill="#5a8a5a" opacity="0.6">1</text><text x="55" y="95" font-size="8" fill="#5a8a5a" opacity="0.6">2</text><text x="78" y="95" font-size="8" fill="#5a8a5a" opacity="0.6">3</text><text x="48" y="98" font-size="8" fill="#3a7a3a" opacity="0.6">4</text><text x="45" y="97" font-size="7" fill="#5a8a5a" opacity="0.6">5</text></svg>''',
-    "timeline4": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="10" y="15" width="100" height="15" fill="#fff" stroke="#dce5ef" stroke-width="1.5" rx="4" opacity="0.7"/><rect x="10" y="38" width="100" height="15" fill="#fff" stroke="#dce5ef" stroke-width="1.5" rx="4" opacity="0.7"/><rect x="10" y="61" width="100" height="15" fill="#fff" stroke="#dce5ef" stroke-width="1.5" rx="4" opacity="0.7"/><rect x="10" y="84" width="100" height="15" fill="#fff" stroke="#dce5ef" stroke-width="1.5" rx="4" opacity="0.7"/><text x="15" y="26" font-size="8" fill="#b0b8c8" opacity="0.6">Escreva uma palavra...</text><text x="15" y="49" font-size="8" fill="#b0b8c8" opacity="0.6">Escreva uma palavra...</text><text x="15" y="72" font-size="8" fill="#b0b8c8" opacity="0.6">Escreva uma palavra...</text></svg>''',
-    "debate1": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="15" y="30" width="90" height="40" fill="#fff" stroke="#3a7bd5" stroke-width="2" rx="8" opacity="0.7"/><text x="60" y="55" font-size="10" fill="#3a7bd5" opacity="0.6" text-anchor="middle" font-weight="bold">TEMA</text><path d="M25 20 L35 10 L45 20" fill="none" stroke="#3a7bd5" stroke-width="2" opacity="0.4"/></svg>''',
-    "debate2": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="15" y="10" width="90" height="22" fill="#edf7f2" stroke="#2e7d5e" stroke-width="1.5" rx="6" opacity="0.7"/><rect x="15" y="38" width="90" height="22" fill="#edf7f2" stroke="#2e7d5e" stroke-width="1.5" rx="6" opacity="0.7"/><rect x="15" y="66" width="90" height="22" fill="#edf7f2" stroke="#2e7d5e" stroke-width="1.5" rx="6" opacity="0.7"/><text x="20" y="25" font-size="8" fill="#2e7d5e" opacity="0.6">\u2705 1. __ __ __</text><text x="20" y="53" font-size="8" fill="#2e7d5e" opacity="0.6">\u2705 2. __ __ __</text><text x="20" y="81" font-size="8" fill="#2e7d5e" opacity="0.6">\u2705 3. __ __ __</text></svg>''',
-    "debate3": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="15" y="10" width="90" height="22" fill="#fdf0f0" stroke="#c94040" stroke-width="1.5" rx="6" opacity="0.7"/><rect x="15" y="38" width="90" height="22" fill="#fdf0f0" stroke="#c94040" stroke-width="1.5" rx="6" opacity="0.7"/><rect x="15" y="66" width="90" height="22" fill="#fdf0f0" stroke="#c94040" stroke-width="1.5" rx="6" opacity="0.7"/><text x="20" y="25" font-size="8" fill="#c94040" opacity="0.6">\u274c 1. __ __ __</text><text x="20" y="53" font-size="8" fill="#c94040" opacity="0.6">\u274c 2. __ __ __</text><text x="20" y="81" font-size="8" fill="#c94040" opacity="0.6">\u274c 3. __ __ __</text></svg>''',
-    "debate4": '''<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><circle cx="60" cy="25" r="10" fill="#f0e8c0" stroke="#d4a017" stroke-width="2" opacity="0.7"/><text x="56" y="29" font-size="10" fill="#8a6a10" opacity="0.7">\u2705</text><text x="21" y="62" font-size="10" fill="#3a5a7a" opacity="0.6">Posi\u00e7\u00e3o:</text><rect x="12" y="70" width="96" height="22" fill="#fff" stroke="#dce5ef" stroke-width="1.5" rx="6" opacity="0.6"/><text x="20" y="84" font-size="8" fill="#b0b8c8" opacity="0.5">___________________</text></svg>'''
+    "ceramic": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><ellipse cx="60" cy="58" rx="28" ry="30" fill="#c47a3a" opacity="0.7"/><ellipse cx="60" cy="42" rx="20" ry="8" fill="#b06a2a" opacity="0.5"/><ellipse cx="60" cy="68" rx="16" ry="12" fill="#d48a4a" opacity="0.4"/><path d="M40 50 Q50 44 60 50 Q70 56 80 50" stroke="#8a5a2a" fill="none" stroke-width="1.5" opacity="0.5"/><path d="M42 60 Q52 54 60 60 Q68 66 78 60" stroke="#8a5a2a" fill="none" stroke-width="1.5" opacity="0.5"/></svg>""",
+    "feather": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><path d="M60 15 Q40 40 45 75 Q55 80 65 75 Q55 55 60 40 Q65 30 60 15Z" fill="#d4553a" opacity="0.7"/><path d="M60 15 Q50 35 52 55 Q60 50 65 40 Q63 25 60 15Z" fill="#e87055" opacity="0.5"/><line x1="58" y1="20" x2="55" y2="72" stroke="#5a3a2a" stroke-width="1" opacity="0.3"/></svg>""",
+    "shine": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><circle cx="50" cy="45" r="18" fill="#f0d050" opacity="0.6"/><circle cx="50" cy="45" r="10" fill="#f8e880" opacity="0.5"/><circle cx="50" cy="45" r="4" fill="#fff8b0" opacity="0.8"/><circle cx="78" cy="60" r="8" fill="#e8c040" opacity="0.4"/><circle cx="35" cy="68" r="5" fill="#e8c040" opacity="0.3"/><line x1="50" y1="20" x2="50" y2="28" stroke="#f0d050" stroke-width="1.5" opacity="0.6"/><line x1="50" y1="62" x2="50" y2="70" stroke="#f0d050" stroke-width="1.5" opacity="0.6"/></svg>""",
+    "pattern": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><path d="M20 20 L30 10 L40 20 L30 30Z" fill="#c43a2a" opacity="0.5"/><path d="M60 20 L70 10 L80 20 L70 30Z" fill="#3a7a5a" opacity="0.5"/><path d="M40 50 L50 40 L60 50 L50 60Z" fill="#d4a017" opacity="0.5"/><path d="M20 60 L30 50 L40 60 L30 70Z" fill="#3a5a8a" opacity="0.5"/><path d="M70 55 L80 45 L90 55 L80 65Z" fill="#8a3a5a" opacity="0.5"/><line x1="10" y1="85" x2="110" y2="85" stroke="#8a5a2a" stroke-width="2" stroke-dasharray="4 4" opacity="0.3"/></svg>""",
+    "flag1": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="10" y="15" width="100" height="70" fill="#2a8a2a" rx="4" opacity="0.7"/><polygon points="60,20 65,38 85,38 68,50 73,68 60,56 47,68 52,50 35,38 55,38" fill="#f0d020" opacity="0.7"/><circle cx="60" cy="44" r="8" fill="#2a4a7a" opacity="0.6"/><rect x="10" y="15" width="100" height="70" fill="none" stroke="#1a6a1a" stroke-width="2" rx="4" opacity="0.5"/></svg>""",
+    "puzzle": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="15" y="15" width="90" height="70" fill="none" stroke="#3a7bd5" stroke-width="2" stroke-dasharray="6 4" rx="6" opacity="0.6"/><path d="M15 40 L105 40 M15 60 L105 60 M55 15 L55 85" stroke="#3a7bd5" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.4"/><rect x="15" y="15" width="90" height="70" fill="none" stroke="#2a5aA5" stroke-width="3" rx="6" opacity="0.4"/><circle cx="60" cy="45" r="12" fill="#3a7bd5" opacity="0.15"/></svg>""",
+    "hands": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="10" y="60" width="100" height="30" fill="#d4a017" rx="8" opacity="0.4"/><ellipse cx="40" cy="40" rx="14" ry="18" fill="#e8c880" opacity="0.6"/><ellipse cx="80" cy="40" rx="14" ry="18" fill="#e8c880" opacity="0.6"/><circle cx="40" cy="35" r="6" fill="#d4a017" opacity="0.4"/><circle cx="80" cy="35" r="6" fill="#d4a017" opacity="0.4"/><rect x="10" y="60" width="100" height="30" fill="none" stroke="#b88910" stroke-width="2" rx="8" opacity="0.5"/></svg>""",
+    "star": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><polygon points="60,10 68,35 95,35 72,52 80,80 60,62 40,80 48,52 25,35 52,35" fill="#f0d020" opacity="0.6" stroke="#d4a017" stroke-width="1.5"/><circle cx="60" cy="45" r="4" fill="#fff8e0" opacity="0.8"/></svg>""",
+    "hieroglyph1": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><text x="18" y="35" font-size="22" fill="#5a3a2a" opacity="0.7" font-family="serif">\u2625</text><text x="48" y="35" font-size="22" fill="#5a3a2a" opacity="0.7" font-family="serif">\u2626</text><text x="78" y="35" font-size="22" fill="#5a3a2a" opacity="0.7" font-family="serif">\u262f</text><text x="18" y="68" font-size="22" fill="#5a3a2a" opacity="0.7" font-family="serif">\u262a</text><text x="48" y="68" font-size="22" fill="#5a3a2a" opacity="0.7" font-family="serif">\u262b</text><text x="78" y="68" font-size="22" fill="#5a3a2a" opacity="0.7" font-family="serif">\u262c</text></svg>""",
+    "hieroglyph2": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><text x="10" y="35" font-size="20" fill="#6a4a2a" opacity="0.7" font-family="serif">\u2625</text><text x="35" y="35" font-size="20" fill="#6a4a2a" opacity="0.7" font-family="serif">\u2626</text><text x="60" y="35" font-size="20" fill="#6a4a2a" opacity="0.7" font-family="serif">\u262f</text><text x="85" y="35" font-size="20" fill="#6a4a2a" opacity="0.7" font-family="serif">\u262a</text><line x1="10" y1="65" x2="110" y2="65" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5"/><line x1="10" y1="75" x2="110" y2="75" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5"/></svg>""",
+    "hieroglyph3": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><line x1="10" y1="35" x2="110" y2="35" stroke="#aaa" stroke-width="2" opacity="0.4"/><line x1="10" y1="50" x2="110" y2="50" stroke="#aaa" stroke-width="2" opacity="0.4"/><line x1="10" y1="65" x2="110" y2="65" stroke="#aaa" stroke-width="2" opacity="0.4"/><line x1="10" y1="80" x2="110" y2="80" stroke="#aaa" stroke-width="2" opacity="0.4"/><text x="12" y="33" font-size="11" fill="#8a7a5a" opacity="0.6" font-family="serif">__ __ __</text><text x="12" y="48" font-size="11" fill="#8a7a5a" opacity="0.6" font-family="serif">__ __ __</text><text x="12" y="63" font-size="11" fill="#8a7a5a" opacity="0.6" font-family="serif">__ __ __</text></svg>""",
+    "hieroglyph4": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><circle cx="35" cy="40" r="14" fill="#8aba8a" opacity="0.4"/><circle cx="60" cy="40" r="14" fill="#8aba8a" opacity="0.4"/><circle cx="85" cy="40" r="14" fill="#8aba8a" opacity="0.4"/><circle cx="35" cy="40" r="14" fill="none" stroke="#5a9a5a" stroke-width="2" opacity="0.5"/><circle cx="35" cy="40" r="14" fill="none" stroke="#5a9a5a" stroke-width="2" opacity="0.5"/><text x="30" y="44" font-size="13" fill="#3a7a3a" opacity="0.7">1</text><text x="55" y="44" font-size="13" fill="#3a7a3a" opacity="0.7">2</text><text x="80" y="44" font-size="13" fill="#3a7a3a" opacity="0.7">3</text><text x="32" y="72" font-size="9" fill="#5a9a5a" opacity="0.5" text-anchor="middle">respire</text><text x="60" y="72" font-size="9" fill="#5a9a5a" opacity="0.5" text-anchor="middle">fundo</text><text x="88" y="72" font-size="9" fill="#5a9a5a" opacity="0.5" text-anchor="middle">3x</text></svg>""",
+    "indigena": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><circle cx="60" cy="28" r="12" fill="#c4804a" opacity="0.7"/><path d="M48 40 Q60 35 72 40 L75 75 Q60 80 45 75Z" fill="#d49a5a" opacity="0.6"/><line x1="68" y1="48" x2="82" y2="38" stroke="#a46a2a" stroke-width="2" opacity="0.5"/><line x1="65" y1="50" x2="78" y2="52" stroke="#a46a2a" stroke-width="1.5" opacity="0.3"/><circle cx="56" cy="28" r="2" fill="#4a2a1a" opacity="0.6"/><circle cx="64" cy="28" r="2" fill="#4a2a1a" opacity="0.6"/><path d="M57 34 Q60 38 63 34" stroke="#6a3a1a" fill="none" stroke-width="1.5" opacity="0.5"/><path d="M75 55 Q100 50 105 65 Q95 70 75 65Z" fill="#d4a83a" opacity="0.4"/></svg>""",
+    "esquimo": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><circle cx="60" cy="28" r="11" fill="#e8d8b8" opacity="0.7"/><path d="M50 38 Q60 34 70 38 L72 65 Q60 70 48 65Z" fill="#d4c8a8" opacity="0.6" stroke="#b8a888" stroke-width="1"/><path d="M10 62 Q60 40 110 62L110 75 L10 75Z" fill="#c8e0f0" opacity="0.4" stroke="#a8c8d8" stroke-width="1.5"/><path d="M20 65 Q60 48 100 65" stroke="#a8c8d8" stroke-width="1" fill="none" opacity="0.3"/><circle cx="20" cy="75" r="9" fill="#c8e0f0" opacity="0.3" stroke="#a8c8d8" stroke-width="1"/><circle cx="100" cy="75" r="9" fill="#c8e0f0" opacity="0.3" stroke="#a8c8d8" stroke-width="1"/></svg>""",
+    "beduino": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><polygon points="10,70 60,30 110,70" fill="#d4a040" opacity="0.4" stroke="#b88830" stroke-width="1.5"/><polygon points="30,70 60,40 90,70" fill="#e8b850" opacity="0.3"/><line x1="10" y1="70" x2="110" y2="70" stroke="#b88830" stroke-width="2" opacity="0.5"/><circle cx="60" cy="45" r="8" fill="#c4804a" opacity="0.6"/><path d="M54 48 Q60 52 66 48" stroke="#8a5a2a" fill="none" stroke-width="1.2" opacity="0.5"/><circle cx="58" cy="44" r="1.5" fill="#3a2a1a" opacity="0.5"/><circle cx="62" cy="44" r="1.5" fill="#3a2a1a" opacity="0.5"/></svg>""",
+    "casa": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="20" y="55" width="80" height="35" fill="#e8d8b8" rx="2" opacity="0.5" stroke="#c8a870" stroke-width="2"/><polygon points="10,58 60,25 110,58" fill="#c84020" opacity="0.4" stroke="#a83010" stroke-width="2"/><rect x="50" y="65" width="20" height="25" fill="#a07040" rx="1" opacity="0.5" stroke="#806030" stroke-width="1.5"/><rect x="30" y="60" width="10" height="10" fill="#88b8e8" opacity="0.4" stroke="#6898c8" stroke-width="1.5"/><rect x="80" y="60" width="10" height="10" fill="#88b8e8" opacity="0.4" stroke="#6898c8" stroke-width="1.5"/></svg>""",
+    "maze1": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="5" y="5" width="110" height="90" fill="none" stroke="#4a6a4a" stroke-width="3" rx="4"/><rect x="15" y="15" width="90" height="70" fill="var(--bg-soft)" rx="2"/><path d="M15 25 L60 25 L60 75" stroke="#3a5a3a" stroke-width="3" fill="none" opacity="0.7"/><path d="M105 75 L60 75 L60 25" stroke="#3a5a3a" stroke-width="3" fill="none" opacity="0.7"/><path d="M15 25 L105 25 L105 75 L15 75Z" fill="none" stroke="#5a8a5a" stroke-width="2" opacity="0.3"/><circle cx="12" cy="25" r="4" fill="#3a7a3a" opacity="0.6"/><text x="6" y="28" font-size="7" fill="#3a7a3a" opacity="0.6">IN\u00cdCIO</text></svg>""",
+    "maze2": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="5" y="5" width="110" height="90" fill="#e8f0e8" rx="4" opacity="0.5"/><rect x="10" y="10" width="35" height="35" fill="#d4e8d4" rx="4" opacity="0.6"/><rect x="55" y="10" width="55" height="35" fill="#d4e0f0" rx="4" opacity="0.6"/><rect x="10" y="55" width="55" height="35" fill="#f0e8d4" rx="4" opacity="0.6"/><rect x="75" y="55" width="35" height="35" fill="#f0d4d4" rx="4" opacity="0.6"/><circle cx="15" cy="15" r="3" fill="#3a7a3a" opacity="0.5"/></svg>""",
+    "maze3": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><path d="M10 40 Q20 15 40 25 Q60 35 55 55 Q50 75 70 70 Q90 65 105 45" stroke="#4a7a4a" stroke-width="3" fill="none" opacity="0.6"/><circle cx="10" cy="40" r="5" fill="#3a7a3a" opacity="0.7"/><text x="2" y="55" font-size="7" fill="#3a7a3a" opacity="0.5">SA\u00cdDA</text><circle cx="105" cy="45" r="5" fill="#c84020" opacity="0.7"/><path d="M96 36 L114 54 M114 36 L96 54" stroke="#c84020" stroke-width="2" opacity="0.6"/></svg>""",
+    "maze4": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><path d="M35 50 L60 30 L85 50 L75 85 L45 85Z" fill="#c4804a" opacity="0.5" stroke="#8a5a2a" stroke-width="2"/><path d="M45 50 L60 38 L75 50" stroke="#8a5a2a" stroke-width="1.5" fill="none" opacity="0.4"/><circle cx="60" cy="62" r="4" fill="#8a5a2a" opacity="0.3"/><path d="M20 15 L45 15 L45 25 L20 25Z" fill="#5a8a3a" opacity="0.3" stroke="#3a6a1a" stroke-width="1.5" rx="2"/><text x="14" y="12" font-size="6" fill="#3a6a1a" opacity="0.5">CHEGADA</text></svg>""",
+    "timeline1": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><line x1="10" y1="50" x2="110" y2="50" stroke="#3a7bd5" stroke-width="2.5" stroke-dasharray="6 4" opacity="0.6"/><line x1="10" y1="50" x2="40" y2="50" stroke="#c84040" stroke-width="3" stroke-dasharray="8 5" opacity="0.6"/><line x1="40" y1="50" x2="75" y2="50" stroke="#d4a017" stroke-width="3" stroke-dasharray="8 5" opacity="0.6"/><line x1="75" y1="50" x2="110" y2="50" stroke="#2e7d5e" stroke-width="3" stroke-dasharray="8 5" opacity="0.6"/></svg>""",
+    "timeline2": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="8" y="15" width="22" height="28" fill="#f0f4ff" stroke="#3a7bd5" stroke-width="1.5" rx="3" stroke-dasharray="3 2" opacity="0.7"/><rect x="38" y="15" width="22" height="28" fill="#f0f4ff" stroke="#3a7bd5" stroke-width="1.5" rx="3" stroke-dasharray="3 2" opacity="0.7"/><rect x="68" y="15" width="22" height="28" fill="#f0f4ff" stroke="#3a7bd5" stroke-width="1.5" rx="3" stroke-dasharray="3 2" opacity="0.7"/><rect x="98" y="15" width="15" height="28" fill="#f0f4ff" stroke="#3a7bd5" stroke-width="1.5" rx="3" stroke-dasharray="3 2" opacity="0.7"/><text x="10" y="68" font-size="7" fill="#5a7a9a" opacity="0.6">NASCEU</text><text x="36" y="68" font-size="7" fill="#5a7a9a" opacity="0.6">PASSOS</text><text x="64" y="68" font-size="7" fill="#5a7a9a" opacity="0.6">ESCOLA</text><text x="94" y="68" font-size="7" fill="#5a7a9a" opacity="0.6">EVENTO</text></svg>""",
+    "timeline3": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><text x="25" y="30" font-size="13" fill="#5a8a5a" opacity="0.7">\u2b07</text><text x="50" y="30" font-size="13" fill="#5a8a5a" opacity="0.7">\u2b07</text><text x="75" y="30" font-size="13" fill="#5a8a5a" opacity="0.7">\u2b07</text><text x="35" y="55" font-size="13" fill="#5a8a5a" opacity="0.7">\u2b07</text><text x="60" y="55" font-size="13" fill="#5a8a5a" opacity="0.7">\u2b07</text><text x="48" y="80" font-size="13" fill="#3a7a3a" opacity="0.8">\u2705</text><text x="30" y="95" font-size="8" fill="#5a8a5a" opacity="0.6">1</text><text x="55" y="95" font-size="8" fill="#5a8a5a" opacity="0.6">2</text><text x="78" y="95" font-size="8" fill="#5a8a5a" opacity="0.6">3</text><text x="48" y="98" font-size="8" fill="#3a7a3a" opacity="0.6">4</text><text x="45" y="97" font-size="7" fill="#5a8a5a" opacity="0.6">5</text></svg>""",
+    "timeline4": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="10" y="15" width="100" height="15" fill="#fff" stroke="#dce5ef" stroke-width="1.5" rx="4" opacity="0.7"/><rect x="10" y="38" width="100" height="15" fill="#fff" stroke="#dce5ef" stroke-width="1.5" rx="4" opacity="0.7"/><rect x="10" y="61" width="100" height="15" fill="#fff" stroke="#dce5ef" stroke-width="1.5" rx="4" opacity="0.7"/><rect x="10" y="84" width="100" height="15" fill="#fff" stroke="#dce5ef" stroke-width="1.5" rx="4" opacity="0.7"/><text x="15" y="26" font-size="8" fill="#b0b8c8" opacity="0.6">Escreva uma palavra...</text><text x="15" y="49" font-size="8" fill="#b0b8c8" opacity="0.6">Escreva uma palavra...</text><text x="15" y="72" font-size="8" fill="#b0b8c8" opacity="0.6">Escreva uma palavra...</text></svg>""",
+    "debate1": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="15" y="30" width="90" height="40" fill="#fff" stroke="#3a7bd5" stroke-width="2" rx="8" opacity="0.7"/><text x="60" y="55" font-size="10" fill="#3a7bd5" opacity="0.6" text-anchor="middle" font-weight="bold">TEMA</text><path d="M25 20 L35 10 L45 20" fill="none" stroke="#3a7bd5" stroke-width="2" opacity="0.4"/></svg>""",
+    "debate2": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="15" y="10" width="90" height="22" fill="#edf7f2" stroke="#2e7d5e" stroke-width="1.5" rx="6" opacity="0.7"/><rect x="15" y="38" width="90" height="22" fill="#edf7f2" stroke="#2e7d5e" stroke-width="1.5" rx="6" opacity="0.7"/><rect x="15" y="66" width="90" height="22" fill="#edf7f2" stroke="#2e7d5e" stroke-width="1.5" rx="6" opacity="0.7"/><text x="20" y="25" font-size="8" fill="#2e7d5e" opacity="0.6">\u2705 1. __ __ __</text><text x="20" y="53" font-size="8" fill="#2e7d5e" opacity="0.6">\u2705 2. __ __ __</text><text x="20" y="81" font-size="8" fill="#2e7d5e" opacity="0.6">\u2705 3. __ __ __</text></svg>""",
+    "debate3": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><rect x="15" y="10" width="90" height="22" fill="#fdf0f0" stroke="#c94040" stroke-width="1.5" rx="6" opacity="0.7"/><rect x="15" y="38" width="90" height="22" fill="#fdf0f0" stroke="#c94040" stroke-width="1.5" rx="6" opacity="0.7"/><rect x="15" y="66" width="90" height="22" fill="#fdf0f0" stroke="#c94040" stroke-width="1.5" rx="6" opacity="0.7"/><text x="20" y="25" font-size="8" fill="#c94040" opacity="0.6">\u274c 1. __ __ __</text><text x="20" y="53" font-size="8" fill="#c94040" opacity="0.6">\u274c 2. __ __ __</text><text x="20" y="81" font-size="8" fill="#c94040" opacity="0.6">\u274c 3. __ __ __</text></svg>""",
+    "debate4": """<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="100" fill="var(--bg-soft)" rx="8"/><circle cx="60" cy="25" r="10" fill="#f0e8c0" stroke="#d4a017" stroke-width="2" opacity="0.7"/><text x="56" y="29" font-size="10" fill="#8a6a10" opacity="0.7">\u2705</text><text x="21" y="62" font-size="10" fill="#3a5a7a" opacity="0.6">Posi\u00e7\u00e3o:</text><rect x="12" y="70" width="96" height="22" fill="#fff" stroke="#dce5ef" stroke-width="1.5" rx="6" opacity="0.6"/><text x="20" y="84" font-size="8" fill="#b0b8c8" opacity="0.5">___________________</text></svg>""",
 }
+
 
 # ===== HTML BUILDER =====
 def build_html():
     parts = []
-    parts.append('''<!DOCTYPE html>
+    parts.append(
+        """<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Atividades Adapt\u00e1veis \u2014 Educa\u00e7\u00e3o Inclusiva</title>''')
-    parts.append('<style>' + css + '</style>')
-    parts.append('</head><body>')
-    
+<title>Atividades Adapt\u00e1veis \u2014 Educa\u00e7\u00e3o Inclusiva</title>"""
+    )
+    parts.append("<style>" + css + "</style>")
+    parts.append("</head><body>")
+
     # Topbar
-    parts.append('''
+    parts.append(
+        """
 <div class="topbar">
   <div>
     <h1>\ud83c\udf93 Atividades Adapt\u00e1veis
@@ -672,75 +1144,97 @@ def build_html():
 
 <div class="app-layout">
   <!-- SIDEBAR -->
-  <div class="sidebar" id="sidebar">''')
-    
+  <div class="sidebar" id="sidebar">"""
+    )
+
     # Syndrome selector
-    parts.append('''
+    parts.append(
+        """
     <div class="sidebar-section">
       <h3>1. Escolha a condi\u00e7\u00e3o</h3>
-      <div class="selector-group" id="syndromeSelect">''')
-    
+      <div class="selector-group" id="syndromeSelect">"""
+    )
+
     for i, s in enumerate(syndromes):
-        active = ' active' if i == 0 else ''
-        parts.append(f'''
+        active = " active" if i == 0 else ""
+        parts.append(
+            f"""
         <button class="selector-item{active}" data-id="{s['id']}" onclick="selectSyndrome('{s['id']}')">
           <span class="icon">{s['icon']}</span>
           <span class="label">{s['name']}</span>
           <span class="badge">{s['levels'][0]['label']}</span>
-        </button>''')
-    
-    parts.append('''
+        </button>"""
+        )
+
+    parts.append(
+        """
       </div>
       <div class="description" id="syndromeDesc"></div>
-    </div>''')
-    
+    </div>"""
+    )
+
     # Level selector
-    parts.append('''
+    parts.append(
+        """
     <div class="sidebar-section">
       <h3>2. N\u00edvel de suporte</h3>
-      <div class="level-selector" id="levelSelect">''')
-    
+      <div class="level-selector" id="levelSelect">"""
+    )
+
     level_labels = ["Suporte Leve", "Suporte Moderado", "Suporte Substancial"]
     for i in range(3):
-        active = ' active' if i == 0 else ''
-        parts.append(f'''
+        active = " active" if i == 0 else ""
+        parts.append(
+            f"""
         <button class="level-btn{active}" data-level="{i+1}" onclick="selectLevel({i+1})">
           N{i+1}
           <span class="lv">{level_labels[i]}</span>
-        </button>''')
-    
-    parts.append('''
+        </button>"""
+        )
+
+    parts.append(
+        """
       </div>
-    </div>''')
-    
+    </div>"""
+    )
+
     # Activity selector
-    parts.append('''
+    parts.append(
+        """
     <div class="sidebar-section">
       <h3>3. Escolha a atividade</h3>
-      <div class="selector-group" id="activitySelect">''')
-    
+      <div class="selector-group" id="activitySelect">"""
+    )
+
     for i, act in enumerate(activities):
-        active = ' active' if i == 0 else ''
-        parts.append(f'''
+        active = " active" if i == 0 else ""
+        parts.append(
+            f"""
         <button class="selector-item{active}" data-id="{act['id']}" onclick="selectActivity('{act['id']}')">
           <span class="icon">{act['icon']}</span>
           <span class="label">{act['name']}</span>
-        </button>''')
-    
-    parts.append('''
+        </button>"""
+        )
+
+    parts.append(
+        """
       </div>
     </div>
-  </div>''')
-    
+  </div>"""
+    )
+
     # Main area
-    parts.append('''
+    parts.append(
+        """
   <div class="main-area" id="mainArea">
     <!-- Rendered by JS -->
   </div>
-</div>''')
-    
+</div>"""
+    )
+
     # Overlay
-    parts.append('''
+    parts.append(
+        """
 <div class="overlay" id="helpOverlay">
   <div class="overlay-card">
     <h2>\u2139\ufe0f Como usar este sistema</h2>
@@ -753,13 +1247,21 @@ def build_html():
     <br>
     <button class="topbar-btn" onclick="document.getElementById('helpOverlay').classList.remove('show')" style="background:#3a7bd5;color:#fff;padding:0.6rem 2rem;border:none;border-radius:20px;cursor:pointer;">OK, entendi!</button>
   </div>
-</div>''')
-    
+</div>"""
+    )
+
     # JS data
-    parts.append('''<script>
-var SYNDROMES = ''' + str(syndromes).replace("'", "\\'") + ''';
-var ACTIVITIES = ''' + str(activities).replace("'", "\\'") + ''';
-var SVGS = ''' + str(svgs).replace("'", "\\'") + ''';
+    parts.append(
+        """<script>
+var SYNDROMES = """
+        + str(syndromes).replace("'", "\\'")
+        + """;
+var ACTIVITIES = """
+        + str(activities).replace("'", "\\'")
+        + """;
+var SVGS = """
+        + str(svgs).replace("'", "\\'")
+        + """;
 
 var currentSyndrome = SYNDROMES[0].id;
 var currentLevel = 1;
@@ -806,7 +1308,7 @@ function render() {
   var syn = getSyndrome(currentSyndrome);
   var lv = syn.levels.find(function(l) { return l.id === currentLevel; }) || syn.levels[0];
   var act = getActivity(currentActivity);
-  
+
   // Apply CSS vars
   var c = syn.colors;
   document.querySelector('.activity-card').style.setProperty('--bg-soft', c.bgSoft);
@@ -817,21 +1319,21 @@ function render() {
   document.querySelector('.activity-card').style.setProperty('--font-size', lv.fontSize);
   document.querySelector('.activity-card').style.setProperty('--line-height', lv.spacing);
   document.querySelector('.activity-card').style.setProperty('--action-height', lv.actionH);
-  
+
   // Render body
   var body = document.getElementById('activityBody');
   var html = '';
-  
+
   // Instruction box
   html += '<div class="instruction-box"><div class="icon">\ud83d\udcdd</div><p style="font-size:' + lv.fontSize + ';line-height:' + lv.spacing + ';">Siga os passos abaixo para completar a atividade.</p></div>';
-  
+
   // Steps
   html += '<ol class="step-list">';
   act.steps.forEach(function(step) {
     html += '<li style="font-size:' + lv.fontSize + ';">' + step + '</li>';
   });
   html += '</ol>';
-  
+
   // Visual grid
   html += '<div class="visual-grid">';
   act.cards.forEach(function(card) {
@@ -839,15 +1341,15 @@ function render() {
     html += '<div class="visual-card">' + svgContent + '<div class="caption">' + card.label + '</div><div class="sub">' + card.sub + '</div></div>';
   });
   html += '</div>';
-  
+
   // Action area
   html += '<div class="action-area" style="min-height:' + lv.actionH + ';"><div class="action-hint" style="font-size:' + lv.fontSize + ';">\ud83d\udc46 Complete esta atividade no espa\u00e7o abaixo</div></div>';
-  
+
   // Pause area
   html += '<div class="pause-area"><div class="pause-icon">\ud83c\udf3f</div><div class="pause-text" style="font-size:' + lv.fontSize + ';">Pausa: Respire fundo 3 vezes antes de continuar</div></div>';
-  
+
   body.innerHTML = html;
-  
+
   // Update legend
   var tags = document.getElementById('adaptTags');
   tags.innerHTML = '';
@@ -863,12 +1365,14 @@ function render() {
 document.addEventListener('DOMContentLoaded', function() {
   render();
 });
-</script></body></html>''')
-    
-    return ''.join(parts)
+</script></body></html>"""
+    )
+
+    return "".join(parts)
+
 
 html = build_html()
-with open('atividades_adaptaveis.html', 'w', encoding='utf-8') as f:
+with open("atividades_adaptaveis.html", "w", encoding="utf-8") as f:
     f.write(html)
-print('OK - File created: atividades_adaptaveis.html')
-print(f'Size: {len(html)} bytes')
+print("OK - File created: atividades_adaptaveis.html")
+print(f"Size: {len(html)} bytes")

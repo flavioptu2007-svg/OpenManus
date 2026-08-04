@@ -9,25 +9,27 @@ O gerador:
 """
 
 import os
-import re
 
-home = os.path.expanduser('~')
-V3_PATH = os.path.join(home, 'Secret\u00e1ria', 'Download', 'planejador-escolar-v3.0.html')
 
-with open(V3_PATH, 'r', encoding='utf-8') as f:
+home = os.path.expanduser("~")
+V3_PATH = os.path.join(
+    home, "Secret\u00e1ria", "Download", "planejador-escolar-v3.0.html"
+)
+
+with open(V3_PATH, "r", encoding="utf-8") as f:
     html = f.read()
 
 # Backup
-bak = V3_PATH + '.bak_pre_generator'
-with open(bak, 'w', encoding='utf-8') as f:
+bak = V3_PATH + ".bak_pre_generator"
+with open(bak, "w", encoding="utf-8") as f:
     f.write(html)
-print(f'Backup: {bak}')
+print(f"Backup: {bak}")
 
 # ═══════════════════════════════════════════════════════════════
 # 1. CSS ADICIONAL (escopado sob #jogos)
 # ═══════════════════════════════════════════════════════════════
 
-extra_css = '''
+extra_css = """
 /* ── GERADOR POR DISCIPLINA ── */
 #jogos .cp-mode-toggle { display: flex; gap: 4px; background: var(--cp-surface); border-radius: 8px; padding: 3px; margin: 0 0 12px; }
 #jogos .cp-mode-btn { padding: 6px 16px; border-radius: 6px; border: none; background: transparent; color: var(--cp-muted); cursor: pointer; font-size: .78rem; font-weight: 600; transition: all .2s; }
@@ -39,13 +41,13 @@ extra_css = '''
 #jogos .cp-disc-config select, #jogos .cp-disc-config input { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--cp-border); background: var(--cp-card); color: var(--cp-text); font-size: .82rem; min-width: 160px; }
 #jogos .cp-vocab-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 8px; }
 #jogos .cp-vocab-tag { padding: 4px 10px; border-radius: 100px; font-size: .75rem; font-weight: 600; background: rgba(78,205,196,.15); color: var(--cp-teal); border: 1px solid rgba(78,205,196,.3); }
-'''
+"""
 
 # ═══════════════════════════════════════════════════════════════
 # 2. HTML ADICIONAL (controles do gerador)
 # ═══════════════════════════════════════════════════════════════
 
-extra_html = '''
+extra_html = """
 <div class="cp-mode-toggle">
   <button class="cp-mode-btn active" onclick="cpSetMode('theme')" id="cp-mode-theme">🎨 Temas Fixos</button>
   <button class="cp-mode-btn" onclick="cpSetMode('disc')" id="cp-mode-disc">📚 Por Disciplina</button>
@@ -70,13 +72,13 @@ extra_html = '''
     <div class="cp-vocab-tags" id="cp-vocabTags"></div>
   </label>
 </div>
-'''
+"""
 
 # ═══════════════════════════════════════════════════════════════
 # 3. JS ADICIONAL (funções do gerador)
 # ═══════════════════════════════════════════════════════════════
 
-extra_js = '''
+extra_js = """
 
 // ══════════════════════════════════════════════════════════
 //  GERADOR POR DISCIPLINA
@@ -106,13 +108,13 @@ function cpSetMode(mode) {
 function cpPopulateDiscSelect() {
   var sel = document.getElementById('cp-discSelect');
   while (sel.options.length > 1) sel.remove(1);
-  
+
   // Also populate period selector dynamically
   cpPopulatePeriodSelect();
-  
+
   var presets = null;
   try { presets = (typeof PRESETS !== 'undefined') ? PRESETS : null; } catch(e) {}
-  
+
   if (presets) {
     for (var key in presets) {
       if (presets.hasOwnProperty(key) && presets[key] && presets[key].label) {
@@ -150,14 +152,14 @@ function cpPopulatePeriodSelect() {
 function cpLoadDiscVocab() {
   var disc = document.getElementById('cp-discSelect').value;
   if (!disc) { document.getElementById('cp-vocabCount').textContent = '0'; document.getElementById('cp-vocabTags').innerHTML = ''; cpDiscVocab = []; return; }
-  
+
   var words = [];
-  
+
   // 1. Base vocab for this discipline
   if (cpDiscVocabBase[disc]) {
     words = words.concat(cpDiscVocabBase[disc]);
   }
-  
+
   // 2. Try to read from PLANO_HISTORIA6 for 6th grade history
   if (disc === 'historia6') {
     try {
@@ -174,7 +176,7 @@ function cpLoadDiscVocab() {
       }
     } catch(e) { console.warn('PLANO_HISTORIA6 error:', e); }
   }
-  
+
   // 3. Try to read from contentTopics (user-entered topics)
   try {
     if (typeof contentTopics !== 'undefined') {
@@ -188,7 +190,7 @@ function cpLoadDiscVocab() {
       }
     }
   } catch(e) {}
-  
+
   // 4. Try to extract keywords from BNCC descriptions
   try {
     if (typeof PRESETS !== 'undefined' && PRESETS[disc] && PRESETS[disc].bnccPorPeriodo) {
@@ -210,14 +212,14 @@ function cpLoadDiscVocab() {
       }
     }
   } catch(e) {}
-  
+
   // Deduplicate and limit
   words = words.filter(function(w, i) { return words.indexOf(w) === i; });
   words.sort();
-  
+
   cpDiscVocab = words;
   document.getElementById('cp-vocabCount').textContent = words.length;
-  
+
   var tags = document.getElementById('cp-vocabTags');
   tags.innerHTML = words.slice(0, 30).map(function(w) { return '<span class="cp-vocab-tag">' + w + '</span>'; }).join('');
   if (words.length > 30) tags.innerHTML += '<span class="cp-vocab-tag" style="background:rgba(233,69,96,.15);color:var(--cp-accent)">+' + (words.length-30) + ' mais</span>';
@@ -228,35 +230,35 @@ function cpGenerateFromDisc() {
     cpToast('Selecione uma disciplina com pelo menos 3 termos.', 'warn');
     return;
   }
-  
+
   // Override the current theme dynamically
   var size = 12; // Always use 12x12 for discipline mode
   var selected = cpDiscVocab.slice(0, Math.min(cpDiscVocab.length, size));
-  
+
   // Build a temporary theme
   var disc = document.getElementById('cp-discSelect').value;
   var discLabel = 'Disciplina';
   try { discLabel = (typeof PRESETS !== 'undefined' && PRESETS[disc]) ? PRESETS[disc].label : disc; } catch(e) {}
-  
+
   var period = parseInt(document.getElementById('cp-periodSelect').value) + 1;
-  
+
   cpCurrentTheme = '__disc__';
-  
+
   // Build grid using the existing cpGenerate logic but with custom words
   cpStopTimer(); cpShowAnswers = false;
   document.getElementById('cp-showBtn').textContent = '👁️ Mostrar';
   cpIsComplete = false; cpFoundWords.clear(); cpSelectedCells = []; cpSeconds = 0;
   document.getElementById('cp-trophy').style.display = 'none';
   document.getElementById('cp-glossary').style.display = 'none';
-  
+
   var s = size;
   cpGrid = Array.from({length: s}, function() { return Array(s).fill(''); });
   cpWordPositions = {};
-  
+
   var words = selected;
   var directions = [[0,1],[1,0],[1,1],[-1,1]];
   var placedCount = 0;
-  
+
   for (var wi = 0; wi < words.length; wi++) {
     var w = words[wi];
     var placed = false;
@@ -286,15 +288,15 @@ function cpGenerateFromDisc() {
       }
     }
   }
-  
+
   cpPlacedCount = placedCount;
-  
+
   // Fill empty cells
   var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   for (var r = 0; r < s; r++)
     for (var c = 0; c < s; c++)
       if (!cpGrid[r][c]) cpGrid[r][c] = letters[Math.floor(Math.random() * letters.length)];
-  
+
   // Render
   var gridEl = document.getElementById('cp-grid');
   gridEl.style.gridTemplateColumns = 'repeat(' + s + ', 1fr)';
@@ -309,10 +311,10 @@ function cpGenerateFromDisc() {
       gridEl.appendChild(cell);
     }
   }
-  
+
   // Update header
   document.querySelector('#jogos .cp-header h2').innerHTML = '🎮 <span style="font-weight:400">Caça-Palavras:</span> ' + discLabel + ' — ' + period + 'º Período';
-  
+
   // Render word list
   var wordList = document.getElementById('cp-wordList');
   wordList.innerHTML = '<h3>📋 Termos (' + words.length + ')</h3>';
@@ -326,7 +328,7 @@ function cpGenerateFromDisc() {
       wordList.appendChild(item);
     })(words[i]);
   }
-  
+
   cpUpdateStats();
   document.getElementById('cp-progressBar').style.width = '0%';
   cpToast('Caça-Palavras gerado com ' + placedCount + ' termos de ' + discLabel + '!', 'ok');
@@ -350,40 +352,42 @@ cpLoadTheme = function(theme) {
     cpLoadThemeOriginal(theme);
   }
 };
-'''
+"""
 
 # ═══════════════════════════════════════════════════════════════
 # INJEÇÃO
 # ═══════════════════════════════════════════════════════════════
 
 # 1. Inject extra CSS before </style>
-idx = html.rfind('</style>')
+idx = html.rfind("</style>")
 if idx >= 0:
-    html = html[:idx] + extra_css + '\n' + html[idx:]
-    print('✅ Extra CSS injected')
+    html = html[:idx] + extra_css + "\n" + html[idx:]
+    print("✅ Extra CSS injected")
 
 # 2. Inject extra HTML after the existing cp-mode-toggle or before cp-header
 # Find the cp-header div
 idx = html.find('<div class="cp-header">')
 if idx >= 0:
-    html = html[:idx] + extra_html + '\n' + html[idx:]
-    print('✅ Extra HTML injected')
+    html = html[:idx] + extra_html + "\n" + html[idx:]
+    print("✅ Extra HTML injected")
 
 # 3. Inject extra JS before the last } that closes the CP script section
 # Find the end of CP JS - look for the last cpToast or cpPrint function
 # Actually, inject before the final '// ═══════════════════' or the final document.addEventListener
-marker = "if (document.readyState === 'complete' || document.readyState === 'interactive') {"
+marker = (
+    "if (document.readyState === 'complete' || document.readyState === 'interactive') {"
+)
 idx = html.find(marker)
 if idx >= 0:
-    html = html[:idx] + extra_js + '\n\n' + html[idx:]
-    print('✅ Extra JS injected')
+    html = html[:idx] + extra_js + "\n\n" + html[idx:]
+    print("✅ Extra JS injected")
 else:
     # Try alternative: inject before the last </script>
-    idx = html.rfind('</script>')
+    idx = html.rfind("</script>")
     if idx >= 0:
-        html = html[:idx] + extra_js + '\n' + html[idx:]
-        print('✅ Extra JS injected (alt method)')
+        html = html[:idx] + extra_js + "\n" + html[idx:]
+        print("✅ Extra JS injected (alt method)")
 
-with open(V3_PATH, 'w', encoding='utf-8') as f:
+with open(V3_PATH, "w", encoding="utf-8") as f:
     f.write(html)
-print(f'\n✅ Done! File size: {len(html)} chars')
+print(f"\n✅ Done! File size: {len(html)} chars")

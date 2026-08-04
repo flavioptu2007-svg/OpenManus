@@ -1,16 +1,21 @@
 """Endpoints de autenticação JWT."""
+
 import logging
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import (
-    create_access_token, create_refresh_token,
-    jwt_required, get_jwt_identity, get_jwt,
+    create_access_token,
+    create_refresh_token,
+    get_jwt,
+    get_jwt_identity,
+    jwt_required,
 )
 from marshmallow import ValidationError as MarshmallowError
 
 from app.extensions import db, limiter
-from app.models.user import User, AuditLog
+from app.models.user import AuditLog, User
 from app.schemas.exam_schema import login_schema
+
 
 logger = logging.getLogger(__name__)
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/v1/auth")
@@ -64,8 +69,11 @@ def login():
     refresh = create_refresh_token(identity=str(user.id))
 
     log = AuditLog(
-        user_id=user.id, action="LOGIN", entity="User",
-        entity_id=user.id, ip_address=request.remote_addr,
+        user_id=user.id,
+        action="LOGIN",
+        entity="User",
+        entity_id=user.id,
+        ip_address=request.remote_addr,
     )
     db.session.add(log)
     db.session.commit()

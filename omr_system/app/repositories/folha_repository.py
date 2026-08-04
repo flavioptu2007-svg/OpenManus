@@ -1,4 +1,5 @@
 """Repository para operações com FolhaResposta."""
+
 import json
 from datetime import datetime
 from typing import Optional

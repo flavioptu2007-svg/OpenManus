@@ -17,18 +17,17 @@ Recursos:
     - 3 temas históricos: Brasil Colonial, Egito Antigo, Roma Antiga
 """
 
-import re
 import shutil
-from datetime import datetime
 
-V3_PATH = '/home/flavio/Secretária/Download/planejador-escolar-v3.0.html'
-BACKUP_PATH = V3_PATH + '.bak_jogos'
+
+V3_PATH = "/home/flavio/Secretária/Download/planejador-escolar-v3.0.html"
+BACKUP_PATH = V3_PATH + ".bak_jogos"
 
 # ═══════════════════════════════════════════════════════════════
 # CSS escopado sob #jogos
 # ═══════════════════════════════════════════════════════════════
 
-CACA_PALAVRAS_CSS = '''
+CACA_PALAVRAS_CSS = """
 /* ── CSS DO CAÇA-PALAVRAS (escopado sob #jogos) ── */
 #jogos { --cp-bg: #0f0f1a; --cp-surface: #1a1a2e; --cp-card: #222244; --cp-border: #333366; --cp-accent: #e94560; --cp-gold: #ffd700; --cp-teal: #4ecdc4; --cp-text: #e8e6f0; --cp-muted: #8888aa; --cp-correct: #4ecdc4; --cp-found: #ffd700; }
 
@@ -90,13 +89,13 @@ CACA_PALAVRAS_CSS = '''
 @keyframes cpConfettiFall { to { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
 @media (max-width: 768px) { #jogos .cp-grid-wrapper { flex-direction: column; align-items: center; } #jogos .cp-cell { width: 30px; height: 30px; font-size: .78rem; } #jogos .cp-word-list { width: 100%; min-width: auto; max-height: 250px; } #jogos .cp-header { flex-direction: column; align-items: stretch; text-align: center; } #jogos .cp-stats { flex-direction: row; } #jogos .cp-stat { min-width: 80px; padding: 10px 14px; } }
 @media print { #jogos .cp-btn, #jogos .cp-select, #jogos .cp-controls, #jogos .cp-theme-selector { display: none !important; } #jogos .cp-container { padding: 0; } #jogos .cp-cell { border: 1px solid #999; color: #000; } #jogos .cp-cell.found, #jogos .cp-cell.showing { background: #e8e8e8; } }
-'''
+"""
 
 # ═══════════════════════════════════════════════════════════════
 # HTML da seção Jogos
 # ═══════════════════════════════════════════════════════════════
 
-CACA_PALAVRAS_HTML = '''
+CACA_PALAVRAS_HTML = """
 <section id="jogos" class="panel-section section-hidden">
 <div class="cp-container">
 
@@ -138,13 +137,13 @@ CACA_PALAVRAS_HTML = '''
 
 </div>
 </section>
-'''
+"""
 
 # ═══════════════════════════════════════════════════════════════
 # JavaScript do Caça-Palavras
 # ═══════════════════════════════════════════════════════════════
 
-CACA_PALAVRAS_JS = '''
+CACA_PALAVRAS_JS = """
 // ══════════════════════════════════════════════════════════
 //  CAÇA-PALAVRAS — Temas, Grid e Lógica
 // ══════════════════════════════════════════════════════════
@@ -213,7 +212,7 @@ function cpGenerate() {
     const clean = w.toUpperCase().replace(/ /g,'');
     if (clean.length <= size) validWords.push({original: w, clean: clean});
   }
-  
+
   const directions = [[0,1],[1,0],[1,1],diff==='dificil'?[-1,1]:null].filter(Boolean);
   let placedCount = 0;
   for (const {original: word, clean: w} of validWords) {
@@ -308,7 +307,7 @@ function cpCellClick(cell) {
 
   cell.classList.add('selected');
   cpSelectedCells.push({r,c});
-  
+
   // Auto-limpar seleção se não formar palavra após 1.5s
   if (cpClearTimer) clearTimeout(cpClearTimer);
   cpClearTimer = setTimeout(function() {
@@ -319,7 +318,7 @@ function cpCellClick(cell) {
       cpSelectedCells = [];
     }
   }, 1500);
-  
+
   cpCheckWord();
 }
 
@@ -495,14 +494,15 @@ document.addEventListener('DOMContentLoaded', function() {
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
   setTimeout(cpLoadTheme.bind(null, 'colonial'), 100);
 }
-'''
+"""
 
 # ═══════════════════════════════════════════════════════════════
 # INJEÇÃO
 # ═══════════════════════════════════════════════════════════════
 
+
 def inject():
-    with open(V3_PATH, 'r', encoding='utf-8') as f:
+    with open(V3_PATH, "r", encoding="utf-8") as f:
         html = f.read()
 
     # 1. Backup
@@ -514,18 +514,18 @@ def inject():
         print("⚠️  Seção #jogos já existe. Substituindo...")
         # Remover seção existente
         start = html.find('<section id="jogos"')
-        end = html.find('</section>', start) + len('</section>')
-        html = html[:start] + '<!-- jogos-removed -->' + html[end:]
+        end = html.find("</section>", start) + len("</section>")
+        html = html[:start] + "<!-- jogos-removed -->" + html[end:]
 
     # 3. Injetar botão no sidebar (após o botão Corretor IA)
     # Procurar o último botão com data-target no grupo Professor
     btn_code = '\n    <button data-target="jogos">🎮 Jogos</button>'
-    
+
     markers = [
         'data-target="omredu">🤖 Corretor IA</button>',
-        '</nav>',
+        "</nav>",
     ]
-    
+
     for marker in markers:
         idx = html.rfind(marker)
         if idx >= 0:
@@ -535,45 +535,49 @@ def inject():
             break
 
     # 4. Injetar CSS dentro do <style> do v3.0
-    style_tag = '</style>'
+    style_tag = "</style>"
     idx = html.rfind(style_tag)
     if idx >= 0:
-        html = html[:idx] + CACA_PALAVRAS_CSS + '\n' + html[idx:]
+        html = html[:idx] + CACA_PALAVRAS_CSS + "\n" + html[idx:]
         print("✅ CSS do Caça-Palavras injetado")
 
     # 5. Injetar seção HTML antes do fechamento do container principal
     # Procurar última section-hidden ou o fechamento do main
     section_markers = [
         'id="omredu" class="panel-section',
-        '</main>',
+        "</main>",
     ]
-    
+
     for marker in section_markers:
         idx = html.rfind(marker)
         if idx >= 0:
             # Encontrar o fechamento </section> mais próximo
-            section_end = html.find('</section>', idx)
+            section_end = html.find("</section>", idx)
             if section_end >= 0:
-                section_end += len('</section>')
-                html = html[:section_end] + '\n' + CACA_PALAVRAS_HTML + html[section_end:]
-                print(f"✅ Seção HTML do Caça-Palavras injetada após '{marker[:30]}...'")
+                section_end += len("</section>")
+                html = (
+                    html[:section_end] + "\n" + CACA_PALAVRAS_HTML + html[section_end:]
+                )
+                print(
+                    f"✅ Seção HTML do Caça-Palavras injetada após '{marker[:30]}...'"
+                )
                 break
 
     # 6. Injetar JS antes do fechamento do <script>
-    script_close = '</script>'
+    script_close = "</script>"
     idx = html.rfind(script_close)
     if idx >= 0:
         # Injetar antes do último </script> (que é do OMREdu)
-        html = html[:idx] + '\n' + CACA_PALAVRAS_JS + '\n' + html[idx:]
+        html = html[:idx] + "\n" + CACA_PALAVRAS_JS + "\n" + html[idx:]
         print("✅ JS do Caça-Palavras injetado")
 
     # 7. Salvar
-    with open(V3_PATH, 'w', encoding='utf-8') as f:
+    with open(V3_PATH, "w", encoding="utf-8") as f:
         f.write(html)
-    
+
     print(f"\n🎉 Injeção completa! Arquivo salvo: {V3_PATH}")
     print(f"   Tamanho final: {len(html)} chars")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     inject()

@@ -1,16 +1,18 @@
 """Script para popular o banco com dados de exemplo."""
+
 import json
-import sys
 import os
+import sys
 from datetime import date
+
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app import create_app
 from app.extensions import db
+from app.models.cp_report import CPReport
 from app.models.prova import Prova, Questao
 from app.models.user import User
-from app.models.cp_report import CPReport
 
 
 def seed():
@@ -65,7 +67,9 @@ def seed():
             db.session.add(report)
 
         db.session.commit()
-        print(f"✅ Dados criados: admin (admin:admin123), 1 prova com 5 questões, 5 CP reports.")
+        print(
+            f"✅ Dados criados: admin (admin:admin123), 1 prova com 5 questões, 5 CP reports."
+        )
 
 
 if __name__ == "__main__":

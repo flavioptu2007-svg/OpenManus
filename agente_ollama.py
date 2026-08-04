@@ -23,6 +23,7 @@ import urllib.request
 
 import ollama
 
+
 # ─── Configuração ─────────────────────────────────────────────
 MODELO = "qwen3"  # ou "qwen2.5" se preferir
 BASE_DIR = os.path.expanduser("~/Desktop")
@@ -103,6 +104,7 @@ def calcular(expressao: str) -> str:
 # ══════════════════════════════════════════════════════════════
 # FERRAMENTA 2 — CLIMA (wttr.in)
 # ══════════════════════════════════════════════════════════════
+
 
 def consultar_clima(cidade: str = "Paracatu", formato: str = "compacto") -> str:
     """Consulta a previsão do tempo atual para uma cidade via wttr.in (gratuito, sem API key).
@@ -242,6 +244,7 @@ def git_add_commit(mensagem: str) -> str:
 # FERRAMENTAS EXISTENTES
 # ══════════════════════════════════════════════════════════════
 
+
 def abrir_programa(nome_app: str) -> str:
     """Abre um aplicativo instalado no sistema operacional.
 
@@ -379,17 +382,21 @@ def executar_agente(pedido_usuario: str):
 
         try:
             resultado = funcao(**args)
-            print(f"  ✅ Resultado: {resultado[:200]}{'...' if len(resultado) > 200 else ''}")
+            print(
+                f"  ✅ Resultado: {resultado[:200]}{'...' if len(resultado) > 200 else ''}"
+            )
         except Exception as e:
             resultado = f"Erro: {e}"
             print(f"  ❌ Erro: {e}")
 
         # Envia resultado de volta pro modelo
-        messages.append({
-            "role": "tool",
-            "name": nome,
-            "content": str(resultado),
-        })
+        messages.append(
+            {
+                "role": "tool",
+                "name": nome,
+                "content": str(resultado),
+            }
+        )
 
     # Resposta final do modelo após executar as ferramentas
     final = ollama.chat(model=MODELO, messages=messages)
@@ -403,6 +410,8 @@ if __name__ == "__main__":
     if not pedido:
         pedido = input("📌 Digite seu pedido: ").strip()
     if not pedido:
-        pedido = "Crie uma pasta chamada TesteAgente no Desktop e liste os arquivos de lá."
+        pedido = (
+            "Crie uma pasta chamada TesteAgente no Desktop e liste os arquivos de lá."
+        )
 
     executar_agente(pedido)

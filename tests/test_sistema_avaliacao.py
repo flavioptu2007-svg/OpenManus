@@ -9,7 +9,6 @@ These tests verify:
 - Backup functionality
 """
 
-import json
 import os
 import shutil
 import tempfile
@@ -97,7 +96,7 @@ class TestCriarDisciplina:
         """Test overwriting an existing discipline."""
         # Create initial
         sistema.criar_disciplina(nome="Fisica", num_questoes=3)
-        
+
         # Overwrite with different number of questions
         resultado = sistema.criar_disciplina(
             nome="Fisica",
@@ -116,7 +115,7 @@ class TestCriarDisciplina:
             num_questoes=2,
             alunos=[{"nome": "Eve", "respostas": ["V", "F"]}],
         )
-        
+
         # Add more students
         resultado = sistema.criar_disciplina(
             nome="Quimica",
@@ -135,7 +134,7 @@ class TestCriarDisciplina:
     def test_criar_disciplina_erro_num_questoes_diferente(self, sistema):
         """Test error when trying to change number of questions on existing discipline."""
         sistema.criar_disciplina(nome="Biologia", num_questoes=3)
-        
+
         resultado = sistema.criar_disciplina(
             nome="Biologia",
             num_questoes=5,
@@ -440,7 +439,7 @@ class TestUtilitarios:
         caminho = sistema._caminho_json("Corrompido")
         with open(caminho, "w") as f:
             f.write("{invalid json}")
-        
+
         resultado = sistema.carregar("Corrompido")
         assert resultado is None
 
