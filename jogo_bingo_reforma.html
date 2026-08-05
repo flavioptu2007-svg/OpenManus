@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bingo Histórico — Reforma Religiosa</title>
+<style>
+:root{
+  --indigo:#4f46e5; --indigo-d:#4338ca; --indigo-l:#eef2ff;
+  --violet:#7c3aed; --violet-l:#f5f3ff;
+  --bg:#f4f5fb; --card:#fff; --borda:#e2e5f1; --texto:#1e2233; --texto2:#5b6178;
+  --ok:#059669; --ok-l:#ecfdf5; --erro:#dc2626; --erro-l:#fef2f2;
+  --raio:14px; --sombra:0 2px 10px rgba(30,34,51,.07);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,Verdana,sans-serif;background:var(--bg);color:var(--texto);font-size:15px;line-height:1.45}
+h1,h2,h3{margin:0 0 6px}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid rgba(79,70,229,.5);outline-offset:2px;border-radius:6px}
+header{display:flex;align-items:center;gap:14px;padding:12px 20px;background:linear-gradient(90deg,var(--indigo),var(--violet));color:#fff;box-shadow:0 2px 12px rgba(30,34,51,.18)}
+header .logo{font-weight:800;font-size:1.2rem}
+.hdr-info{margin-left:auto;display:flex;align-items:center;gap:16px;font-size:.85rem}
+.stat{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);padding:5px 12px;border-radius:999px;font-weight:700}
+.layout{display:grid;grid-template-columns:minmax(340px,440px) 1fr;gap:18px;padding:18px 20px 50px;max-width:1080px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--borda);border-radius:var(--raio);box-shadow:var(--sombra);padding:16px}
+.card h2{font-size:1.05rem;display:flex;align-items:center;gap:8px}
+.btn{border:none;border-radius:10px;padding:10px 16px;font-weight:700;background:var(--indigo-l);color:var(--indigo);transition:all .15s}
+.btn:hover{background:var(--indigo);color:#fff;transform:translateY(-1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-pri{background:var(--indigo);color:#fff;width:100%;font-size:1rem;padding:13px}
+.btn-pri:hover{background:var(--indigo-d)}
+.btn-ok{background:var(--ok);color:#fff}
+/* ---- Cartela ---- */
+#cartela{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}
+.casa{border:1px solid var(--borda);border-radius:10px;background:#fff;min-height:66px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;font-size:.8rem;padding:6px 4px;transition:all .15s;box-shadow:var(--sombra)}
+.casa:hover{border-color:var(--indigo);transform:translateY(-1px)}
+.casa.livre{background:var(--indigo-l);color:var(--indigo);border-color:var(--indigo)}
+.casa.marcada{background:var(--ok);color:#fff;border-color:var(--ok);box-shadow:0 0 0 3px rgba(5,150,105,.25)}
+/* ---- Pergunta ---- */
+#pergunta{font-size:1.05rem;min-height:76px;margin:10px 0}
+#alt-box{display:grid;gap:8px;margin-top:8px}
+.alt{border:1.5px solid var(--borda);background:#fff;border-radius:10px;padding:10px 12px;text-align:left;font-weight:600;transition:all .12s}
+.alt:hover{border-color:var(--indigo);background:var(--indigo-l)}
+.alt:disabled{cursor:default;opacity:.85}
+.alt.certa{background:var(--ok-l);border-color:var(--ok);color:#065f46}
+.alt.errada{background:var(--erro-l);border-color:var(--erro);color:#991b1b}
+#resultado{margin-top:10px;font-weight:700;min-height:24px}
+.ok-txt{color:var(--ok)}.erro-txt{color:var(--erro)}
+.sorteado{display:inline-flex;align-items:center;gap:8px;background:var(--violet-l);border:1px dashed var(--violet);color:var(--violet);border-radius:999px;padding:4px 12px;font-weight:800;margin-top:8px}
+/* ---- Modal ---- */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,18,35,.6);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
+.modal-overlay.aberto{display:flex}
+.modal{background:#fff;border-radius:18px;max-width:460px;width:90%;padding:26px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.3);animation:pop .25s ease}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+.modal .big{font-size:4rem}
+.modal h2{color:var(--indigo);font-size:1.6rem}
+.proj{position:fixed;inset:0;background:var(--bg);z-index:90;display:none;overflow:auto}
+.proj.aberto{display:block}
+.proj .conteudo{max-width:1000px;margin:0 auto;padding:24px}
+.proj .casa{min-height:110px;font-size:1.35rem}
+@media (max-width:860px){.layout{grid-template-columns:1fr}}
+#toast-root{position:fixed;bottom:18px;right:18px;z-index:200;display:flex;flex-direction:column;gap:8px}
+.toast{padding:11px 16px;border-radius:11px;color:#fff;font-weight:700;font-size:.85rem;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:slide .25s ease}
+.toast.ok{background:var(--ok)}.toast.erro{background:var(--erro)}.toast.info{background:var(--indigo)}
+@keyframes slide{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🎱 Bingo Histórico — Reforma Religiosa</div>
+  <div class="hdr-info">
+    <span class="stat">✅ <span id="cont-acertos">0</span></span>
+    <span class="stat">❌ <span id="cont-erros">0</span></span>
+    <span class="stat">📋 <span id="cont-perguntas">0</span>/<span id="total-perguntas">30</span></span>
+  </div>
+</header>
+
+<div class="layout">
+  <section class="card">
+    <h2>📇 Sua Cartela</h2>
+    <div id="cartela"></div>
+    <p style="font-size:.78rem;color:var(--texto2);margin:10px 0 0">Marque uma linha inteira (horizontal, vertical ou diagonal) para fazer <b>BINGO!</b></p>
+  </section>
+
+  <section class="card">
+    <h2>❓ Sorteio</h2>
+    <button class="btn btn-pri" id="btn-sortear">🎲 Sortear Pergunta</button>
+    <div id="pergunta" style="color:var(--texto2)">Clique em <b>Sortear Pergunta</b> para começar!</div>
+    <div id="alt-box"></div>
+    <div id="resultado"></div>
+  </section>
+</div>
+
+<div class="modal-overlay" id="modal-bingo">
+  <div class="modal">
+    <div class="big">🎉</div>
+    <h2>BINGO!</h2>
+    <p id="modal-info">Você completou uma linha!</p>
+    <p><b>Acertos:</b> <span id="modal-acertos">0</span> · <b>Erros:</b> <span id="modal-erros">0</span></p>
+    <button class="btn btn-ok btn-pri" onclick="novoJogo()">🔄 Novo Jogo</button>
+  </div>
+</div>
+
+<div id="toast-root"></div>
+
+<script>
+'use strict';
+/* ============================================================
+   BINGO HISTÓRICO — Reforma Religiosa (EF07HI12)
+   Sorteia perguntas; acertou = marca o termo na cartela.
+   5 em linha (H/V/D) = BINGO!
+   ============================================================ */
+
+const BANCO = [
+  {t:'Martinho Lutero', q:'Qual monge alemão afixou as 95 teses na porta da igreja de Wittenberg em 1517?', o:['João Calvino','Martinho Lutero','Henrique VIII'], c:1},
+  {t:'95 Teses', q:'Documento de 1517 que criticava a venda de indulgências e deu início à Reforma:', o:['Concílio de Trento','Paz de Augsburgo','95 Teses'], c:2},
+  {t:'Indulgências', q:'Prática da Igreja criticada pelos reformadores: pagamento para a remissão dos pecados:', o:['Indulgências','Dízimo','Cruzadas'], c:0},
+  {t:'Justificação pela fé', q:'Doutrina luterana: a salvação vem apenas pela fé, não pelas obras:', o:['Justificação pelas obras','Justificação pela fé','Predestinação'], c:1},
+  {t:'Sola Scriptura', q:'Princípio protestante: somente a Bíblia é fonte de autoridade religiosa:', o:['Sola Scriptura','Sola Fide','Sola Gratia'], c:0},
+  {t:'João Calvino', q:'Reformador francês que organizou a reforma em Genebra e criou a doutrina da predestinação:', o:['Ulrico Zuínglio','João Calvino','Martinho Lutero'], c:1},
+  {t:'Predestinação', q:'Doutrina calvinista: o destino de cada pessoa (salvação ou danação) já está decidido por Deus:', o:['Indulgência','Predestinação','Excomunhão'], c:1},
+  {t:'Henrique VIII', q:'Rei inglês que rompeu com o papa para se casar com Ana Bolena, criando a Igreja Anglicana:', o:['Henrique VIII','Carlos V','Francisco I'], c:0},
+  {t:'Igreja Anglicana', q:'Igreja criada na Inglaterra após o Ato de Supremacia (1534), com o rei como chefe:', o:['Igreja Luterana','Igreja Anglicana','Igreja Presbiteriana'], c:1},
+  {t:'Ato de Supremacia', q:'Lei de 1534 que tornou o rei da Inglaterra chefe supremo da Igreja:', o:['Ato de Navegação','Ato de Supremacia','Ato dos Seis Artigos'], c:1},
+  {t:'Ulrico Zuínglio', q:'Reformador suíço contemporâneo de Lutero que atuou em Zurique:', o:['João Calvino','Ulrico Zuínglio','Tomás Müntzer'], c:1},
+  {t:'Contrarreforma', q:'Movimento da Igreja Católica para reagir à Reforma Protestante no século XVI:', o:['Contrarreforma','Cisma do Oriente','Reforma Anglicana'], c:0},
+  {t:'Concílio de Trento', q:'Concilio católico (1545–1563) que reafirmou dogmas e reorganizou a Igreja:', o:['Concílio de Niceia','Concílio de Trento','Concílio de Constança'], c:1},
+  {t:'Companhia de Jesus', q:'Ordem religiosa fundada por Inácio de Loyola para combater a Reforma e missionar:', o:['Companhia de Jesus','Ordem Franciscana','Ordem Beneditina'], c:0},
+  {t:'Inácio de Loyola', q:'Fundador da Companhia de Jesus (jesuítas), em 1540:', o:['São Francisco de Assis','Inácio de Loyola','Tomás de Aquino'], c:1},
+  {t:'Paz de Augsburgo', q:'Acordo de 1555: o príncipe decide a religião do seu território (cuius regio, eius religio):', o:['Paz de Vestfália','Paz de Augsburgo','Tratado de Tordesilhas'], c:1},
+  {t:'Cuius regio, eius religio', q:'Princípio da Paz de Augsburgo: a religião do território é a do seu governante:', o:['Cuius regio, eius religio','Sola Scriptura','Exsurge Domine'], c:0},
+  {t:'Exsurge Domine', q:'Bula papal de 1520 que ameaçou Lutero de excomunhão:', o:['Unam Sanctam','Exsurge Domine','Inter Caetera'], c:1},
+  {t:'Dieta de Worms', q:'Assembleia de 1521 onde Lutero foi convocado a retratar-se e foi excomungado:', o:['Dieta de Worms','Dieta de Speyer','Concílio de Trento'], c:0},
+  {t:'Luteranismo', q:'Religião protestante predominante no norte da Alemanha e nos países nórdicos:', o:['Calvinismo','Luteranismo','Anglicanismo'], c:1},
+  {t:'Calvinismo', q:'Corrente protestante ligada a Genebra e à burguesia, forte na França (huguenotes) e Países Baixos:', o:['Calvinismo','Luteranismo','Anabatismo'], c:0},
+  {t:'Huguenotes', q:'Nome dado aos calvinistas franceses, perseguidos nas guerras religiosas:', o:['Huguenotes','Puritanos','Valdenses'], c:0},
+  {t:'Puritanos', q:'Calvinistas ingleses que criticavam os rituais da Igreja Anglicana:', o:['Huguenotes','Puritanos','Anabatistas'], c:1},
+  {t:'Anabatistas', q:'Grupo radical que defendia o batismo na idade adulta e o fim dos privilégios feudais:', o:['Anabatistas','Jesuítas','Dominicanos'], c:0},
+  {t:'Imprensa de Gutenberg', q:'Invenção do século XV que ajudou a espalhar as ideias da Reforma rapidamente:', o:['Bússola','Imprensa de Gutenberg','Astrolábio'], c:1},
+  {t:'Venda de indulgências', q:'Prática financiada pelo papa Leão X (obras de São Pedro) que motivou as 95 Teses:', o:['Dízimo','Venda de indulgências','Cobrança de pedágio'], c:1},
+  {t:'Wittenberg', q:'Cidade alemã onde Lutero era professor e afixou as 95 Teses:', o:['Worms','Wittenberg','Genebra'], c:1},
+  {t:'Genebra', q:'Cidade que se tornou o centro do calvinismo no século XVI:', o:['Zurique','Genebra','Roma'], c:1},
+  {t:'Reforma Inglesa', q:'Processo de ruptura da Inglaterra com Roma, motivado por interesses políticos e pessoais do rei:', o:['Reforma Inglesa','Reforma Suíça','Reforma Escocesa'], c:0},
+  {t:'Secularização dos bens', q:'Medida dos príncipes alemães: tomar terras e riquezas da Igreja após a Reforma:', o:['Dízimo real','Secularização dos bens','Excomunhão'], c:1}
+];
+
+const LINHAS = [
+  [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],   // horizontais
+  [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],   // verticais
+  [0,6,12,18,24],[4,8,12,16,20]                                                  // diagonais
+];
+
+const $ = id => document.getElementById(id);
+let cartela = [], marcadas = new Set(), usadas = [], acertos = 0, erros = 0;
+let bloqueado = false;
+
+/* ---------- som (WebAudio) ---------- */
+let ctxAudio = null;
+function beep(freq, dur=0.12, tipo='sine'){
+  try{
+    ctxAudio = ctxAudio || new (window.AudioContext||window.webkitAudioContext)();
+    const o = ctxAudio.createOscillator(), g = ctxAudio.createGain();
+    o.type = tipo; o.frequency.value = freq;
+    g.gain.value = 0.18;
+    o.connect(g); g.connect(ctxAudio.destination);
+    o.start(); o.stop(ctxAudio.currentTime + dur);
+  }catch(e){}
+}
+function somAcerto(){ beep(880,0.12); setTimeout(()=>beep(1175,0.15),110); }
+function somErro(){ beep(196,0.22,'sawtooth'); }
+function somBingo(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,0.2),i*140)); }
+
+/* ---------- cartela ---------- */
+function embaralhar(arr){ return [...arr].sort(()=>Math.random()-.5); }
+function gerarCartela(){
+  const termos = embaralhar(BANCO).slice(0,24);
+  cartela = termos.map(t=>t.t);
+  marcadas.clear();
+  const grid = $('cartela');
+  grid.innerHTML = '';
+  for(let i=0;i<25;i++){
+    const casa = document.createElement('div');
+    casa.className = 'casa';
+    if(i===12){ casa.classList.add('livre'); casa.textContent = '★ LIVRE'; }
+    else { casa.textContent = cartela[i]; }
+    grid.appendChild(casa);
+  }
+}
+
+/* ---------- sorteio ---------- */
+function sortear(){
+  if(usadas.length >= BANCO.length){ $('resultado').innerHTML = '🎉 Todas as perguntas foram usadas!'; return; }
+  bloqueado = false;
+  let idx;
+  do{ idx = Math.floor(Math.random()*BANCO.length); }while(usadas.includes(idx));
+  usadas.push(idx);
+  const q = BANCO[idx];
+  $('pergunta').textContent = q.q;
+  $('pergunta').style.color = 'var(--texto)';
+  $('cont-perguntas').textContent = usadas.length;
+  const box = $('alt-box'); box.innerHTML = '';
+  q.o.forEach((alt,i)=>{
+    const b = document.createElement('button');
+    b.className = 'alt';
+    b.textContent = alt;
+    b.addEventListener('click',()=>responder(q,i,b));
+    box.appendChild(b);
+  });
+  $('resultado').innerHTML = '';
+}
+
+function responder(q, escolha, btn){
+  if(bloqueado) return;
+  bloqueado = true;
+  const botoes = [...$('alt-box').children];
+  botoes.forEach(b=>b.disabled = true);
+  if(escolha === q.c){
+    btn.classList.add('certa');
+    acertos++; $('cont-acertos').textContent = acertos;
+    somAcerto();
+    marcarTermo(q.t);
+    $('resultado').innerHTML = `<span class="ok-txt">✅ Correto! Termo marcado: <span class="sorteado">${q.t}</span></span>`;
+  }else{
+    btn.classList.add('errada');
+    botoes[q.c].classList.add('certa');
+    erros++; $('cont-erros').textContent = erros;
+    somErro();
+    $('resultado').innerHTML = `<span class="erro-txt">❌ Errado! O termo era: <b>${q.t}</b></span>`;
+  }
+}
+
+function marcarTermo(termo){
+  const grid = $('cartela');
+  const idx = cartela.indexOf(termo);
+  if(idx === -1){ toast(`O termo "${termo}" não está na sua cartela.`, 'info'); return; }
+  if(marcadas.has(idx)) return;
+  marcadas.add(idx);
+  grid.children[idx].classList.add('marcada');
+  if(verificarBingo()){
+    setTimeout(()=>{ somBingo(); abrirBingo(); }, 350);
+  }
+}
+
+function verificarBingo(){
+  for(const linha of LINHAS){
+    if(linha.every(i=>i===12 || marcadas.has(i))) return true;
+  }
+  return false;
+}
+
+function abrirBingo(){
+  $('modal-info').textContent = 'Você completou uma linha de termos corretos!';
+  $('modal-acertos').textContent = acertos;
+  $('modal-erros').textContent = erros;
+  $('modal-bingo').classList.add('aberto');
+}
+
+function novoJogo(){
+  $('modal-bingo').classList.remove('aberto');
+  usadas = []; acertos = 0; erros = 0;
+  $('cont-acertos').textContent = '0'; $('cont-erros').textContent = '0';
+  $('cont-perguntas').textContent = '0';
+  $('pergunta').textContent = 'Clique em Sortear Pergunta para começar!';
+  $('pergunta').style.color = 'var(--texto2)';
+  $('alt-box').innerHTML = ''; $('resultado').innerHTML = '';
+  gerarCartela();
+  toast('Novo jogo iniciado!', 'info');
+}
+
+/* ---------- toast ---------- */
+function toast(msg, tipo='info'){
+  const t = document.createElement('div');
+  t.className = 'toast '+tipo; t.textContent = msg;
+  $('toast-root').appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(()=>t.remove(),400); }, 3000);
+}
+
+/* ---------- init ---------- */
+$('btn-sortear').addEventListener('click', sortear);
+$('total-perguntas').textContent = BANCO.length;
+gerarCartela();
+</script>
+</body>
+</html>

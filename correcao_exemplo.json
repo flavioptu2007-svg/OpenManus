@@ -1,0 +1,19 @@
+{
+  "questao": "Explique as principais causas da Revolução Industrial e cite uma consequência social.",
+  "resposta_esperada": "Conceitos-chave: acumulação de capital, cercamentos (enclosure acts), revolução agrícola, máquina a vapor, carvão/ferro, êxodo rural, urbanização, condições de trabalho nas fábricas, luta operária.",
+  "criterios": [
+    {"nome": "Conteúdo", "max": 6, "descricao": "Domínio de fatos, conceitos e causas corretas"},
+    {"nome": "Argumentação", "max": 3, "descricao": "Relação causa-consequência e coerência"},
+    {"nome": "Uso de termos", "max": 1, "descricao": "Vocabulário histórico adequado"}
+  ],
+  "respostas": [
+    {
+      "aluno": "Maria",
+      "texto": "A Revolução Industrial aconteceu por causa da máquina a vapor, que foi inventada por James Watt, e do carvão como fonte de energia. Houve também os cercamentos, que tiraram os camponeses do campo. Isso fez as pessoas irem para as cidades trabalhar nas fábricas, onde as condições eram muito ruins e até crianças trabalhavam."
+    },
+    {
+      "aluno": "João",
+      "texto": "A Revolução Industrial foi quando as pessoas inventaram os computadores e a internet na Inglaterra no século XX. Isso deixou todo mundo rico e não teve problema nenhum."
+    }
+  ]
+}

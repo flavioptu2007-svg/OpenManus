@@ -26,7 +26,7 @@ from dotenv import load_dotenv
 load_dotenv()  # same .env loading as app/config.py
 
 BASE_URL = "https://openrouter.ai/api/v1"
-DEFAULT_MODEL = "google/gemma-4-31b-it:free"  # free model (no credits needed)
+DEFAULT_MODEL = "openrouter/free"  # roteador: melhor modelo gratuito (0 créditos)
 
 
 def get_api_key() -> str:

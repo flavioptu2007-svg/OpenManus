@@ -46,7 +46,8 @@ MODELOS_LOCAIS_DEFAULT = [
 MODELOS_REMOTOS_DEFAULT = [
     ("GPT (gpt-5)", "openai/gpt-5"),
     ("Claude (claude-3.7-sonnet)", "anthropic/claude-3.7-sonnet"),
-    ("DeepSeek (deepseek-chat)", "deepseek/deepseek-chat"),
+    ("Gemma 4 26B (free)", "google/gemma-4-26b-a4b-it:free"),
+    ("DeepSeek (deepseek-v4-flash)", "deepseek/deepseek-v4-flash"),
     ("Qwen (qwen2.5-72b)", "qwen/qwen2.5-72b-instruct"),
     ("Mistral (mistral-large)", "mistralai/mistral-large-latest"),
     ("Command-R (command-r-plus)", "cohere/command-r-plus"),
