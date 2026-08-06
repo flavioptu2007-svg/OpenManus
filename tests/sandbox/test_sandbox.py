@@ -111,10 +111,19 @@ async def test_sandbox_network_access(sandbox):
     if not sandbox.config.network_enabled:
         pytest.skip("Network access is disabled")
 
-    # Test network connectivity
-    await sandbox.terminal.run_command("apt update && apt install curl -y")
-    result = await sandbox.terminal.run_command("curl -I https://www.example.com")
-    assert "HTTP/2 200" in result
+    # Test network connectivity using Python stdlib.
+    # Avoid package installation during the test because APT availability
+    # and speed are unrelated to sandbox network connectivity.
+    command = (
+        'python3 -c "'
+        "import urllib.request; "
+        "r = urllib.request.urlopen('https://www.example.com', timeout=15); "
+        "print(r.status)"
+        '"'
+    )
+    exit_code, output = await sandbox.terminal._exec_simple(command)
+    assert exit_code == 0
+    assert "200" in output
 
 
 @pytest.mark.asyncio

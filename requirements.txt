@@ -42,3 +42,4 @@ crawl4ai~=0.6.3
 huggingface-hub~=0.29.2
 setuptools~=75.8.0
 pytest-cov~=7.1.0
+structlog>=24.1.0
