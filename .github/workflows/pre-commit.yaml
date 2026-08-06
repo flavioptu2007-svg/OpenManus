@@ -1,6 +1,7 @@
 name: Pre-commit checks
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - '**'
@@ -31,6 +32,14 @@ jobs:
       - name: Run pre-commit hooks on changed files
         run: |
           set -euo pipefail
+
+          # Manual execution has no push/PR base SHA.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual run - checking all files."
+            pre-commit run --all-files
+            exit $?
+          fi
+
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE_REF="${{ github.event.pull_request.base.sha }}"
           else

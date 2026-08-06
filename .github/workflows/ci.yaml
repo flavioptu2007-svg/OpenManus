@@ -1,6 +1,7 @@
 name: CI — Tests & Quality
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
