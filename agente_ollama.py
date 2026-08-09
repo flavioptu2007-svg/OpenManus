@@ -9,10 +9,12 @@ Ferramentas:
   • Sistema: abrir_programa
   • Calculadora: calcular (matemática segura)
   • Clima: consultar_clima (wttr.in, sem API key)
+  • Web: buscar_web (Brave Search API — requer BRAVE_API_KEY ou ~/.brave_api_key)
   • Git: git_status, git_log, git_branch, git_add_commit (whitelist)
 """
 
 import ast
+import json
 import operator
 import os
 import platform
@@ -301,6 +303,91 @@ def listar_arquivos(nome_pasta: str = "") -> str:
     return "\n".join(conteudo) if conteudo else "(pasta vazia)"
 
 
+def _chave_brave() -> str:
+    """Lê a chave da Brave: env BRAVE_API_KEY, depois ~/.brave_api_key ou .env."""
+    chave = os.getenv("BRAVE_API_KEY", "").strip()
+    if chave:
+        return chave
+    for caminho in (
+        os.path.expanduser("~/.brave_api_key"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"),
+    ):
+        try:
+            with open(caminho, encoding="utf-8") as f:
+                for linha in f:
+                    linha = linha.strip()
+                    if linha.startswith("BRAVE_API_KEY="):
+                        v = linha.split("=", 1)[1].strip().strip('"').strip("'")
+                        if v:
+                            return v
+                    elif linha.startswith("BSA") and len(linha) > 10:
+                        return linha
+        except OSError:
+            continue
+    return ""
+
+
+def buscar_web(consulta: str, quantidade: int = 5) -> str:
+    """Busca na web usando a Brave Search API (requer BRAVE_API_KEY no ambiente).
+
+    Retorna título, URL e resumo dos melhores resultados — ideal para o
+    modelo acessar informação atualizada que não está nos dados de treino.
+
+    Args:
+        consulta: Termos de pesquisa (ex: "BNCC história 7º ano feudalismo").
+        quantidade: Número de resultados a mostrar (1 a 10).
+
+    Returns:
+        Lista formatada de resultados ou mensagem de erro amigável.
+    """
+    chave = _chave_brave()
+    if not chave:
+        return (
+            "🔑 BRAVE_API_KEY não configurada. Obtenha uma chave gratuita em "
+            "https://brave.com/search/api/ e exporte no ambiente "
+            "(ex.: export BRAVE_API_KEY=BSA-...)."
+        )
+    try:
+        n = min(max(1, int(quantidade)), 10)
+        url = (
+            "https://api.search.brave.com/res/v1/web/search?"
+            + urllib.parse.urlencode(
+                {
+                    "q": consulta,
+                    "count": n,
+                    "country": os.getenv("BRAVE_COUNTRY", "br"),
+                    "search_lang": os.getenv("BRAVE_LANG", "pt"),
+                    "safesearch": "moderate",
+                    "extra_snippets": "true",
+                }
+            )
+        )
+        req = urllib.request.Request(
+            url,
+            headers={
+                "X-Subscription-Token": chave,
+                "Accept": "application/json",
+                "User-Agent": "agente-local-ollama/1.0",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            dados = json.load(resp)
+        resultados = (dados.get("web") or {}).get("results") or []
+        if not resultados:
+            return f"Nenhum resultado para '{consulta}'."
+        linhas = [f"🔎 Resultados para '{consulta}':"]
+        for i, r in enumerate(resultados[:n], 1):
+            titulo = r.get("title") or "(sem título)"
+            url_res = r.get("url") or ""
+            desc = (r.get("description") or "").replace("\n", " ").strip()[:180]
+            linhas.append(f"{i}. {titulo}\n   {url_res}\n   {desc}")
+        return "\n".join(linhas)
+    except urllib.error.HTTPError as e:
+        return f"Erro na busca (HTTP {e.code}). Verifique sua chave/plano da Brave."
+    except Exception as e:
+        return f"Erro ao buscar: {e}"
+
+
 def ler_arquivo(nome_arquivo: str, pasta: str = "") -> str:
     """Lê o conteúdo de um arquivo texto dentro do diretório permitido.
 
@@ -331,6 +418,7 @@ FERRAMENTAS = [
     ler_arquivo,
     calcular,
     consultar_clima,
+    buscar_web,
     git_status,
     git_log,
     git_branch,

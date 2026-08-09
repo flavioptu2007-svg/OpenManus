@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Dança dos Dragões e as Guerras de Sucessão — Material Didático</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐉</text></svg>">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   PALETA — pergaminho medieval + fogo Targaryen
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --tinta:#3b2f2a;
+  --marrom:#6d4c41;
+  --marrom-claro:#a1887f;
+  --pergaminho:#f6ecd8;
+  --pergaminho-2:#eadfc4;
+  --azul:#1a237e;
+  --azul-claro:#e8eaf6;
+  --ouro:#caa14b;
+  --ouro-claro:#ffd54f;
+  --vermelho:#b71c1c;
+  --vermelho-targ:#8b1a1a;
+  --vermelho-claro:#ffebee;
+  --verde:#2e7d32;
+  --verde-claro:#e8f5e9;
+  --cinza:#5d5a52;
+  --texto:#3b2f2a;
+  --borda:#b8a88a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:
+    radial-gradient(ellipse at top,#fff8e7 0%,rgba(255,248,231,0) 60%),
+    linear-gradient(160deg,var(--pergaminho),var(--pergaminho-2) 65%,#e0d0ab);
+  color:var(--texto);
+  min-height:100vh;
+  padding:1rem;
+}
+.wrap{max-width:1080px;margin:0 auto;}
+
+/* ─── Cabeçalho ─── */
+header{
+  background:linear-gradient(135deg,var(--vermelho-targ) 0%,#5d0e0e 55%,#2a0505 100%);
+  color:#fbe9d0;
+  border-radius:14px;
+  padding:1.6rem 1.4rem;
+  margin-bottom:1.2rem;
+  border:1px solid var(--ouro);
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
+  position:relative;
+  overflow:hidden;
+}
+header::after{
+  content:"🐉";
+  position:absolute;right:1rem;top:.6rem;font-size:2.4rem;opacity:.5;
+}
+header h1{font-size:1.5rem;letter-spacing:.3px;}
+header p{opacity:.92;font-size:.95rem;margin-top:.35rem;max-width:80%;}
+.badges{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem;}
+.badge{
+  font-size:.72rem;font-weight:600;padding:.25rem .6rem;border-radius:999px;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);
+}
+.badge.ficcao{background:rgba(255,213,79,.18);border-color:var(--ouro-claro);color:#ffe9b0;}
+.badge.fonte{background:rgba(232,234,246,.15);border-color:#b3bcf0;color:#dfe3ff;}
+
+/* ─── Cards gerais ─── */
+.card{
+  background:rgba(255,253,246,.94);
+  border:1px solid var(--borda);
+  border-radius:12px;
+  padding:1.2rem 1.3rem;
+  margin-bottom:1rem;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  animation:fadeIn .4s ease-out both;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card h2{
+  font-size:1.15rem;color:var(--vermelho-targ);
+  border-bottom:2px solid var(--ouro);
+  padding-bottom:.4rem;margin-bottom:.8rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.card h3{font-size:1rem;color:var(--azul);margin:.9rem 0 .4rem;}
+.card p,.card li{font-size:.93rem;line-height:1.55;}
+.card ul{padding-left:1.2rem;}
+.card li{margin-bottom:.25rem;}
+.note{
+  background:var(--ouro-claro);
+  border:1px dashed var(--ouro);
+  border-radius:8px;
+  padding:.6rem .8rem;
+  font-size:.85rem;
+  margin-top:.7rem;
+}
+.aviso{
+  background:var(--vermelho-claro);
+  border:1px solid #e57373;
+  border-radius:8px;
+  padding:.6rem .8rem;
+  font-size:.85rem;
+  margin-top:.7rem;
+}
+.aviso b{color:var(--vermelho);}
+
+/* ─── Abas dos casos ─── */
+.tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.8rem;}
+.tab{
+  border:1px solid var(--borda);background:#fffaf0;color:var(--tinta);
+  padding:.45rem .85rem;border-radius:999px;cursor:pointer;
+  font-size:.82rem;font-weight:600;transition:all .2s ease;
+}
+.tab:hover{transform:translateY(-2px);box-shadow:0 3px 8px rgba(0,0,0,.15);}
+.tab.active{background:var(--vermelho-targ);color:#ffe9d0;border-color:var(--vermelho-targ);}
+.case{display:none;}
+.case.active{display:block;animation:fadeIn .35s ease-out both;}
+.case-head{
+  display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;
+  font-size:.8rem;color:var(--cinza);margin-bottom:.6rem;
+}
+.case-head .tag{
+  font-weight:700;padding:.15rem .55rem;border-radius:6px;font-size:.72rem;
+}
+.tag.real{background:var(--verde-claro);color:var(--verde);border:1px solid #a5d6a7;}
+.tag.fict{background:var(--vermelho-claro);color:var(--vermelho);border:1px solid #ef9a9a;}
+.chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.5rem;}
+.chip{
+  font-size:.72rem;background:var(--azul-claro);color:var(--azul);
+  border:1px solid #c5cae9;border-radius:999px;padding:.2rem .6rem;
+}
+.quote{
+  background:var(--pergaminho-2);
+  border-left:4px solid var(--ouro);
+  border-radius:0 8px 8px 0;
+  padding:.6rem .9rem;font-style:italic;font-size:.88rem;margin:.7rem 0;
+}
+
+/* ─── Tabela comparativa ─── */
+.table-scroll{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.83rem;min-width:640px;}
+th{
+  background:var(--vermelho-targ);color:#ffe9d0;padding:.5rem .6rem;
+  text-align:left;font-weight:600;position:sticky;top:0;
+}
+td{border:1px solid var(--borda);padding:.45rem .6rem;vertical-align:top;background:#fffdf7;}
+tr:nth-child(even) td{background:#faf4e6;}
+td b{color:var(--azul);}
+
+/* ─── Jogo de pares ─── */
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;}
+@media (max-width:700px){.match-grid{grid-template-columns:1fr;}}
+.match-col h4{
+  font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;
+  color:var(--cinza);margin-bottom:.5rem;text-align:center;
+}
+.match-card{
+  border:1px solid var(--borda);background:#fffdf7;border-radius:10px;
+  padding:.7rem .8rem;margin-bottom:.55rem;cursor:pointer;
+  font-size:.86rem;transition:all .18s ease;user-select:none;
+}
+.match-card:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(0,0,0,.12);}
+.match-card.selected{border-color:var(--ouro);background:#fff3d6;box-shadow:0 0 0 2px var(--ouro-claro);}
+.match-card.paired{border-color:#81c784;background:var(--verde-claro);cursor:default;opacity:.75;}
+.match-card.wrong{border-color:#e57373;background:var(--vermelho-claro);animation:shake .3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.match-feedback{min-height:1.4rem;font-size:.85rem;font-weight:600;margin-top:.4rem;}
+#matchReset{
+  margin-top:.6rem;background:var(--azul);color:#fff;border:none;
+  padding:.45rem 1rem;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:600;
+  transition:all .2s ease;
+}
+#matchReset:hover{background:#283593;transform:translateY(-1px);}
+
+/* ─── Quiz ─── */
+.q-block{border:1px solid var(--borda);border-radius:10px;padding:.9rem;margin-bottom:.8rem;background:#fffdf7;}
+.q-text{font-size:.92rem;font-weight:600;margin-bottom:.6rem;}
+.q-opts{display:grid;gap:.4rem;}
+.q-opt{
+  text-align:left;border:1px solid var(--borda);background:#fff;
+  padding:.5rem .7rem;border-radius:8px;cursor:pointer;font-size:.86rem;
+  transition:all .18s ease;
+}
+.q-opt:hover:not(:disabled){border-color:var(--ouro);background:#fff8e7;transform:translateX(3px);}
+.q-opt.correct{background:#c8e6c9;border-color:#66bb6a;color:#1b5e20;font-weight:600;}
+.q-opt.wrong{background:#ffcdd2;border-color:#ef5350;color:#b71c1c;}
+.q-opt:disabled{cursor:default;opacity:.85;}
+.q-feedback{font-size:.82rem;margin-top:.5rem;font-weight:600;min-height:1.2rem;}
+#quizScore{
+  display:inline-block;background:var(--vermelho-targ);color:#ffe9d0;
+  padding:.35rem .9rem;border-radius:999px;font-weight:700;font-size:.85rem;margin-bottom:.7rem;
+}
+#quizReset{
+  background:var(--ouro);color:#3b2f2a;border:none;padding:.45rem 1rem;
+  border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:700;transition:all .2s ease;
+}
+#quizReset:hover{background:var(--ouro-claro);transform:translateY(-1px);}
+
+/* ─── Debate ─── */
+.debate li{margin-bottom:.55rem;}
+.debate li::marker{color:var(--ouro);}
+
+/* ─── Rodapé / fontes ─── */
+footer{
+  font-size:.8rem;color:var(--cinza);text-align:center;
+  padding:1rem 0 0;border-top:1px solid var(--borda);margin-top:1rem;
+}
+.fonte-list a{color:var(--azul);text-decoration:none;font-weight:600;}
+.fonte-list a:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>🐉 A Dança dos Dragões e as Guerras de Sucessão</h1>
+    <p>Material didático de História — comparando a crise sucessória de <i>House of the Dragon</i> (ficção) com guerras de sucessão reais: a Anarquia inglesa (1135–54), a Crise de 1383–85 em Portugal e a Guerra das Duas Rosas (1455–87).</p>
+    <div class="badges">
+      <span class="badge ficcao">🎭 FICÇÃO: House of the Dragon</span>
+      <span class="badge fonte">📜 Fontes reais: Fernão Lopes, crônicas medievais</span>
+      <span class="badge">📺 3 temporadas · estreia 2022</span>
+      <span class="badge">📍 Onde assistir no Brasil: HBO Max · Claro tv+ · HBO Max (Amazon)</span>
+    </div>
+  </header>
+
+  <!-- 1. Visão geral -->
+  <div class="card">
+    <h2>🗺️ 1. O ponto de partida</h2>
+    <p><b>House of the Dragon</b> (JustWatch Brasil, 2026) se passa cerca de 170 anos antes de <i>Game of Thrones</i> e narra a ascensão da Casa Targaryen. A trama central da 1ª temporada é a <b>Dança dos Dragões</b>: a guerra civil de sucessão entre <b>Rhaenyra Targaryen</b> e seu meio-irmão <b>Aegon II</b> pelo Trono de Ferro.</p>
+    <div class="aviso"><b>⚠️ Atenção para uso em sala:</b> a série é <b>ficção</b> (baseada no livro <i>Fogo &amp; Sangue</i>, de George R. R. Martin). Serve como <b>porta de entrada e analogia</b> para discutir processos históricos reais — mas nunca como fonte histórica em si.</div>
+    <p style="margin-top:.6rem">A Dança dos Dragões foi <b>diretamente inspirada</b> pela <b>Anarquia inglesa</b> (1135–1154), quando a herdeira nomeada pelo rei — <b>Matilde de Inglaterra</b> — foi preterida e o trono disputado em guerra civil. É o caso perfeito para começar.</p>
+  </div>
+
+  <!-- 2. Os quatro casos -->
+  <div class="card">
+    <h2>⚔️ 2. Os quatro casos de crise sucessória</h2>
+    <div class="tabs">
+      <button class="tab active" data-case="c0">🐉 Dança dos Dragões</button>
+      <button class="tab" data-case="c1">🏴 Anarquia (1135–54)</button>
+      <button class="tab" data-case="c2">🇵🇹 Crise de 1383–85</button>
+      <button class="tab" data-case="c3">🌹 Guerra das Duas Rosas</button>
+    </div>
+
+    <!-- Caso 0: ficção -->
+    <div class="case active" id="c0">
+      <div class="case-head">
+        <span class="tag fict">FICÇÃO</span>
+        <span>Westeros · ano 129–131 da Era de Aegon · Série: House of the Dragon</span>
+      </div>
+      <p><b>O conflito:</b> o rei Viserys I Targaryen nomeia a filha <b>Rhaenyra</b> herdeira do Trono de Ferro, com o juramento dos senhores. Quando ele morre, uma facção da corte — liderada pela rainha <b>Alicent Hightower</b> e seu pai <b>Otto Hightower</b> — coroa <b>Aegon II</b>, meio-irmão de Rhaenyra, sob o argumento de que <b>nenhuma mulher deveria governar</b>.</p>
+      <ul>
+        <li><b>Questão central:</b> a mulher pode herdar o trono? (sucessão e primogenitura)</li>
+        <li><b>Os partidos:</b> "negros" (apoiadores de Rhaenyra) × "verdes" (apoiadores de Aegon II).</li>
+        <li><b>A guerra:</b> batalhas com dragões, traições, cercos; ambos os lados sofrem perdas devastadoras.</li>
+        <li><b>Desfecho:</b> Rhaenyra morre; Aegon II é envenenado; sucede-lhe <b>Aegon III</b>, filho de Rhaenyra — mas a maioria dos dragões morreu. A dinastia sobrevive enfraquecida.</li>
+      </ul>
+      <div class="note">💡 <b>Para discutir:</b> a série mostra o <b>custo humano da disputa dinástica</b> e como a questão "quem tem direito ao trono" pode dividir um reino inteiro. Que grupos sustentam cada candidato e por quê?</div>
+    </div>
+
+    <!-- Caso 1: Anarquia -->
+    <div class="case" id="c1">
+      <div class="case-head">
+        <span class="tag real">HISTÓRIA REAL</span>
+        <span>Inglaterra · 1135–1154 · inspiração direta de G.R.R. Martin</span>
+      </div>
+      <p>O rei <b>Henrique I</b> da Inglaterra perdeu seu único filho homem legítimo no naufrágio do <i>Navio Branco</i> (1120). Ele então fez os barões <b>jurarem fidelidade à sua filha Matilde</b> como herdeira. Ao morrer (1135), porém, o sobrinho <b>Estêvão de Blois</b> antecipou-se e foi coroado, com o apoio de parte da nobreza.</p>
+      <ul>
+        <li><b>Questão central:</b> vale o juramento feito à herdeira mulher? A nobreza prefere um homem ao trono.</li>
+        <li><b>A guerra:</b> Matilde invade e chega a controlar parte do reino, mas nunca é coroada; anos de conflito, "quando Deus e seus anjos dormiram" (crônica de Pedro de Langtoft).</li>
+        <li><b>Desfecho:</b> <b>Tratado de Wallingford</b> (1153): Estêvão mantém o trono enquanto viver, mas <b>Henrique, filho de Matilde, o sucede</b> → Henrique II Plantageneta.</li>
+      </ul>
+      <div class="note">💡 <b>Paralelo com a série:</b> Rhaenyra (Matilde), Aegon II (Estêvão), os senhores que juram e depois mudam de lado, e o desfecho em que o <b>filho da herdeira</b> acaba reinando.</div>
+    </div>
+
+    <!-- Caso 2: Crise 1383-85 -->
+    <div class="case" id="c2">
+      <div class="case-head">
+        <span class="tag real">HISTÓRIA REAL</span>
+        <span>Portugal · 1383–1385 · fonte primária: Fernão Lopes (cronista)</span>
+      </div>
+      <p>O rei <b>D. Fernando I</b> morre (1383) sem filho homem legítimo. Sua filha <b>Beatriz</b> estava casada com <b>D. Juan I de Castela</b> (Tratado de Salvaterra de Magos). A possibilidade de o reino português ser anexado a Castela provoca <b>revolta popular</b> em Lisboa.</p>
+      <ul>
+        <li><b>Os candidatos:</b> Beatriz (ligada a Castela) × <b>D. João, Mestre de Avis</b>, filho bastardo de D. Pedro I — aclamado regedor e defensor do reino.</li>
+        <li><b>A guerra:</b> cerco de Lisboa (1384) e a grande vitória portuguesa na <b>Batalha de Aljubarrota (14 de agosto de 1385)</b>, com o auxílio de arqueiros ingleses.</li>
+        <li><b>Desfecho:</b> as <b>Cortes de Coimbra</b> aclamam D. João I — nasce a <b>dinastia de Avis</b> e consolida-se a independência de Portugal.</li>
+      </ul>
+      <div class="quote">📜 <b>Fonte primária (Projeto Gutenberg):</b> Fernão Lopes, cronista-mor do reino, escreveu as crônicas de D. Pedro I, D. Fernando e D. João I. O texto já baixado no acervo de fontes (<i>Chronica de el-rei D. Pedro I</i>, ebook 16633) permite <b>ler a sucessão pelos olhos de quem viveu a época</b>.</div>
+      <div class="note">💡 <b>Para discutir:</b> aqui a sucessão não é só jurídica — envolve <b>independência nacional</b>. Por que a nobreza e o povo preferem o Mestre de Avis (bastardo) a Beatriz (legítima)? O que pesa mais: legitimidade ou o medo de domínio estrangeiro?</div>
+    </div>
+
+    <!-- Caso 3: Duas Rosas -->
+    <div class="case" id="c3">
+      <div class="case-head">
+        <span class="tag real">HISTÓRIA REAL</span>
+        <span>Inglaterra · 1455–1487 · York × Lancaster</span>
+      </div>
+      <p>Após a derrota na <b>Guerra dos Cem Anos</b>, a nobreza inglesa se divide entre as casas de <b>Lancaster</b> (rosa vermelha — o rei <b>Henrique VI</b>, frágil e com crises de loucura) e <b>York</b> (rosa branca — <b>Ricardo, Duque de York</b>, que reivindica o trono por linhagem).</p>
+      <ul>
+        <li><b>Questão central:</b> quem tem melhor direito hereditário — o rei reinante ou o parente com linhagem mais antiga?</li>
+        <li><b>A guerra:</b> décadas de batalhas alternadas (St. Albans, Towton, Tewkesbury), reis depostos e mortos, incluindo <b>Ricardo III</b>.</li>
+        <li><b>Desfecho:</b> <b>Henrique Tudor</b> vence na <b>Batalha de Bosworth</b> (1485) e casa-se com <b>Elizabeth de York</b>, unindo as duas casas e fundando a <b>dinastia Tudor</b>.</li>
+      </ul>
+      <div class="note">💡 <b>Para discutir:</b> a guerra terminou por <b>aliança matrimonial</b>, não só pela espada. Como casamentos dinásticos funcionavam como "acordos de paz"? Isso lembra algum outro conflito que você já estudou?</div>
+    </div>
+  </div>
+
+  <!-- 3. Tabela comparativa -->
+  <div class="card">
+    <h2>📊 3. Tabela comparativa</h2>
+    <div class="table-scroll">
+      <table>
+        <tr>
+          <th>Critério</th>
+          <th>🐉 Dança dos Dragões (ficção)</th>
+          <th>🏴 Anarquia (1135–54)</th>
+          <th>🇵🇹 Crise 1383–85</th>
+          <th>🌹 Duas Rosas (1455–87)</th>
+        </tr>
+        <tr><td><b>Causa imediata</b></td><td>Morte de Viserys I com herdeira nomeada</td><td>Morte de Henrique I sem filho homem</td><td>Morte de D. Fernando I sem filho homem</td><td>Fraqueza de Henrique VI + derrota na Guerra dos Cem Anos</td></tr>
+        <tr><td><b>Questão jurídica</b></td><td>Mulher pode herdar?</td><td>Mulher pode herdar?</td><td>Herdeira casada com rei estrangeiro</td><td>Quem tem melhor direito hereditário?</td></tr>
+        <tr><td><b>Candidatos</b></td><td>Rhaenyra × Aegon II</td><td>Matilde × Estêvão de Blois</td><td>Beatriz (Castela) × Mestre de Avis</td><td>Lancaster × York</td></tr>
+        <tr><td><b>Partidos</b></td><td>Negros × Verdes</td><td>Barões da Matilde × barões do Estêvão</td><td>Portugueses × castelhanos</td><td>Rosa vermelha × rosa branca</td></tr>
+        <tr><td><b>Desfecho</b></td><td>Filho de Rhaenyra reina; dinastia enfraquecida</td><td>Tratado: filho de Matilde sucede</td><td>Avis vence; independência mantida</td><td>Casamento une as casas → Tudor</td></tr>
+        <tr><td><b>Conceito-chave</b></td><td>Ficção — parábola do custo da guerra civil</td><td>Primogenitura e juramento</td><td>Legitimidade × independência nacional</td><td>Casamento dinástico e pacificação</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. Jogo de pares -->
+  <div class="card">
+    <h2>🧩 4. Jogo de pares: ficção × história</h2>
+    <p style="font-size:.88rem;margin-bottom:.8rem">Clique em um card da esquerda e depois no card correspondente da direita. Forme os 6 pares.</p>
+    <div class="match-grid">
+      <div class="match-col">
+        <h4>Da série (ficção)</h4>
+        <div id="colA"></div>
+      </div>
+      <div class="match-col">
+        <h4>Da história real</h4>
+        <div id="colB"></div>
+      </div>
+    </div>
+    <div class="match-feedback" id="matchFeedback"></div>
+    <button id="matchReset">↻ Reiniciar jogo</button>
+  </div>
+
+  <!-- 5. Quiz -->
+  <div class="card">
+    <h2>📝 5. Quiz de verificação</h2>
+    <div><span id="quizScore">Acertos: 0 / 6</span> <button id="quizReset">↻ Reiniciar</button></div>
+    <div id="quizBox"></div>
+  </div>
+
+  <!-- 6. Debate -->
+  <div class="card">
+    <h2>💬 6. Para debater e escrever</h2>
+    <ol class="debate">
+      <li>Por que a sucessão de uma <b>mulher</b> ao trono gerava guerras nas sociedades medievais? Que ideias sobre poder e gênero estavam em jogo?</li>
+      <li>Na Crise de 1383–85, o povo de Lisboa se levantou contra a união com Castela. <b>A sucessão era só um assunto de reis?</b> Quem participava da decisão?</li>
+      <li>Compare o papel da <b>nobreza</b> em cada caso: quem os nobres apoiavam e o que ganhavam com isso?</li>
+      <li>Como a ficção (série) ajuda a <b>visualizar</b> a guerra civil, e como ela <b>distorce</b> o processo histórico real?</li>
+      <li>Leia um trecho da <i>Chronica de el-rei D. Pedro I</i> de Fernão Lopes (acervo Gutenberg). O que muda quando lemos a fonte de quem viveu a época?</li>
+    </ol>
+  </div>
+
+  <!-- 7. Fontes -->
+  <div class="card fonte-list">
+    <h2>📚 7. Fontes e referências</h2>
+    <ul>
+      <li><b>JustWatch Brasil</b> — página de House of the Dragon (onde assistir, temporadas, notas): <a href="https://www.justwatch.com/br/serie/house-of-the-dragon" target="_blank" rel="noopener">justwatch.com/br/serie/house-of-the-dragon</a> · acessado em 07/08/2026</li>
+      <li><b>Projeto Gutenberg</b> — Fernão Lopes, <i>Chronica de el-rei D. Pedro I</i>: <a href="https://www.gutenberg.org/ebooks/16633" target="_blank" rel="noopener">gutenberg.org/ebooks/16633</a> (domínio público)</li>
+      <li><b>Projeto Gutenberg</b> — catálogo de fontes de História do acervo local: <i>Documentos/Gutenberg-Historia/catalogo-gutenberg-historia.md</i></li>
+      <li>George R. R. Martin, <i>Fogo &amp; Sangue</i> (2018) — obra ficcional em que se baseia a série.</li>
+      <li>Referências históricas: Fernão Lopes; crônica da Anarquia (Pedro de Langtoft); historiografia sobre a Guerra das Duas Rosas.</li>
+    </ul>
+  </div>
+
+  <footer>
+    Material didático · ProfHistória · gerado em 07/08/2026 · fonte de informação: JustWatch Brasil + Projeto Gutenberg
+  </footer>
+</div>
+
+<script>
+/* ───────────────────────────── Abas ───────────────────────────── */
+const tabs = document.querySelectorAll('.tab');
+const cases = document.querySelectorAll('.case');
+tabs.forEach(t=>{
+  t.addEventListener('click',()=>{
+    tabs.forEach(x=>x.classList.remove('active'));
+    cases.forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.case).classList.add('active');
+  });
+});
+
+/* ───────────────────────── Jogo de pares ──────────────────────── */
+const PAIRS = [
+  {a:"Rhaenyra Targaryen — herdeira nomeada pelo rei, preterida", b:"Matilde de Inglaterra — herdeira de Henrique I, preterida"},
+  {a:"Aegon II — meio-irmão coroado por uma facção da corte", b:"Estêvão de Blois — sobrinho que tomou o trono antes da herdeira"},
+  {a:"Otto Hightower — mão da rainha que articula a coroação", b:"Barões que desfazem o juramento à herdeira"},
+  {a:"Dança dos Dragões — guerra civil de sucessão", b:"A Anarquia (1135–54) — inspiração direta de G.R.R. Martin"},
+  {a:"Batalha entre partidos 'negros' e 'verdes'", b:"Crise de 1383–85 — sucessão que virou guerra pela independência de Portugal"},
+  {a:"Aegon III — filho da herdeira acaba reinando", b:"Henrique II — filho de Matilde acaba reinando (Tratado de Wallingford)"}
+];
+let selA = null, selB = null, matchCount = 0;
+const colA = document.getElementById('colA'), colB = document.getElementById('colB');
+const fb = document.getElementById('matchFeedback');
+
+function renderMatch(){
+  colA.innerHTML = ''; colB.innerHTML = '';
+  PAIRS.forEach((p,i)=>{
+    const ca = document.createElement('div');
+    ca.className = 'match-card'; ca.dataset.pair = i; ca.textContent = p.a;
+    if(p._done) ca.classList.add('paired');
+    ca.addEventListener('click',()=>pickA(ca,i));
+    colA.appendChild(ca);
+    const cb = document.createElement('div');
+    cb.className = 'match-card'; cb.dataset.pair = i; cb.textContent = p.b;
+    if(p._done) cb.classList.add('paired');
+    cb.addEventListener('click',()=>pickB(cb,i));
+    colB.appendChild(cb);
+  });
+}
+function pickA(el,i){
+  if(PAIRS[i]._done) return;
+  document.querySelectorAll('#colA .selected').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected'); selA = i; tryPair();
+}
+function pickB(el,i){
+  if(PAIRS[i]._done) return;
+  document.querySelectorAll('#colB .selected').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected'); selB = i; tryPair();
+}
+function tryPair(){
+  if(selA===null || selB===null) return;
+  const cards = document.querySelectorAll('.match-card.selected');
+  if(selA===selB){
+    PAIRS[selA]._done = true; matchCount++;
+    cards.forEach(c=>{c.classList.remove('selected'); c.classList.add('paired');});
+    fb.textContent = '✅ Par correto! ('+matchCount+'/6)'; fb.style.color = 'var(--verde)';
+  }else{
+    fb.textContent = '❌ Não é esse par — tente de novo.'; fb.style.color = 'var(--vermelho)';
+    cards.forEach(c=>{c.classList.add('wrong'); setTimeout(()=>c.classList.remove('wrong','selected'),350);});
+  }
+  selA = selB = null;
+  if(matchCount===PAIRS.length) fb.textContent = '🏆 Todos os pares formados!';
+}
+document.getElementById('matchReset').addEventListener('click',()=>{
+  PAIRS.forEach(p=>delete p._done); matchCount = 0; selA = selB = null;
+  fb.textContent = ''; renderMatch();
+});
+renderMatch();
+
+/* ───────────────────────────── Quiz ───────────────────────────── */
+const QUIZ = [
+  {q:"Qual guerra real inspirou diretamente a 'Dança dos Dragões' de G.R.R. Martin?",
+   o:["A Guerra das Duas Rosas","A Anarquia inglesa (1135–54)","A Guerra dos Cem Anos","A Crise de 1383–85"], r:1},
+  {q:"Qual é a questão jurídica central na Dança dos Dragões e na Anarquia?",
+   o:["Se uma mulher podia herdar o trono","Se o papa podia coroar reis","Se bastardia impedia reinar","Se o reino devia ser dividido"], r:0},
+  {q:"Na Crise de 1383–85, quem foi aclamado rei nas Cortes de Coimbra?",
+   o:["D. Fernando I","Beatriz de Portugal","D. João I, Mestre de Avis","D. Juan I de Castela"], r:2},
+  {q:"Qual batalha garantiu a independência de Portugal em 1385?",
+   o:["Batalha de Bosworth","Batalha de Aljubarrota","Batalha de Towton","Batalha de St. Albans"], r:1},
+  {q:"Quem escreveu as crônicas reais que são fonte primária da sucessão portuguesa?",
+   o:["Pedro de Langtoft","Fernão Lopes","Rui de Pina","Duarte Galvão"], r:1},
+  {q:"A Guerra das Duas Rosas terminou com qual solução?",
+   o:["Execução de todos os candidatos","Casamento de Henrique Tudor com Elizabeth de York","Invasão da França","Divisão do reino em dois"], r:1}
+];
+let quizDone = 0, quizRight = 0;
+const qb = document.getElementById('quizBox');
+function renderQuiz(){
+  qb.innerHTML = ''; quizDone = 0; quizRight = 0;
+  updateScore();
+  QUIZ.forEach((item,qi)=>{
+    const bl = document.createElement('div'); bl.className = 'q-block';
+    const t = document.createElement('div'); t.className = 'q-text';
+    t.textContent = (qi+1)+'. '+item.q; bl.appendChild(t);
+    const opts = document.createElement('div'); opts.className = 'q-opts';
+    item.o.forEach((alt,ai)=>{
+      const b = document.createElement('button'); b.className = 'q-opt'; b.textContent = alt;
+      b.addEventListener('click',()=>{
+        if(b.disabled) return;
+        opts.querySelectorAll('.q-opt').forEach(x=>x.disabled = true);
+        const correct = ai === item.r;
+        if(correct) quizRight++;
+        quizDone++;
+        opts.querySelectorAll('.q-opt').forEach((x,xi)=>{
+          if(xi === item.r) x.classList.add('correct');
+          else if(xi === ai) x.classList.add('wrong');
+        });
+        const f = document.createElement('div'); f.className = 'q-feedback';
+        f.textContent = correct ? '✅ Correto!' : '❌ Errado. Resposta: ' + item.o[item.r] + '.';
+        f.style.color = correct ? 'var(--verde)' : 'var(--vermelho)';
+        bl.appendChild(f); updateScore();
+      });
+      opts.appendChild(b);
+    });
+    bl.appendChild(opts); qb.appendChild(bl);
+  });
+}
+function updateScore(){
+  document.getElementById('quizScore').textContent = 'Acertos: '+quizRight+' / '+QUIZ.length;
+}
+document.getElementById('quizReset').addEventListener('click', renderQuiz);
+renderQuiz();
+</script>
+</body>
+</html>

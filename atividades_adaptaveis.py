@@ -1,3 +1,6 @@
+import json
+
+
 # ===== CSS =====
 css = """
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -113,6 +116,11 @@ css = """
   }
 
   .selector-item:hover { background: #eef2f7; }
+  .selector-item:focus-visible, .level-btn:focus-visible, .topbar-btn:focus-visible {
+    outline: 3px solid #3a7bd5;
+    outline-offset: 2px;
+    border-radius: 10px;
+  }
   .selector-item.active {
     border-color: #3a7bd5;
     background: #f0f4ff;
@@ -264,7 +272,7 @@ css = """
     margin: 1.5rem 0;
   }
 
-  @media (max-width: 600px) { .activity-body .visual-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .activity-body .visual-grid { grid-template-columns: 1fr; } .overlay-card .info-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; } }
 
   .activity-body .visual-card {
     background: var(--bg-soft, #f8fafc);
@@ -1113,6 +1121,51 @@ svgs = {
 }
 
 
+# ===== HELPERS =====
+def js_json(obj) -> str:
+    """Serializa um objeto Python como literal JSON válido para embutir em <script>.
+
+    - ensure_ascii=False preserva acentos e emojis reais no HTML final;
+    - "</" vira "<\\/" e "<!--" vira "<\\u0021--" (escapes válidos em JSON)
+      para impedir que um dado contenha "</script>" (fecha o bloco cedo) ou
+      "<!--" (coloca o parser HTML no estado "escaped", quebrando o fechamento).
+    """
+    return (
+        json.dumps(obj, ensure_ascii=False)
+        .replace("</", "<\\/")
+        .replace("<!--", "<\\u0021--")
+    )
+
+
+def _fix_surrogates(text: str) -> str:
+    """Converte surrogate pairs (ex.: \\ud83d\\udcdd -> 📝) em caracteres reais.
+
+    O código-fonte usa escapes como \\ud83d\\udcdd que o Python interpreta como
+    dois code points surrogate separados. Esta função os combina em um único
+    caractere Unicode e substitui surrogates isolados por U+FFFD, garantindo
+    que o HTML final seja sempre UTF-8 válido.
+    """
+    out = []
+    i = 0
+    n = len(text)
+    while i < n:
+        c = text[i]
+        code = ord(c)
+        if 0xD800 <= code <= 0xDBFF and i + 1 < n:
+            nxt = ord(text[i + 1])
+            if 0xDC00 <= nxt <= 0xDFFF:
+                combined = 0x10000 + ((code - 0xD800) << 10) + (nxt - 0xDC00)
+                out.append(chr(combined))
+                i += 2
+                continue
+        if 0xD800 <= code <= 0xDFFF:
+            out.append("\ufffd")  # surrogate isolado -> caractere de substituição
+        else:
+            out.append(c)
+        i += 1
+    return "".join(out)
+
+
 # ===== HTML BUILDER =====
 def build_html():
     parts = []
@@ -1152,14 +1205,16 @@ def build_html():
         """
     <div class="sidebar-section">
       <h3>1. Escolha a condi\u00e7\u00e3o</h3>
-      <div class="selector-group" id="syndromeSelect">"""
+      <div class="selector-group" id="syndromeSelect" role="radiogroup" aria-label="Escolha a condi\u00e7\u00e3o do aluno">"""
     )
 
     for i, s in enumerate(syndromes):
         active = " active" if i == 0 else ""
+        marcado = "true" if i == 0 else "false"
+        tab = "0" if i == 0 else "-1"
         parts.append(
             f"""
-        <button class="selector-item{active}" data-id="{s['id']}" onclick="selectSyndrome('{s['id']}')">
+        <button class="selector-item{active}" role="radio" aria-checked="{marcado}" tabindex="{tab}" data-id="{s['id']}" onclick="selectSyndrome('{s['id']}')">
           <span class="icon">{s['icon']}</span>
           <span class="label">{s['name']}</span>
           <span class="badge">{s['levels'][0]['label']}</span>
@@ -1169,7 +1224,7 @@ def build_html():
     parts.append(
         """
       </div>
-      <div class="description" id="syndromeDesc"></div>
+      <div class="description" id="syndromeDesc" aria-live="polite" aria-atomic="true"></div>
     </div>"""
     )
 
@@ -1178,15 +1233,17 @@ def build_html():
         """
     <div class="sidebar-section">
       <h3>2. N\u00edvel de suporte</h3>
-      <div class="level-selector" id="levelSelect">"""
+      <div class="level-selector" id="levelSelect" role="radiogroup" aria-label="N\u00edvel de suporte necess\u00e1rio">"""
     )
 
     level_labels = ["Suporte Leve", "Suporte Moderado", "Suporte Substancial"]
     for i in range(3):
         active = " active" if i == 0 else ""
+        marcado = "true" if i == 0 else "false"
+        tab = "0" if i == 0 else "-1"
         parts.append(
             f"""
-        <button class="level-btn{active}" data-level="{i+1}" onclick="selectLevel({i+1})">
+        <button class="level-btn{active}" role="radio" aria-checked="{marcado}" tabindex="{tab}" data-level="{i+1}" onclick="selectLevel({i+1})">
           N{i+1}
           <span class="lv">{level_labels[i]}</span>
         </button>"""
@@ -1203,14 +1260,16 @@ def build_html():
         """
     <div class="sidebar-section">
       <h3>3. Escolha a atividade</h3>
-      <div class="selector-group" id="activitySelect">"""
+      <div class="selector-group" id="activitySelect" role="radiogroup" aria-label="Escolha a atividade adaptada">"""
     )
 
     for i, act in enumerate(activities):
         active = " active" if i == 0 else ""
+        marcado = "true" if i == 0 else "false"
+        tab = "0" if i == 0 else "-1"
         parts.append(
             f"""
-        <button class="selector-item{active}" data-id="{act['id']}" onclick="selectActivity('{act['id']}')">
+        <button class="selector-item{active}" role="radio" aria-checked="{marcado}" tabindex="{tab}" data-id="{act['id']}" onclick="selectActivity('{act['id']}')">
           <span class="icon">{act['icon']}</span>
           <span class="label">{act['name']}</span>
         </button>"""
@@ -1223,11 +1282,24 @@ def build_html():
   </div>"""
     )
 
-    # Main area
+    # Main area (estrutura fixa; conteúdo dinâmico preenchido pelo JS)
     parts.append(
         """
   <div class="main-area" id="mainArea">
-    <!-- Rendered by JS -->
+    <div class="activity-card">
+      <div class="activity-header">
+        <div class="big-icon" id="activityIcon"></div>
+        <div class="info">
+          <h2 id="activityTitle"></h2>
+          <p id="activityDesc"></p>
+        </div>
+      </div>
+      <div class="activity-body" id="activityBody"></div>
+      <div class="adaptation-legend">
+        <h4>\ud83d\udccb Adapta\u00e7\u00f5es para esta condi\u00e7\u00e3o</h4>
+        <div class="tags" id="adaptTags"></div>
+      </div>
+    </div>
   </div>
 </div>"""
     )
@@ -1254,13 +1326,13 @@ def build_html():
     parts.append(
         """<script>
 var SYNDROMES = """
-        + str(syndromes).replace("'", "\\'")
+        + js_json(syndromes)
         + """;
 var ACTIVITIES = """
-        + str(activities).replace("'", "\\'")
+        + js_json(activities)
         + """;
 var SVGS = """
-        + str(svgs).replace("'", "\\'")
+        + js_json(svgs)
         + """;
 
 var currentSyndrome = SYNDROMES[0].id;
@@ -1272,6 +1344,7 @@ function selectSyndrome(id) {
   document.querySelectorAll('#syndromeSelect .selector-item').forEach(function(b) {
     b.classList.toggle('active', b.dataset.id === id);
   });
+  sincronizarA11y('syndromeSelect');
   render();
 }
 
@@ -1280,6 +1353,7 @@ function selectLevel(lv) {
   document.querySelectorAll('#levelSelect .level-btn').forEach(function(b) {
     b.classList.toggle('active', parseInt(b.dataset.level) === lv);
   });
+  sincronizarA11y('levelSelect');
   render();
 }
 
@@ -1288,7 +1362,50 @@ function selectActivity(id) {
   document.querySelectorAll('#activitySelect .selector-item').forEach(function(b) {
     b.classList.toggle('active', b.dataset.id === id);
   });
+  sincronizarA11y('activitySelect');
   render();
+}
+
+/* ===== Acessibilidade: radiogroup com navegação por teclado ===== */
+
+function sincronizarA11y(idGrupo) {
+  // Mantém aria-checked e tabindex (roving) sincronizados com a classe .active
+  document.querySelectorAll('#' + idGrupo + ' [role="radio"]').forEach(function(b) {
+    var ativo = b.classList.contains('active');
+    b.setAttribute('aria-checked', ativo ? 'true' : 'false');
+    b.tabIndex = ativo ? 0 : -1;
+  });
+}
+
+function navegarComTeclado(idGrupo) {
+  var grupo = document.getElementById(idGrupo);
+  if (!grupo) return;
+  var itens = Array.prototype.slice.call(grupo.querySelectorAll('[role="radio"]'));
+  if (!itens.length) return;
+  grupo.addEventListener('keydown', function(e) {
+    var idx = itens.indexOf(document.activeElement);
+    if (idx === -1) return;  // foco fora do grupo
+    var alvo = -1;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') alvo = (idx + 1) % itens.length;
+    else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') alvo = (idx - 1 + itens.length) % itens.length;
+    else if (e.key === 'Home') alvo = 0;
+    else if (e.key === 'End') alvo = itens.length - 1;
+    else if (e.key === ' ' || e.key === 'Enter') return;  // ativação nativa do <button>
+    if (alvo !== -1) {
+      e.preventDefault();
+      itens[alvo].focus();
+      itens[alvo].click();  // dispara select* correspondente
+    }
+  });
+}
+
+function initA11y() {
+  navegarComTeclado('syndromeSelect');
+  navegarComTeclado('levelSelect');
+  navegarComTeclado('activitySelect');
+  sincronizarA11y('syndromeSelect');
+  sincronizarA11y('levelSelect');
+  sincronizarA11y('activitySelect');
 }
 
 function getSyndrome(id) { return SYNDROMES.find(function(s) { return s.id === id; }); }
@@ -1311,14 +1428,26 @@ function render() {
 
   // Apply CSS vars
   var c = syn.colors;
-  document.querySelector('.activity-card').style.setProperty('--bg-soft', c.bgSoft);
-  document.querySelector('.activity-card').style.setProperty('--accent-color', c.accent);
-  document.querySelector('.activity-card').style.setProperty('--text-color', '#1a1a2e');
-  document.querySelector('.activity-card').style.setProperty('--text-muted', c.textMuted);
-  document.querySelector('.activity-card').style.setProperty('--border-color', c.border);
-  document.querySelector('.activity-card').style.setProperty('--font-size', lv.fontSize);
-  document.querySelector('.activity-card').style.setProperty('--line-height', lv.spacing);
-  document.querySelector('.activity-card').style.setProperty('--action-height', lv.actionH);
+  var card = document.querySelector('.activity-card');
+  card.style.setProperty('--bg-soft', c.bgSoft);
+  card.style.setProperty('--accent-color', c.accent);
+  card.style.setProperty('--text-color', '#1a1a2e');
+  card.style.setProperty('--text-muted', c.textMuted);
+  card.style.setProperty('--border-color', c.border);
+  card.style.setProperty('--font-size', lv.fontSize);
+  card.style.setProperty('--line-height', lv.spacing);
+  card.style.setProperty('--action-height', lv.actionH);
+
+  // Header: atividade selecionada
+  document.getElementById('activityIcon').textContent = act.icon;
+  document.getElementById('activityTitle').textContent = act.name;
+  document.getElementById('activityDesc').textContent = act.desc;
+
+  // Descrição da condição na sidebar (mostra antes de preencher, para que
+  // leitores de tela anunciem o texto completo via aria-live/aria-atomic)
+  var desc = document.getElementById('syndromeDesc');
+  desc.classList.add('show');
+  desc.textContent = syn.name + ' \u00b7 ' + syn.adaptations.join(', ');
 
   // Render body
   var body = document.getElementById('activityBody');
@@ -1361,8 +1490,9 @@ function render() {
   });
 }
 
-// Initial render
+// Initial render + acessibilidade
 document.addEventListener('DOMContentLoaded', function() {
+  initA11y();
   render();
 });
 </script></body></html>"""
@@ -1371,8 +1501,14 @@ document.addEventListener('DOMContentLoaded', function() {
     return "".join(parts)
 
 
-html = build_html()
-with open("atividades_adaptaveis.html", "w", encoding="utf-8") as f:
-    f.write(html)
-print("OK - File created: atividades_adaptaveis.html")
-print(f"Size: {len(html)} bytes")
+def main() -> None:
+    """Gera atividades_adaptaveis.html com HTML/JS/JSON 100% válidos."""
+    html = _fix_surrogates(build_html())
+    with open("atividades_adaptaveis.html", "w", encoding="utf-8") as f:
+        f.write(html)
+    print("OK - File created: atividades_adaptaveis.html")
+    print(f"Size: {len(html)} bytes")
+
+
+if __name__ == "__main__":
+    main()

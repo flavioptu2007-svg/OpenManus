@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>History Quiz — ProfHistória IA</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❓</text></svg>">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js"></script>
@@ -1401,7 +1403,7 @@
         setJogoFinalizado(true);
         SoundFX.win();
         prog.totalJogadas++;
-        prog.ultimosAcertos.push(acertos/perguntas.length);
+        prog.ultimosAcertos.push(acertos/questions.length);
         if (acertos === questions.length) prog.perfeitos++;
         if (modo === "timer" && timerRestante > 0) prog.timersRapidos++;
         // Check achievements
@@ -1484,7 +1486,7 @@
                 className: "px-4 py-2 rounded-lg text-sm font-medium " + (modo===m?"bg-indigo-600 text-white":"bg-gray-100 border")
               }, m==="study"? "\u{1F4D6} Study" : m==="quiz"? "\u{1F3AF} Quiz" : "\u{23F1} Timer"))
             ),
-            (perguntas.length > 0) && React.createElement("button", {
+            (questions.length > 0) && React.createElement("button", {
               onClick: iniciarQuiz,
               className: "w-full py-3 bg-indigo-700 text-white rounded-lg font-bold text-lg hover:bg-indigo-800 transition"
             }, "\u{25B6} Start " + (modo==="study"?"Study":modo==="quiz"?"Quiz":"Timer") + " (" + questions.length + " questions)")

@@ -232,13 +232,6 @@ const I18N = (() => {
     document.head.appendChild(style);
   }
 
-  // ── RE-RENDER ALL ON LOCALE CHANGE ─────────────────────────
-  onChange((locale) => {
-    updateSwitcher();
-    document.dispatchEvent(new CustomEvent('i18n-changed', { detail: { locale } }));
-    updateDOM();
-  });
-
   // ── PUBLIC API ─────────────────────────────────────────────
   const I18N_EXPORTS = {
     register,
@@ -255,6 +248,14 @@ const I18N = (() => {
     onChange,
     _locales: LOCALES,
   };
+
+  // ── RE-RENDER ALL ON LOCALE CHANGE ─────────────────────────
+  // (registrado APOS a definicao de I18N_EXPORTS para evitar TDZ)
+  onChange((locale) => {
+    updateSwitcher();
+    document.dispatchEvent(new CustomEvent('i18n-changed', { detail: { locale } }));
+    updateDOM();
+  });
 
   return I18N_EXPORTS;
 })();

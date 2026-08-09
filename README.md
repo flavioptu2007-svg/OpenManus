@@ -798,6 +798,42 @@ This repository includes several standalone HTML educational resources for Histo
 
 All HTML files are **zero-dependency** (open directly in browser) or use **CDN** (React, Tailwind).
 
+### 🖥️ Local Portal (LAN) & 📱 PWA
+
+The educational pages can be served on the local network so they open on phones/tablets (e.g. `http://192.168.15.17:8765/`):
+
+- `index.html` — portal landing page listing every project (each card carries the emoji used as its favicon).
+- `manifest.json` + `sw.js` — PWA support (installable with full icons on secure contexts: HTTPS or localhost).
+- `scripts/servir_projetos.sh` — start/stop helper for the local HTTP server.
+- `~/.config/systemd/user/portal-projetos.service` — systemd user service that keeps the portal up across reboots (no sudo needed; `loginctl enable-linger` must be on).
+
+### 🛠️ Portal Maintenance Scripts
+
+| Script | Purpose | Key commands |
+|---|---|---|
+| `scripts/gerar_favicon.py` | Regenerates **all** portal icons (favicon.ico, favicon.png, apple-touch-icon 180x180, PWA 192/512, maskable 512) from one design | `python3 scripts/gerar_favicon.py`
+| `scripts/adicionar_favicons.py` | Injects `<link rel="icon">` (emoji data-URI) + `<link rel="apple-touch-icon">` into every project's `<head>` | `python3 scripts/adicionar_favicons.py` · `--check` · `--only quiz`
+| `scripts/validar_mobile.py` | Playwright battery over all portal pages: mobile viewport (390x844), JS errors, horizontal overflow, broken resources (HTTP >= 400 / network failures) | `python3 scripts/validar_mobile.py` · `--only quiz` · `--json out.json` · `--base-url http://IP:8765`
+| `scripts/check_html_js.py` | Validates inline `<script>` syntax of HTML files via `node --check` | `python3 scripts/check_html_js.py *.html`
+
+Workflow after editing a project's HTML:
+
+```bash
+# 1. Make sure the JS is valid
+python3 scripts/check_html_js.py meu_projeto.html
+
+# 2. Regenerate icons if the portal design changed
+python3 scripts/gerar_favicon.py
+
+# 3. (Re)add favicon + apple-touch-icon links to every project head
+python3 scripts/adicionar_favicons.py
+
+# 4. Validate the whole portal on a mobile viewport (exit 0 = all OK)
+python3 scripts/validar_mobile.py
+```
+
+Exit codes for `validar_mobile.py`: `0` = all pages OK, `1` = at least one page failed, `2` = infrastructure problem (portal offline / Chromium missing). It auto-detects the Playwright Chromium binary and skips favicon 404s by default (`--no-favicon-ok` turns them into failures).
+
 ---
 
 ## Cite

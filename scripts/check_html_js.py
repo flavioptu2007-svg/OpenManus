@@ -3,16 +3,62 @@
 
 Uso: python3 check_html_js.py arquivo1.html arquivo2.html ...
 Requisito: `node` instalado (usa `node --check` para validar cada bloco).
+
+Regras:
+  - Scripts externos (<script src=...>) são ignorados;
+  - Tipos de dados (importmap, application/json, ld+json, text/template,
+    text/html, text/plain) são ignorados — não são JavaScript;
+  - Blocos JS puros (sem type, module, text/javascript, etc.) são validados
+    com `node --check`;
+  - Blocos text/babel ou text/jsx também são validados: JS puro neles passa;
+    JSX real falha com "Unexpected token '<'" e é tratado como esperado
+    (transpilado pelo Babel no navegador), enquanto qualquer outro erro de
+    sintaxe é reportado como falha real.
 """
+
+import os
 import re
 import subprocess
 import sys
 import tempfile
 
 
-SCRIPT_RE = re.compile(
-    r"<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>", re.DOTALL | re.IGNORECASE
-)
+# Captura o atributo do bloco (grupo 1) e o conteúdo (grupo 2).
+SCRIPT_RE = re.compile(r"<script\b([^>]*)>(.*?)</script>", re.DOTALL | re.IGNORECASE)
+
+# Tipos que nunca são JavaScript (dados ou templates).
+TIPOS_NAO_JS = {
+    "importmap",
+    "application/json",
+    "application/ld+json",
+    "text/template",
+    "text/html",
+    "text/plain",
+    "application/template",
+}
+
+# Tipos tratados pelo navegador como JavaScript puro (ou sem type).
+TIPOS_JS = {
+    "",
+    "text/javascript",
+    "application/javascript",
+    "module",
+    "text/ecmascript",
+    "application/ecmascript",
+}
+
+# Tipos que podem conter JS puro OU JSX (transpilado pelo Babel no browser).
+TIPOS_JSX = {"text/babel", "text/jsx", "application/babel"}
+
+
+def _tipo_do_bloco(atributos: str) -> str:
+    # Âncoras (?:^|\s) evitam casar data-src=/data-type=
+    if re.search(r"(?:^|\s)src\s*=", atributos, re.IGNORECASE):
+        return "externo"
+    m = re.search(r"(?:^|\s)type\s*=\s*[\"']([^\"']*)[\"']", atributos, re.IGNORECASE)
+    if m is None:
+        return ""
+    return m.group(1).strip().lower()
 
 
 def checar(arquivo: str) -> int:
@@ -26,9 +72,14 @@ def checar(arquivo: str) -> int:
         print(f"⚠️  {arquivo}: nenhum bloco <script> inline encontrado")
         return 0
     falhas = 0
-    for i, js in enumerate(blocos, 1):
-        if not js.strip():
+    jsx_ignorados = 0  # blocos JSX legítimos (Babel) — esperados
+    js_validados = 0  # blocos que passaram no node --check
+    for i, (atributos, js) in enumerate(blocos, 1):
+        tipo = _tipo_do_bloco(atributos)
+        if not js.strip() or tipo == "externo" or tipo in TIPOS_NAO_JS:
             continue
+        if tipo not in TIPOS_JS and tipo not in TIPOS_JSX:
+            continue  # type desconhecido — não arriscar falso negativo
         with tempfile.NamedTemporaryFile(
             "w", suffix=".js", delete=False, encoding="utf-8"
         ) as f:
@@ -42,16 +93,28 @@ def checar(arquivo: str) -> int:
             print("⚠️  node não disponível — pulando validação")
             return 0
         finally:
-            import os
-
             os.unlink(tmp)
         if r.returncode != 0:
+            stderr = (r.stderr or r.stdout).strip()
+            if tipo in TIPOS_JSX and "Unexpected token '<'" in stderr:
+                # JSX legítimo — será transpilado pelo Babel no navegador
+                jsx_ignorados += 1
+                continue
             falhas += 1
-            primeira = (r.stderr or r.stdout).strip().splitlines()
+            primeira = stderr.splitlines()
             detalhe = primeira[-1] if primeira else "erro desconhecido"
             print(f"❌ {arquivo} bloco {i}: ERRO DE SINTAXE -> {detalhe[:160]}")
         else:
+            js_validados += 1
             print(f"✅ {arquivo} bloco {i}: sintaxe OK")
+    # Nenhum bloco JS passou na validação: informa o motivo.
+    if falhas == 0 and js_validados == 0:
+        if jsx_ignorados:
+            print(
+                f"⚠️  {arquivo}: apenas blocos JSX/Babel (pulados — transpilados no navegador)"
+            )
+        else:
+            print(f"⚠️  {arquivo}: nenhum bloco <script> JS puro encontrado")
     return falhas
 
 

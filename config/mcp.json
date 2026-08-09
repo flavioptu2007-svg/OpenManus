@@ -1,0 +1,9 @@
+{
+    "mcpServers": {
+        "brave": {
+            "type": "stdio",
+            "command": "python3",
+            "args": ["/home/flavio/OpenManus/brave_search_mcp.py"]
+        }
+    }
+}

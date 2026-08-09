@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taikyoku · Go IA — Tabuleiro &amp; Inteligência Artificial</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23d9a05b'/><circle cx='36' cy='38' r='11' fill='%23111'/><circle cx='62' cy='64' r='11' fill='%23fff'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   ESTÉTICA — papel de arroz + madeira clara (kaya)
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --papel:#f4ecd9;
+  --papel-2:#ece2c8;
+  --tinta:#2c2418;
+  --madeira:#d8a85c;
+  --madeira-esc:#b98a3e;
+  --ink:#3a2d1b;
+  --preto:#15151a;
+  --ouro:#b08a3e;
+  --ouro-claro:#d8b96a;
+  --verde:#3f7d4f;
+  --vermelho:#a43b2f;
+  --azul:#44556e;
+  --texto-sec:#6f6248;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Cormorant Garamond',Georgia,serif;
+  color:var(--tinta);
+  line-height:1.5;
+  min-height:100vh;
+  padding:20px 16px 56px;
+  font-size:18px;
+  background:
+    radial-gradient(1100px 700px at 15% -5%, rgba(216,168,92,.16) 0%, transparent 55%),
+    radial-gradient(900px 650px at 95% 105%, rgba(180,150,100,.18) 0%, transparent 55%),
+    linear-gradient(180deg,var(--papel) 0%, var(--papel-2) 100%);
+}
+/* fibra de papel de arroz (turbulência SVG, sutil) */
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.55;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='260' height='260' filter='url(%23n)' opacity='0.05'/></svg>");
+}
+.wrap{max-width:1120px;margin:0 auto;position:relative;z-index:1}
+
+/* ── Cabeçalho ─────────────────────────────────────────── */
+header{
+  display:flex;align-items:center;gap:18px;
+  padding:18px 24px;
+  margin-bottom:18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.15));
+  border:1.5px solid rgba(176,138,62,.5);
+  border-radius:14px;
+  box-shadow:0 4px 20px rgba(90,70,30,.14);
+  flex-wrap:wrap;
+}
+.logo-kanji{
+  font-family:'Noto Serif JP',serif;
+  font-weight:900;font-size:40px;line-height:1;
+  color:#fff;
+  background:linear-gradient(160deg,var(--tinta),#4a3a22);
+  border-radius:12px;
+  padding:10px 12px;
+  box-shadow:0 4px 12px rgba(0,0,0,.3);
+  border:1px solid var(--ouro);
+}
+.titulo h1{
+  font-family:'Noto Serif JP',serif;
+  font-weight:900;font-size:clamp(22px,3.4vw,30px);
+  letter-spacing:1px;
+  color:#3a2a15;
+  line-height:1.1;
+}
+.titulo .sub{font-style:italic;color:var(--texto-sec);font-size:15.5px}
+.badges{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── Rank badges ───────────────────────────────────────── */
+.badge-rank{
+  font-family:'Noto Serif JP',serif;
+  font-size:13.5px;font-weight:700;
+  padding:6px 12px;border-radius:999px;
+  border:1.5px solid;cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease;
+  background:rgba(255,255,255,.5);
+  white-space:nowrap;
+}
+.badge-rank:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(0,0,0,.18)}
+.badge-rank.ativo{transform:translateY(-2px)}
+.badge-r1{color:var(--verde);border-color:var(--verde)}
+.badge-r1.ativo{background:var(--verde);color:#fff;box-shadow:0 4px 12px rgba(63,125,79,.4)}
+.badge-r2{color:var(--ouro);border-color:var(--ouro)}
+.badge-r2.ativo{background:var(--ouro);color:#fff;box-shadow:0 4px 12px rgba(176,138,62,.4)}
+.badge-r3{color:var(--vermelho);border-color:var(--vermelho)}
+.badge-r3.ativo{background:var(--vermelho);color:#fff;box-shadow:0 4px 12px rgba(164,59,47,.4)}
+.badge-rank .dan{display:block;font-size:10.5px;font-weight:600;letter-spacing:1.5px;opacity:.85}
+
+/* ── Layout principal ──────────────────────────────────── */
+.main{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+
+.board-shell{
+  position:relative;
+  flex:1 1 520px;
+  min-width:320px;
+}
+#tabuleiro{
+  width:100%;
+  height:auto;
+  display:block;
+  border-radius:14px;
+  box-shadow:0 14px 44px rgba(70,50,20,.35), inset 0 0 0 1px rgba(0,0,0,.12);
+  cursor:pointer;
+  touch-action:manipulation;
+}
+
+/* ── Thinking: pedras orbitando ────────────────────────── */
+.thinking{
+  position:absolute;inset:0;z-index:6;
+  display:none;
+  align-items:center;justify-content:center;flex-direction:column;gap:12px;
+  background:rgba(244,236,217,.25);
+  backdrop-filter:blur(1.5px);
+  border-radius:14px;
+  pointer-events:none;
+}
+.thinking.visivel{display:flex}
+.orbita{
+  position:relative;width:70px;height:70px;
+  animation:girar 2.6s linear infinite;
+}
+.orbita .pedra{
+  position:absolute;width:17px;height:17px;border-radius:50%;
+  box-shadow:0 2px 5px rgba(0,0,0,.35);
+}
+.orbita .p1{top:-6px;left:50%;transform:translateX(-50%);background:radial-gradient(circle at 32% 30%,#fff,#a9a9a9 60%,#777)}
+.orbita .p2{top:50%;right:-7px;transform:translateY(-50%);background:radial-gradient(circle at 32% 30%,#333,#000)}
+.orbita .p3{bottom:-6px;left:50%;transform:translateX(-50%);background:radial-gradient(circle at 32% 30%,#fff,#b8b8b8 60%,#8a8a8a)}
+@keyframes girar{to{transform:rotate(360deg)}}
+.thinking .txt{
+  font-family:'Noto Serif JP',serif;font-weight:700;font-size:16px;color:#4a3518;
+  background:rgba(255,255,255,.72);
+  padding:5px 16px;border-radius:999px;
+  border:1px solid rgba(176,138,62,.6);
+  box-shadow:0 3px 10px rgba(0,0,0,.12);
+}
+.thinking .txt .piscar::after{content:"";animation:pontos 1.2s steps(4,end) infinite}
+@keyframes pontos{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+
+/* ── Painel lateral ────────────────────────────────────── */
+.painel{flex:0 1 340px;min-width:280px;display:flex;flex-direction:column;gap:14px}
+.painel-card{
+  background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,.25));
+  border:1.5px solid rgba(176,138,62,.45);
+  border-radius:12px;
+  padding:14px 16px;
+  box-shadow:0 3px 14px rgba(90,70,30,.12);
+}
+.painel-card h3{
+  font-family:'Noto Serif JP',serif;
+  font-size:14px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--texto-sec);
+  margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;
+}
+.painel-card h3::before{content:"";width:5px;height:14px;border-radius:3px;background:var(--ouro)}
+
+/* status do turno */
+.status-turno{display:flex;align-items:center;gap:12px}
+.pedra-status{
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  box-shadow:0 3px 8px rgba(0,0,0,.3);
+}
+.pedra-status.preta{background:radial-gradient(circle at 32% 30%,#3c3c44,#0a0a0d 65%)}
+.pedra-status.branca{background:radial-gradient(circle at 32% 30%,#fff,#c9c9c9 65%)}
+.status-turno .txt{font-size:17.5px;font-weight:600}
+.status-turno .txt small{display:block;color:var(--texto-sec);font-weight:500;font-size:13.5px;font-style:italic}
+
+/* intenção da IA */
+.intento{
+  background:rgba(255,255,255,.65);
+  border:1.5px dashed var(--ouro);
+  border-radius:10px;
+  padding:10px 13px;
+  font-style:italic;
+  font-size:16px;
+  min-height:52px;
+  color:#4a3518;
+  transition:opacity .4s ease;
+}
+.intento.vazio{opacity:.45}
+.intento .coord{font-weight:700;color:var(--vermelho);font-style:normal;font-family:'Noto Serif JP',serif}
+
+/* controles */
+.linhas{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.btn{
+  font-family:'Noto Serif JP',serif;
+  font-size:13.5px;font-weight:700;letter-spacing:.5px;
+  padding:9px 15px;border-radius:9px;
+  border:1.5px solid var(--ouro);
+  cursor:pointer;
+  background:linear-gradient(180deg,#fffdf4,#efe2c2);
+  color:#3a2a15;
+  transition:transform .13s ease, box-shadow .13s ease;
+  box-shadow:0 2px 6px rgba(90,70,30,.14);
+}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(90,70,30,.2)}
+.btn:active{transform:translateY(0)}
+.btn.escuro{background:linear-gradient(180deg,#3a2d1c,#241a0d);border-color:#241a0d;color:#f0e6c8}
+.btn.escuro:hover{box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.btn[disabled]{opacity:.4;cursor:not-allowed;transform:none}
+.btn.ativo{background:var(--ouro);color:#fff;border-color:var(--ouro);box-shadow:0 3px 10px rgba(176,138,62,.4)}
+select.btn{appearance:none;padding-right:26px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%236f6248'/></svg>");background-repeat:no-repeat;background-position:right 10px center}
+
+/* bowls de capturas + liderança */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.kpi{
+  background:rgba(255,255,255,.5);
+  border:1.5px solid rgba(176,138,62,.4);
+  border-radius:10px;
+  padding:9px 12px;
+  text-align:center;
+}
+.kpi .r{font-size:11.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--texto-sec);font-weight:700}
+.kpi .v{font-family:'Noto Serif JP',serif;font-size:20px;font-weight:700}
+.kpi .v b{font-size:13px;font-weight:600;color:var(--texto-sec)}
+.lideranca .v{color:var(--vermelho)}
+
+/* lista de lances (review) */
+.movelist{
+  max-height:150px;overflow-y:auto;
+  font-family:'Noto Serif JP',serif;
+  font-size:13px;line-height:1.9;
+  display:flex;flex-wrap:wrap;gap:4px;
+  margin-top:4px;
+}
+.movelist .mv{
+  padding:1px 8px;border-radius:6px;
+  border:1px solid transparent;cursor:pointer;
+  color:var(--texto-sec);
+  transition:all .12s ease;
+}
+.movelist .mv:hover{background:rgba(176,138,62,.18);border-color:var(--ouro)}
+.movelist .mv.key{background:rgba(164,59,47,.12);color:var(--vermelho);border-color:rgba(164,59,47,.5);font-weight:700}
+.movelist .mv.ativo{background:var(--ouro);color:#fff;border-color:var(--ouro)}
+.movelist .mv.handicap{background:rgba(176,138,62,.15);border-color:var(--ouro);color:#4a3518;font-weight:700}
+.movelist .mv.handicap.ativo{background:var(--ouro);color:#fff}
+
+/* lista de histórico de partidas */
+.histlist{max-height:170px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.hist-item{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 9px;border:1px solid rgba(176,138,62,.4);border-radius:8px;background:rgba(255,255,255,.45);font-size:13px}
+.hist-item .hi-info{line-height:1.35}
+.hist-item .hi-info b{color:var(--vermelho)}
+.btn.mini{padding:4px 8px;font-size:12px;border-radius:7px}
+
+/* ── Modal fim de jogo ─────────────────────────────────── */
+.fim{
+  position:fixed;inset:0;z-index:40;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(40,28,12,.6);
+  backdrop-filter:blur(5px);
+  padding:20px;
+}
+.fim.visivel{display:flex;animation:aparecer .35s ease}
+@keyframes aparecer{from{opacity:0}to{opacity:1}}
+.fim-card{
+  background:linear-gradient(180deg,var(--papel),var(--papel-2));
+  border:2px solid var(--ouro);
+  border-radius:16px;
+  padding:28px 30px;
+  max-width:460px;width:100%;
+  text-align:center;
+  box-shadow:0 24px 70px rgba(0,0,0,.5);
+  animation:subir .45s cubic-bezier(.2,.9,.3,1.15);
+}
+@keyframes subir{from{transform:translateY(34px) scale(.95);opacity:0}to{transform:none;opacity:1}}
+.fim-card h2{
+  font-family:'Noto Serif JP',serif;font-weight:900;font-size:28px;
+  letter-spacing:2px;color:#3a2a15;text-transform:uppercase;
+}
+.fim-card .resultado{font-size:22px;font-weight:700;color:var(--vermelho);margin:6px 0 4px}
+.fim-card .detalhe{font-size:15.5px;color:var(--texto-sec);margin-bottom:14px}
+.fim-acoes{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+
+/* ── Modo review ───────────────────────────────────────── */
+.review{
+  margin-top:16px;
+  border-top:1.5px dashed var(--ouro);
+  padding-top:14px;
+  display:none;
+}
+.review.visivel{display:block}
+.review .linha-rev{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.review input[type=range]{flex:1;accent-color:var(--ouro);height:26px}
+.review .coment{
+  font-style:italic;font-size:15.5px;color:#4a3518;
+  background:rgba(255,255,255,.6);
+  border:1px solid rgba(176,138,62,.5);
+  border-radius:9px;padding:8px 12px;min-height:40px;
+}
+.ticks{display:flex;gap:2px;margin:2px 0 8px;flex-wrap:wrap}
+.ticks .t{width:14px;height:14px;border-radius:50%;border:1px solid var(--ouro);background:rgba(255,255,255,.4);position:relative;font-size:9px;line-height:14px;text-align:center;color:var(--texto-sec)}
+.ticks .t.key{background:rgba(164,59,47,.2);border-color:var(--vermelho);color:var(--vermelho);font-weight:700}
+.ticks .t.hoshi{background:rgba(176,138,62,.35);color:#3a2a15;font-weight:700}
+.ticks .t.ativo{background:var(--ouro);color:#fff;border-color:var(--ouro)}
+
+footer{text-align:center;color:var(--texto-sec);font-style:italic;font-size:14.5px;margin-top:26px;border-top:1.5px solid rgba(176,138,62,.4);padding-top:14px}
+
+@media(max-width:760px){
+  .painel{flex-basis:100%}
+  .badges{margin-left:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo-kanji">囲碁</div>
+    <div class="titulo">
+      <h1>Taikyoku · Go IA</h1>
+      <div class="sub">Tabuleiro tradicional, inteligência artificial — AlphaGo encontra o Nihon Ki-in</div>
+    </div>
+    <div class="badges" id="badgesAI">
+      <span class="badge-rank badge-r1" id="nivel1" onclick="definirNivel(1)">初段 <span class="dan">Beginner Dan</span></span>
+      <span class="badge-rank badge-r2" id="nivel2" onclick="definirNivel(2)">四段 <span class="dan">Mid Dan</span></span>
+      <span class="badge-rank badge-r3" id="nivel3" onclick="definirNivel(3)">九段 <span class="dan">High Dan</span></span>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- Tabuleiro -->
+    <div class="board-shell">
+      <canvas id="tabuleiro"></canvas>
+      <div class="thinking" id="thinking">
+        <div class="orbita"><span class="pedra p1"></span><span class="pedra p2"></span><span class="pedra p3"></span></div>
+        <div class="txt">Pensando<span class="piscar"></span></div>
+      </div>
+    </div>
+
+    <!-- Painel lateral -->
+    <div class="painel">
+      <div class="painel-card">
+        <h3>Status</h3>
+        <div class="status-turno">
+          <div class="pedra-status preta" id="statusPedra"></div>
+          <div class="txt" id="statusTxt">Seu lance — Preto<small>você joga primeiro · komi 7.5 para a IA</small></div>
+        </div>
+      </div>
+
+      <div class="painel-card">
+        <h3 id="intentoTitulo">Intenção da IA</h3>
+        <div class="intento vazio" id="intento">A IA explicará cada lance aqui…</div>
+      </div>
+
+      <div class="painel-card">
+        <h3>Partida</h3>
+        <div class="kpis">
+          <div class="kpi"><div class="r">⚫ Capturas</div><div class="v"><b id="capP">0</b> pedras</div></div>
+          <div class="kpi"><div class="r">⚪ Capturas</div><div class="v"><b id="capB">0</b> pedras</div></div>
+          <div class="kpi lideranca"><div class="r">Liderança (est.)</div><div class="v" id="lider">—</div></div>
+          <div class="kpi"><div class="r">Lances</div><div class="v" id="lanceNum">0</div></div>
+        </div>
+        <div class="linhas" style="margin-bottom:10px">
+          <button class="btn" id="modoAI" onclick="definirModo(false)">🤖 vs IA</button>
+          <button class="btn" id="modoPvp" onclick="definirModo(true)">👥 PvP — 2 jogadores</button>
+        </div>
+        <div class="linhas" style="margin-bottom:10px" id="linhaCor">
+          <button class="btn" id="corPreta" onclick="definirCor(1)">🖤 Jogar de Preto</button>
+          <button class="btn" id="corBranca" onclick="definirCor(2)">🤍 Jogar de Branco</button>
+        </div>
+        <div class="linhas" style="margin-bottom:10px" id="linhaHandicap">
+          <select class="btn" id="handicapSel" onchange="reiniciar()" title="Pedras de handicap para você (jogador de preto) — sem komi, a IA (branca) joga primeiro">
+            <option value="0" selected>Handicap: nenhum</option>
+            <option value="2">Handicap: 2 pedras</option>
+            <option value="3">Handicap: 3 pedras</option>
+            <option value="4">Handicap: 4 pedras</option>
+            <option value="5">Handicap: 5 pedras</option>
+            <option value="6">Handicap: 6 pedras</option>
+            <option value="7">Handicap: 7 pedras</option>
+            <option value="8">Handicap: 8 pedras</option>
+            <option value="9">Handicap: 9 pedras</option>
+          </select>
+        </div>
+        <div class="linhas" style="margin-bottom:10px">
+          <select class="btn" id="komiSel" onchange="reiniciar()" title="Komi (compensação para o Branco) — jogos sem handicap">
+            <option value="0">Komi: 0</option>
+            <option value="0.5">Komi: 0.5</option>
+            <option value="2.5">Komi: 2.5</option>
+            <option value="5.5">Komi: 5.5</option>
+            <option value="6.5">Komi: 6.5</option>
+            <option value="7.5" selected>Komi: 7.5</option>
+          </select>
+        </div>
+        <div class="linhas" style="margin-top:12px">
+          <select class="btn" id="tamanhoSel" onchange="reiniciar()">
+            <option value="9" selected>9×9 · Tabuleiro pequeno</option>
+            <option value="13">13×13 · Médio</option>
+            <option value="19">19×19 · Grande (honinbo)</option>
+          </select>
+        </div>
+        <div class="linhas">
+          <button class="btn" onclick="passar()">✋ Passar</button>
+          <button class="btn escuro" onclick="desistir()">🏳 Desistir</button>
+          <button class="btn" onclick="reiniciar()">🔄 Novo jogo</button>
+          <button class="btn" id="btnHeat" onclick="alternarHeatmap()">🗺 Heatmap</button>
+          <button class="btn" id="btnSom" onclick="alternarSom()">🔊 Som</button>
+        </div>
+      </div>
+
+      <div class="painel-card">
+        <h3>Registro de lances</h3>
+        <div class="movelist" id="movelist"><span style="color:var(--texto-sec);font-style:italic">Os lances aparecem aqui…</span></div>
+      </div>
+
+      <!-- Histórico de partidas + exportação SGF -->
+      <div class="painel-card">
+        <h3>📜 Histórico</h3>
+        <div class="linhas" style="margin-bottom:8px">
+          <button class="btn" onclick="exportarSGF()">💾 Exportar SGF (atual)</button>
+          <button class="btn" onclick="limparHistorico()">🧹 Limpar</button>
+        </div>
+        <div class="histlist" id="histList"><span style="color:var(--texto-sec);font-style:italic">Nenhuma partida registrada…</span></div>
+      </div>
+
+      <!-- Contagem final: grupos mortos -->
+      <div class="painel-card" id="contagemCard" style="display:none">
+        <h3>🪦 Contagem — grupos mortos</h3>
+        <p style="font-size:14.5px;color:var(--texto-sec);margin-bottom:8px">
+          Clique nos grupos que considera <b>mortos</b> — eles saem do tabuleiro e viram território do adversário.
+          Clique de novo para desmarcar. <i style="color:var(--ouro)">Sugestões automáticas foram aplicadas.</i>
+        </p>
+        <div class="kpis" style="margin-bottom:10px">
+          <div class="kpi"><div class="r">⚫ Pretas marcadas</div><div class="v" id="mortasP">0</div></div>
+          <div class="kpi"><div class="r">⚪ Brancas marcadas</div><div class="v" id="mortasB">0</div></div>
+        </div>
+        <div class="linhas">
+          <button class="btn escuro" onclick="confirmarContagem()">✅ Confirmar contagem</button>
+          <button class="btn" onclick="limparMortas()">🧽 Limpar marcações</button>
+        </div>
+      </div>
+
+      <!-- Review (aparece no fim) -->
+      <div class="review" id="review">
+        <h3 style="font-family:'Noto Serif JP',serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--texto-sec);margin-bottom:8px">🎬 Replay &amp; Análise IA</h3>
+        <div class="linha-rev">
+          <button class="btn" onclick="rev(-1)">◀</button>
+          <input type="range" id="revSlider" min="0" max="0" value="0" oninput="irParaMove(parseInt(this.value))">
+          <button class="btn" onclick="rev(1)">▶</button>
+        </div>
+        <div class="ticks" id="ticks"></div>
+        <div class="linha-rev">
+          <button class="btn" onclick="revKey(-1)">▲ Anterior-chave</button>
+          <button class="btn" onclick="revKey(1)">Próximo-chave ▲</button>
+        </div>
+        <div class="coment" id="revComent">Arraste o cursor para revisar cada lance. Movimentos-chave têm triângulo vermelho.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    大局 Taikyoku · Go IA — motor heurístico com capturas, ko e contagem por área · som e interface 100% sintetizados
+  </footer>
+</div>
+
+<!-- Modal fim -->
+<div class="fim" id="fim">
+  <div class="fim-card">
+    <h2>Fim da partida</h2>
+    <div class="resultado" id="fimResultado"></div>
+    <div class="detalhe" id="fimDetalhe"></div>
+    <div class="fim-acoes">
+      <button class="btn escuro" onclick="fecharFim(); ativarReview()">🎬 Replay &amp; Análise</button>
+      <button class="btn" onclick="fecharFim(); reiniciar()">🔄 Nova partida</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ═══════════════════════════════════════════════════════════
+   MOTOR_START — motor de Go puro (sem DOM; testável em node)
+   ═══════════════════════════════════════════════════════════ */
+function novoTabuleiro(n){
+  return { n, st: new Int8Array(n * n), hist: [], histHash: [], estados: [], capturadasPorCor: {1:0, 2:0} };
+}
+/* posições de handicap (hoshi + lados + tengen) nas medidas padrão */
+function posicoesHandicap(n, pedras){
+  if(!(pedras >= 2 && pedras <= 9)) return [];
+  const a = n <= 9 ? 2 : 3;                 // deslocamento das hoshi
+  const m = (n - 1) / 2;                    // linha central
+  const c = [[a,a],[a,n-1-a],[n-1-a,a],[n-1-a,n-1-a]];   // 4 cantos
+  const s = [[m,a],[m,n-1-a],[a,m],[n-1-a,m]];           // 4 lados
+  const ordem = {
+    2: [0,1], 3: [0,1,3], 4: [0,1,2,3],
+    5: [0,1,2,3,4], 6: [0,1,2,3,4,5], 7: [0,1,2,3,4,5,6],
+    8: [0,1,2,3,4,5,6,7], 9: [0,1,2,3,4,5,6,7,8]
+  };
+  const todos = c.concat(s, [[m, m]]);
+  return ordem[pedras].map(i => todos[i]);
+}
+function px(x, y, n){ return y * n + x; }
+function viz(x, y, n){
+  const r = [];
+  if(x > 0) r.push([x-1, y]);
+  if(x < n-1) r.push([x+1, y]);
+  if(y > 0) r.push([x, y-1]);
+  if(y < n-1) r.push([x, y+1]);
+  return r;
+}
+function hashBoard(st){
+  let h = 2166136261;
+  for(let i = 0; i < st.length; i++){ h ^= st[i] + 1; h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function grupoDe(st, n, x, y){
+  const cor = st[px(x, y, n)];
+  if(!cor) return null;
+  const visit = new Uint8Array(n * n), libSet = new Set(), pedras = [];
+  const pilha = [[x, y]]; visit[px(x, y, n)] = 1;
+  while(pilha.length){
+    const [a, b] = pilha.pop(); pedras.push(px(a, b, n));
+    for(const [c, d] of viz(a, b, n)){
+      const i = px(c, d, n);
+      if(st[i] === 0) libSet.add(i);
+      else if(st[i] === cor && !visit[i]){ visit[i] = 1; pilha.push([c, d]); }
+    }
+  }
+  const lib = [...libSet];
+  return { pedras, lib, libCount: lib.length };
+}
+function capturarSe(st, n, cor){
+  // st já tem a pedra colocada; remove grupos inimigos sem liberdades
+  const removidas = [];
+  const visit = new Uint8Array(n * n);
+  for(let i = 0; i < st.length; i++){
+    if(st[i] === 0 || st[i] === cor || visit[i]) continue;
+    const g = grupoDe(st, n, i % n, (i / n) | 0);
+    for(const p of g.pedras) visit[p] = 1;
+    if(g.libCount === 0){ for(const p of g.pedras){ removidas.push(p); st[p] = 0; } }
+  }
+  return removidas;
+}
+function jogadaLegal(g, x, y, cor){
+  const n = g.n, i = px(x, y, n);
+  if(g.st[i] !== 0) return { ok: false, motivo: "ocupado" };
+  const tmp = g.st.slice(); tmp[i] = cor;
+  const cap = capturarSe(tmp, n, cor);
+  if(!cap.length){
+    const me = grupoDe(tmp, n, x, y);
+    if(!me || me.libCount === 0) return { ok: false, motivo: "suicídio" };
+  }
+  // ko: não pode recriar a posição imediatamente anterior ao último lance
+  const k = g.histHash.length;
+  if(k >= 2 && hashBoard(tmp) === g.histHash[k - 2]) return { ok: false, motivo: "ko" };
+  return { ok: true, capturas: cap, tmp };
+}
+function jogar(g, x, y, cor){
+  const legal = jogadaLegal(g, x, y, cor);
+  if(!legal.ok) return legal;
+  const cap = legal.capturas;
+  g.st = legal.tmp;
+  g.capturadasPorCor[3 - cor] += cap.length;
+  g.hist.push({ x, y, cor, capturas: cap.length, capPedras: cap.slice() });
+  g.histHash.push(hashBoard(g.st));
+  g.estados.push(g.st.slice());
+  return { ok: true, capturas: cap };
+}
+function passarLance(g, cor){
+  // cor explícita (quem passa); por padrão assume preto primeiro (paridade do histórico)
+  cor = cor || (g.hist.length % 2 === 0 ? 1 : 2);
+  g.hist.push({ x: -1, y: -1, cor, pass: true });
+  g.histHash.push(hashBoard(g.st));
+  g.estados.push(g.st.slice());
+}
+function ultimoCor(g){ return g.hist.length ? 3 - g.hist[g.hist.length - 1].cor : 1; }
+function ultimoLancePassou(g){
+  const h = g.hist[g.hist.length - 1];
+  return !!h && !!h.pass;
+}
+function jogadasLegais(g, cor){
+  const n = g.n, r = [];
+  for(let y = 0; y < n; y++) for(let x = 0; x < n; x++)
+    if(jogadaLegal(g, x, y, cor).ok) r.push([x, y]);
+  return r;
+}
+// estimativa de território por região (flood fill) → mapa -1..+1 por ponto
+function estimarTerritorio(st, n){
+  const mapa = new Float32Array(n * n);
+  const visit = new Uint8Array(n * n);
+  for(let i = 0; i < st.length; i++){
+    if(st[i] === 0 && !visit[i]){
+      const reg = [], cores = new Set(), pilha = [i]; visit[i] = 1;
+      while(pilha.length){
+        const c = pilha.pop(); reg.push(c); const x = c % n, y = (c / n) | 0;
+        for(const [a, b] of viz(x, y, n)){
+          const j = px(a, b, n);
+          if(st[j] === 0){ if(!visit[j]){ visit[j] = 1; pilha.push(j); } }
+          else cores.add(st[j]);
+        }
+      }
+      const v = cores.size === 1 ? (cores.has(1) ? -1 : 1) : 0;
+      for(const c of reg) mapa[c] = v;
+    } else if(st[i] !== 0) mapa[i] = st[i] === 1 ? -1 : 1;
+  }
+  return mapa;
+}
+function totalTerritorio(st, n){
+  const m = estimarTerritorio(st, n);
+  let b = 0, w = 0;
+  for(let i = 0; i < st.length; i++){
+    if(st[i] !== 0) continue; // só pontos vazios contam como território
+    const v = m[i];
+    if(v < 0) b += -v; else if(v > 0) w += v;
+  }
+  return { preto: b, branco: w };
+}
+// contagem por área (chinesa) sobre um tabuleiro dado: território + pedras + komi
+function contarTabuleiro(st, n, komi){
+  const t = totalTerritorio(st, n);
+  let pedP = 0, pedB = 0;
+  for(const v of st){ if(v === 1) pedP++; else if(v === 2) pedB++; }
+  const preto = t.preto + pedP;
+  const branco = t.branco + pedB + komi;
+  return { preto, branco, komi, tP: t.preto, tB: t.branco, pedP, pedB };
+}
+function contarFinal(g, komi){ return contarTabuleiro(g.st, g.n, komi); }
+/* detecção heurística de grupos mortos: grupo com menos de 2 olhos
+   (região vazia cuja única fronteira é o próprio grupo) e que toca
+   território inimigo. É uma SUGESTÃO — o jogador confirma. */
+function detectarGruposMortos(g){
+  const n = g.n, st = g.st;
+  const res = [];
+  const visit = new Uint8Array(n * n);
+  for(let i = 0; i < st.length; i++){
+    if(!st[i] || visit[i]) continue;
+    const grp = grupoDe(st, n, i % n, (i / n) | 0);
+    for(const p of grp.pedras) visit[p] = 1;
+    const cor = st[i];
+    // regiões vazias adjacentes ao grupo (cada região contada uma única vez)
+    const vazioVisit = new Set();
+    const regioes = [];
+    for(const l of grp.lib){
+      if(vazioVisit.has(l)) continue;
+      const pilha = [l]; vazioVisit.add(l);
+      let tam = 0;
+      const fronteira = new Set();
+      while(pilha.length){
+        const c = pilha.pop(); tam++;
+        const x = c % n, y = (c / n) | 0;
+        for(const [a, b] of viz(x, y, n)){
+          const j = px(a, b, n);
+          if(st[j] === 0){ if(!vazioVisit.has(j)){ vazioVisit.add(j); pilha.push(j); } }
+          else fronteira.add(st[j]);
+        }
+      }
+      regioes.push({ fronteira, tam });
+    }
+    // olhos: região cuja única fronteira é este grupo (≥2 pontos = olho real duplo)
+    let olhos = 0, tocaInimigo = false;
+    for(const r of regioes){
+      if(r.fronteira.size === 1 && r.fronteira.has(cor)) olhos += r.tam >= 2 ? 2 : 1;
+      for(const c of r.fronteira) if(c !== cor) tocaInimigo = true;
+    }
+    // sugestão só para shapes quase-capturados (≤3 liberdades): evita marcar grupos abertos
+    if(olhos < 2 && tocaInimigo && grp.libCount <= 3) res.push({ cor, pedras: grp.pedras.slice() });
+  }
+  return res;
+}
+/* candidatos: liberdades de pedras + pontos de abertura */
+function gerarCandidatos(g, cor){
+  const n = g.n, st = g.st, set = new Set();
+  for(let i = 0; i < st.length; i++){
+    if(st[i] === 0) continue;
+    const x = i % n, y = (i / n) | 0;
+    for(const [a, b] of viz(x, y, n)) if(!st[px(a, b, n)]) set.add(a + "," + b);
+  }
+  if(g.hist.length < 8){
+    const canto = n <= 9 ? [2, n - 3] : [3, n - 4];
+    for(const a of canto) for(const b of canto) set.add(a + "," + b);
+    if(n % 2 === 1){ const c = (n - 1) / 2; set.add(c + "," + c); }
+  }
+  if(!set.size){
+    const c = (n / 2) | 0; return [[c, c]];
+  }
+  let arr = [...set].map(s => s.split(",").map(Number));
+  if(arr.length > 240) arr = arr.sort(() => Math.random() - 0.5).slice(0, 240);
+  return arr;
+}
+/* avaliação heurística de um candidato */
+function avaliar(g, x, y, cor, fase, nivel){
+  const n = g.n;
+  const legal = jogadaLegal(g, x, y, cor);
+  if(!legal.ok) return -1e9;
+  const st2 = legal.tmp;
+  let s = 0;
+  const cap = legal.capturas.length;
+  if(cap > 0) s += cap * (26 + (nivel === 3 ? 14 : 0));
+  // salvou grupo próprio em atari?
+  for(const [a, b] of viz(x, y, n)){
+    const i = px(a, b, n);
+    if(st2[i] === cor && g.st[i] === cor){
+      const grp = grupoDe(g.st, n, a, b);
+      if(grp && grp.libCount === 1) s += 42;
+    }
+  }
+  // inimigo em atari depois?
+  for(const [a, b] of viz(x, y, n)){
+    const i = px(a, b, n);
+    if(st2[i] !== 0 && st2[i] !== cor){
+      const grp = grupoDe(st2, n, a, b);
+      if(grp && grp.libCount === 1) s += 24;
+    }
+  }
+  // território potencial
+  const m = estimarTerritorio(st2, n);
+  let mine = 0, opp = 0;
+  for(const v of m){ if(v > 0) opp += v; else if(v < 0) mine += -v; }
+  s += (mine - opp) * (fase < 0.25 ? 1.1 : fase < 0.6 ? 1.6 : 2.3);
+  // extensão própria
+  let own = 0;
+  for(const [a, b] of viz(x, y, n)) if(g.st[px(a, b, n)] === cor) own++;
+  s += Math.min(own, 3) * 3;
+  // fase posicional
+  const edge = Math.min(x, n - 1 - x, y, n - 1 - y);
+  if(fase < 0.18){ if(edge === 0) s += 15; else if(edge === 1) s += 8; }
+  else if(fase < 0.6){
+    if(Math.abs(x - (n - 1) / 2) + Math.abs(y - (n - 1) / 2) < n / 4) s += 5;
+  }
+  // alta: pedra isolada com 1 liberdade é dano
+  if(nivel === 3){
+    for(const [a, b] of viz(x, y, n)){
+      const i = px(a, b, n);
+      if(st2[i] === cor){
+        const grp = grupoDe(st2, n, a, b);
+        if(grp && grp.pedras.length === 1 && grp.libCount === 1) s -= 32;
+      }
+    }
+  }
+  const ruido = nivel === 1 ? 60 : nivel === 2 ? 24 : 7;
+  return s + (Math.random() - 0.5) * ruido;
+}
+function classificarIntento(g, x, y, cor){
+  const n = g.n;
+  const legal = jogadaLegal(g, x, y, cor);
+  if(legal.ok && legal.capturas.length > 0)
+    return "Capturando " + legal.capturas.length + " pedra" + (legal.capturas.length > 1 ? "s" : "");
+  for(const [a, b] of viz(x, y, n)){
+    const i = px(a, b, n);
+    if(g.st[i] === cor){
+      const grp = grupoDe(g.st, n, a, b);
+      if(grp && grp.libCount === 1) return "Salvando um grupo fraco";
+    }
+  }
+  const m = estimarTerritorio(g.st, n);
+  const idx = px(x, y, n);
+  if((cor === 2 && m[idx] < -0.3) || (cor === 1 && m[idx] > 0.3)) return "Invasão no território adversário";
+  const fase = g.hist.length / (n * n);
+  const edge = Math.min(x, n - 1 - x, y, n - 1 - y);
+  if(fase < 0.2 && edge === 0) return "Firmando o canto";
+  if(fase < 0.2 && edge === 1) return "Conquistando a borda";
+  let inimigo = false;
+  for(const [a, b] of viz(x, y, n)){
+    const i = px(a, b, n);
+    if(g.st[i] !== 0 && g.st[i] !== cor){ inimigo = true; break; }
+  }
+  if(inimigo) return "Luta corpo a corpo";
+  if(fase > 0.6) return "Consolidando a posição central";
+  return "Estendendo a formação";
+}
+function moverIA(g, nivel, cor){
+  cor = cor || 2; // default: a IA joga de branco
+  const cands = gerarCandidatos(g, cor);
+  const fase = g.hist.length / (g.n * g.n);
+  const score = [];
+  for(const [x, y] of cands){
+    const v = avaliar(g, x, y, cor, fase, nivel);
+    if(v > -1e8) score.push({ x, y, v });
+  }
+  if(!score.length) return { passe: true };
+  score.sort((a, b) => b.v - a.v);
+  let escolha;
+  if(nivel === 1){
+    const top = Math.max(1, Math.floor(score.length * 0.4));
+    escolha = score[(Math.random() * top) | 0];
+  } else if(nivel === 2){
+    const top = Math.max(1, Math.floor(score.length * 0.12));
+    escolha = score[(Math.random() * top) | 0];
+  } else escolha = score[0];
+  return { x: escolha.x, y: escolha.y, intento: classificarIntento(g, escolha.x, escolha.y, cor) };
+}
+function coordenada(x, y, n){
+  const letras = "ABCDEFGHJKLMNOPQRST";
+  return letras[x] + (n - y);
+}
+function coordHandicap(x, y){
+  // notação compacta da linha de handicap: letra minúscula (a=0) + linha a partir do topo
+  return String.fromCharCode(97 + x) + y;
+}
+/* análise pós-jogo: movimentos-chave (capturas + viradas de território) */
+function analisarPartida(g){
+  const n = g.n;
+  const keys = new Map(); // índice → comentário
+  const deltas = [];
+  let prev = { preto: 0, branco: 0 };
+  for(let k = 0; k < g.hist.length; k++){
+    const h = g.hist[k];
+    const t = totalTerritorio(g.estados[k], n);
+    const d = Math.abs((t.preto - t.branco) - (prev.preto - prev.branco));
+    deltas.push(d);
+    if(h.capturas > 0) keys.set(k, "⚔ Captura de " + h.capturas + " pedra" + (h.capturas > 1 ? "s" : "") + " — ponto de virada");
+    prev = t;
+  }
+  const ordenado = deltas.map((d, i) => ({ d, i })).filter(o => o.d >= 2).sort((a, b) => b.d - a.d);
+  for(const o of ordenado.slice(0, 5)){
+    const h = g.hist[o.i];
+    if(!keys.has(o.i)) keys.set(o.i, "🗺 Mudança territorial decisiva (" + Math.round(o.d) + " pts)");
+  }
+  // ordena chaves
+  return [...keys.entries()].sort((a, b) => a[0] - b[0]).map(([i, c]) => ({ i, comentario: c + " — " + coordenada(g.hist[i].x, g.hist[i].y, n) }));
+}
+/* SGF simplificado: exporta a partida no formato padrão (GM[1] FF[4]) */
+function sgfCoord(x, y){
+  const l = "abcdefghjklmnopqrstuvwxyz"; // pula o 'i' (convenção SGF)
+  return l[x] + l[y];
+}
+function gerarSGF(g, opts){
+  opts = opts || {};
+  const n = g.n;
+  const komi = opts.komi === undefined ? 7.5 : opts.komi;
+  const hc = opts.handicap || 0;
+  const pb = opts.pb || "Preto", pw = opts.pw || "Branco";
+  const linhas = [];
+  let root = "(;GM[1]FF[4]CA[UTF-8]AP[Taikyoku]SZ[" + n + "]KM[" + komi + "]PB[" + pb + "]PW[" + pw + "]";
+  if(hc > 0) root += "HA[" + hc + "]AB[" + posicoesHandicap(n, hc).map(p => sgfCoord(p[0], p[1])).join("][") + "]";
+  if(opts.resultado) root += "RE[" + opts.resultado + "]";
+  if(opts.comentario) root += "C[" + opts.comentario + "]";
+  linhas.push(root);
+  let linha = "";
+  for(const h of g.hist){
+    linha += (h.cor === 1 ? "B" : "W") + (h.pass ? "[]" : "[" + sgfCoord(h.x, h.y) + "]");
+    if(linha.length >= 60){ linhas.push(linha); linha = ""; }
+  }
+  if(linha) linhas.push(linha);
+  if(!g.hist.length) linhas.push("");
+  linhas.push(")");
+  return linhas.join("\n");
+}
+/* MOTOR_END ═══════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   SOM — sintetizado (Web Audio)
+   ═══════════════════════════════════════════════════════════ */
+const Som = (function(){
+  let ctx = null, master = null, ligado = true;
+  function init(){
+    if(ctx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.8; master.connect(ctx.destination);
+  }
+  function resume(){ if(ctx && ctx.state === "suspended") ctx.resume(); }
+  function pedra(){
+    if(!ctx || !ligado) return;
+    const t = ctx.currentTime;
+    // baque grave (pedra na madeira)
+    const o = ctx.createOscillator(); o.type = "sine";
+    o.frequency.setValueAtTime(250, t); o.frequency.exponentialRampToValueAtTime(85, t + 0.07);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.55, t + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.12);
+    // "clique" de impacto
+    const o2 = ctx.createOscillator(); o2.type = "triangle";
+    o2.frequency.setValueAtTime(540, t); o2.frequency.exponentialRampToValueAtTime(170, t + 0.03);
+    const g2 = ctx.createGain();
+    g2.gain.setValueAtTime(0.0001, t); g2.gain.exponentialRampToValueAtTime(0.28, t + 0.003);
+    g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+    o2.connect(g2); g2.connect(master); o2.start(t); o2.stop(t + 0.06);
+    // atrito curto (ruído)
+    const dur = 0.028, buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2);
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 3600; bp.Q.value = 0.7;
+    const g3 = ctx.createGain(); g3.gain.value = 0.10;
+    src.connect(bp); bp.connect(g3); g3.connect(master); src.start(t);
+  }
+  function passe(){
+    if(!ctx || !ligado) return;
+    const t = ctx.currentTime;
+    const o = ctx.createOscillator(); o.type = "sine"; o.frequency.value = 330;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.22, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.4);
+  }
+  function gongo(){
+    if(!ctx || !ligado) return;
+    const t = ctx.currentTime;
+    [196, 392, 587].forEach((f, i) => {
+      const o = ctx.createOscillator(); o.type = "sine"; o.frequency.value = f;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.24 / (i + 1), t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 2.6 - i * 0.4);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t + 3);
+    });
+  }
+  return { init, resume, pedra, passe, gongo, alternar(){ ligado = !ligado; return ligado; }, get ligado(){ return ligado; } };
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   APLICAÇÃO — estado, render, interação
+   ═══════════════════════════════════════════════════════════ */
+const canvas = document.getElementById("tabuleiro");
+const ctx2 = canvas.getContext("2d");
+let komiAtual = 7.5; // padrão; reiniciar() deriva do select komiSel
+let jogo = novoTabuleiro(9);
+  let nivel = 2;
+  let epoch = 0;              // invalida timeouts de partidas antigas
+  let vezIA = false;          // esperando a IA?
+  let pensando = false;
+  let modoPvp = false;        // jogador vs jogador (sem IA)
+  let turnoAtual = 1;         // em PvP: 1 = preto, 2 = branco
+  let jogadorCor = 1;         // vs IA: cor do jogador (1 = preto, 2 = branco)
+  let handicap = 0;           // pedras de handicap (0 = nenhum, 2..9)
+  let emContagem = false;     // fase final: marcando grupos mortos
+  let mortas = new Set();     // índices dos pontos marcados como mortos
+let heatmapOn = true;
+let hover = null;           // {x,y}
+let animacoes = [];         // pedras caindo
+let pulsoT = 0;             // pulso do último lance
+let heatAlvo = 0, heatAtual = 0;
+let ultimoLance = null;
+let loopRodando = false;   // impede múltiplos loops RAF concorrentes
+let modoRev = false, revMove = 0, revChaves = [];
+let fimDoJogo = false;
+let historico = [];        // partidas salvas (SGF simplificado) — localStorage
+let resultadoAtual = "";   // último resultado (ex.: "B+12.5", "W+R")
+
+/* ── config do canvas ──────────────────────────────────── */
+function redimensionar(){
+  const box = canvas.parentElement;
+  const w = box.clientWidth;
+  const h = Math.round(w * 1.02);
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  canvas.style.width = w + "px"; canvas.style.height = h + "px";
+  ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+  desenhar();
+}
+window.addEventListener("resize", redimensionar);
+
+/* ── geometria ─────────────────────────────────────────── */
+function geometria(){
+  const n = jogo.n;
+  const W = canvas.width / (window.devicePixelRatio || 1);
+  const H = canvas.height / (window.devicePixelRatio || 1);
+  const cell = Math.min(W, H) / (n + 1);
+  const margX = (W - (n - 1) * cell) / 2;
+  const margY = (H - (n - 1) * cell) / 2;
+  return { n, W, H, cell, margX, margY };
+}
+function pontoTab(x, y){ const g = geometria(); return [g.margX + x * g.cell, g.margY + y * g.cell]; }
+function tabPonto(mx, my){
+  const g = geometria();
+  const fx = Math.round((mx - g.margX) / g.cell), fy = Math.round((my - g.margY) / g.cell);
+  if(fx < 0 || fy < 0 || fx >= g.n || fy >= g.n) return null;
+  return { x: fx, y: fy };
+}
+
+/* ── madeira (textura procedural) ──────────────────────── */
+function desenharMadeira(g){
+  const { W, H, cell } = g;
+  const grad = ctx2.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, "#e2b269");
+  grad.addColorStop(0.5, "#d8a85c");
+  grad.addColorStop(1, "#c9964c");
+  ctx2.fillStyle = grad;
+  ctx2.fillRect(0, 0, W, H);
+  // veios verticais ondulados
+  const semente = 1234 + jogo.n;
+  let s = semente;
+  const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+  for(let i = 0; i < 46; i++){
+    const x0 = rnd() * W;
+    const amp = 6 + rnd() * 22;
+    const freq = 0.02 + rnd() * 0.05;
+    const fase = rnd() * 6.28;
+    ctx2.strokeStyle = "rgba(140,95,35," + (0.05 + rnd() * 0.07) + ")";
+    ctx2.lineWidth = 1 + rnd() * 2.5;
+    ctx2.beginPath();
+    for(let y = -8; y <= H + 8; y += 6){
+      const x = x0 + Math.sin(y * freq + fase) * amp;
+      if(y === -8) ctx2.moveTo(x, y); else ctx2.lineTo(x, y);
+    }
+    ctx2.stroke();
+  }
+  // brilho suave superior-esquerdo + vinheta
+  const luz = ctx2.createRadialGradient(-W * 0.2, -H * 0.25, 40, W * 0.4, H * 0.4, W * 1.05);
+  luz.addColorStop(0, "rgba(255,255,255,.18)");
+  luz.addColorStop(0.5, "rgba(255,255,255,0)");
+  ctx2.fillStyle = luz; ctx2.fillRect(0, 0, W, H);
+  const vin = ctx2.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.42, W / 2, H / 2, Math.max(W, H) * 0.75);
+  vin.addColorStop(0, "rgba(0,0,0,0)");
+  vin.addColorStop(1, "rgba(60,38,10,.28)");
+  ctx2.fillStyle = vin; ctx2.fillRect(0, 0, W, H);
+}
+
+/* ── grade + hoshi ─────────────────────────────────────── */
+function desenharGrade(g){
+  const { n, cell, margX, margY } = g;
+  ctx2.strokeStyle = "rgba(58,45,27,.85)";
+  ctx2.lineWidth = 1.4;
+  for(let i = 0; i < n; i++){
+    ctx2.beginPath();
+    ctx2.moveTo(margX + i * cell, margY);
+    ctx2.lineTo(margX + i * cell, margY + (n - 1) * cell);
+    ctx2.stroke();
+    ctx2.beginPath();
+    ctx2.moveTo(margX, margY + i * cell);
+    ctx2.lineTo(margX + (n - 1) * cell, margY + i * cell);
+    ctx2.stroke();
+  }
+  const canto = n <= 9 ? [2, n - 3] : [3, n - 4];
+  const pontos = [];
+  for(const a of canto) for(const b of canto) pontos.push([a, b]);
+  if(n % 2 === 1) pontos.push([(n - 1) / 2, (n - 1) / 2]);
+  ctx2.fillStyle = "rgba(58,45,27,.9)";
+  for(const [x, y] of pontos){
+    const [cx, cy] = pontoTab(x, y);
+    ctx2.beginPath(); ctx2.arc(cx, cy, Math.max(3, cell * 0.07), 0, Math.PI * 2); ctx2.fill();
+  }
+}
+
+/* ── pedras ────────────────────────────────────────────── */
+function desenharPedra(g, x, y, cor, dy, alpha){
+  const [cx, cy] = pontoTab(x, y);
+  const r = g.cell * 0.46;
+  ctx2.save();
+  ctx2.globalAlpha = alpha === undefined ? 1 : alpha;
+  // sombra no tabuleiro
+  ctx2.fillStyle = "rgba(40,25,8,.32)";
+  ctx2.beginPath();
+  ctx2.ellipse(cx + r * 0.16, cy + r * 0.34 + dy, r * 0.92, r * 0.5, 0, 0, Math.PI * 2);
+  ctx2.fill();
+  const y2 = cy + dy;
+  if(cor === 1){
+    const gr = ctx2.createRadialGradient(cx - r * 0.38, y2 - r * 0.42, r * 0.12, cx, y2, r * 1.05);
+    gr.addColorStop(0, "#4a4a55");
+    gr.addColorStop(0.55, "#1b1b22");
+    gr.addColorStop(1, "#05050a");
+    ctx2.fillStyle = gr;
+  } else {
+    const gr = ctx2.createRadialGradient(cx - r * 0.38, y2 - r * 0.42, r * 0.1, cx, y2, r * 1.05);
+    gr.addColorStop(0, "#ffffff");
+    gr.addColorStop(0.6, "#f0eee6");
+    gr.addColorStop(0.9, "#c9c7bd");
+    gr.addColorStop(1, "#a9a79d");
+    ctx2.fillStyle = gr;
+  }
+  ctx2.beginPath(); ctx2.arc(cx, y2, r, 0, Math.PI * 2); ctx2.fill();
+  // brilho especular (gloss)
+  if(cor === 1){
+    const hi = ctx2.createRadialGradient(cx - r * 0.42, y2 - r * 0.5, 0, cx - r * 0.42, y2 - r * 0.5, r * 0.5);
+    hi.addColorStop(0, "rgba(255,255,255,.28)");
+    hi.addColorStop(1, "rgba(255,255,255,0)");
+    ctx2.fillStyle = hi;
+    ctx2.beginPath(); ctx2.arc(cx, y2, r, 0, Math.PI * 2); ctx2.fill();
+  } else {
+    const hi = ctx2.createRadialGradient(cx - r * 0.42, y2 - r * 0.5, 0, cx - r * 0.42, y2 - r * 0.5, r * 0.55);
+    hi.addColorStop(0, "rgba(255,255,255,.95)");
+    hi.addColorStop(1, "rgba(255,255,255,0)");
+    ctx2.fillStyle = hi;
+    ctx2.beginPath(); ctx2.arc(cx, y2, r, 0, Math.PI * 2); ctx2.fill();
+  }
+  // anel de borda
+  ctx2.strokeStyle = cor === 1 ? "rgba(0,0,0,.5)" : "rgba(140,138,128,.55)";
+  ctx2.lineWidth = 1;
+  ctx2.beginPath(); ctx2.arc(cx, y2, r, 0, Math.PI * 2); ctx2.stroke();
+  ctx2.restore();
+}
+
+/* ── heatmap de território ─────────────────────────────── */
+function desenharHeatmap(g){
+  if(!heatmapOn || heatAtual <= 0.01) return;
+  const m = estimarTerritorio(emContagem ? stSemMortas() : jogo.st, g.n);
+  ctx2.save();
+  ctx2.globalAlpha = heatAtual;
+  for(let y = 0; y < g.n; y++){
+    for(let x = 0; x < g.n; x++){
+      const v = m[px(x, y, g.n)];
+      if(v === 0) continue;
+      const [cx, cy] = pontoTab(x, y);
+      const a = Math.min(Math.abs(v), 1) * 0.34;
+      if(v < 0) ctx2.fillStyle = "rgba(52,64,94," + a + ")";   // preto lidera
+      else ctx2.fillStyle = "rgba(214,164,86," + a + ")";     // branco lidera
+      ctx2.beginPath(); ctx2.arc(cx, cy, g.cell * 0.44, 0, Math.PI * 2); ctx2.fill();
+    }
+  }
+  ctx2.restore();
+}
+
+/* ── marcas: último lance + triângulos de review ───────── */
+function desenharMarcas(g){
+  if(modoRev){
+    const chaves = revChaves.filter(k => k.i <= revMove);
+    for(const k of chaves){
+      const h = jogo.hist[k.i];
+      if(!h || h.pass) continue;
+      const [cx, cy] = pontoTab(h.x, h.y);
+      const r = g.cell * 0.42;
+      ctx2.fillStyle = "rgba(196,58,40,.95)";
+      ctx2.beginPath();
+      ctx2.moveTo(cx, cy - r * 1.35);
+      ctx2.lineTo(cx - r * 0.55, cy - r * 0.35);
+      ctx2.lineTo(cx + r * 0.55, cy - r * 0.35);
+      ctx2.closePath(); ctx2.fill();
+    }
+  }
+  const alvo = modoRev ? (revMove >= 0 && revMove < jogo.hist.length ? jogo.hist[revMove] : null) : ultimoLance;
+  if(alvo && !alvo.pass){
+    const [cx, cy] = pontoTab(alvo.x, alvo.y);
+    const r = g.cell * 0.42;
+    const p = 0.5 + 0.5 * Math.sin(pulsoT * 4);
+    ctx2.strokeStyle = "rgba(255,255,255," + (0.35 + 0.5 * p) + ")";
+    ctx2.lineWidth = 2;
+    ctx2.beginPath(); ctx2.arc(cx, cy, r + 2 + p * 4, 0, Math.PI * 2); ctx2.stroke();
+  }
+}
+
+/* ── desenho principal ─────────────────────────────────── */
+function desenhar(){
+  const g = geometria();
+  // fade suave do heatmap (sobe/desce entre lances)
+  heatAtual += (heatAlvo - heatAtual) * 0.07;
+  if(heatAtual < 0.005) heatAtual = 0;
+  desenharMadeira(g);
+  desenharGrade(g);
+  // heatmap por baixo das pedras (fade suave)
+  desenharHeatmap(g);
+  // pedras com animação (salto)
+  const agora = performance.now();
+  const vivas = [];
+  for(const a of animacoes){
+    const t = Math.min(1, (agora - a.t0) / a.dur);
+    const dy = -g.cell * 1.1 * Math.pow(1 - t, 2) * Math.sin(Math.min(1, t) * Math.PI);
+    if(t < 1){ vivas.push(a); }
+    desenharPedra(g, a.x, a.y, a.cor, dy);
+  }
+  animacoes = vivas;
+  // pedras estáticas (jogo real)
+  if(!modoRev){
+    for(let i = 0; i < jogo.st.length; i++){
+      const c = jogo.st[i];
+      if(!c) continue;
+      if(animacoes.some(a => a.idx === i)) continue;
+      desenharPedra(g, i % g.n, (i / g.n) | 0, c, 0);
+    }
+  } else {
+    // review: posição inicial (revMove = -1) mostra só as pedras de handicap
+    const st = revMove === -1 ? (jogo.inicial || []) : (revMove >= 0 && revMove < jogo.estados.length ? jogo.estados[revMove] : null);
+    if(st) for(let i = 0; i < st.length; i++){
+      if(st[i]) desenharPedra(g, i % g.n, (i / g.n) | 0, st[i], 0);
+    }
+  }
+  desenharMortas(g);
+  desenharMarcas(g);
+  // marca ✕ sobre grupos mortos (fase de contagem)
+  function desenharMortas(g){
+    if(!emContagem || !mortas.size) return;
+    ctx2.save();
+    ctx2.strokeStyle = "rgba(200,35,35,.95)";
+    ctx2.lineWidth = 3;
+    ctx2.lineCap = "round";
+    for(const p of mortas){
+      const x = p % g.n, y = (p / g.n) | 0;
+      const [cx, cy] = pontoTab(x, y);
+      const r = g.cell * 0.3;
+      ctx2.beginPath();
+      ctx2.moveTo(cx - r, cy - r); ctx2.lineTo(cx + r, cy + r);
+      ctx2.moveTo(cx + r, cy - r); ctx2.lineTo(cx - r, cy + r);
+      ctx2.stroke();
+    }
+    ctx2.restore();
+  }
+  // pedra fantasma (hover)
+  if(hover && !pensando && !fimDoJogo && !modoRev){
+    const corAtual = modoPvp ? turnoAtual : (vezIA ? 3 - jogadorCor : jogadorCor);
+    const legal = jogadaLegal(jogo, hover.x, hover.y, corAtual);
+    if(legal.ok){
+      desenharPedra(g, hover.x, hover.y, corAtual, 0, 0.35);
+    }
+  }
+  // pulso contínuo — loop RAF único (idempotente: só agenda se não houver outro pendente)
+  pulsoT += 0.016;
+  if(!loopRodando){
+    loopRodando = true;
+    requestAnimationFrame(() => { loopRodando = false; desenhar(); });
+  }
+}
+
+/* ── fluxo do jogo ─────────────────────────────────────── */
+function atualizarStatus(){
+  const el = document.getElementById("statusTxt");
+  const pedra = document.getElementById("statusPedra");
+  if(emContagem){
+    pedra.className = "pedra-status preta";
+    el.innerHTML = "Contagem final 🪦<small>clique nos grupos mortos para marcá-los</small>";
+    return;
+  }
+  if(fimDoJogo){ el.innerHTML = "Partida encerrada<small>use o replay para revisar</small>"; return; }
+  if(modoPvp){
+    pedra.className = "pedra-status " + (turnoAtual === 1 ? "preta" : "branca");
+    el.innerHTML = turnoAtual === 1
+      ? "Vez do Preto ⚫<small>jogador 1 · komi " + komiAtual + " para o Branco</small>"
+      : "Vez do Branco ⚪<small>jogador 2 · komi " + komiAtual + " para o Branco</small>";
+    return;
+  }
+  const corIA = 3 - jogadorCor;
+  if(pensando){
+    pedra.className = "pedra-status " + (corIA === 1 ? "preta" : "branca");
+    el.innerHTML = "IA pensando…<small>computando o melhor lance</small>";
+  } else {
+    pedra.className = "pedra-status " + (jogadorCor === 1 ? "preta" : "branca");
+    const nota = handicap > 0
+      ? "Handicap " + handicap + " · sem komi · a IA (branca) joga primeiro"
+      : jogadorCor === 1
+        ? "komi " + komiAtual + " para a IA"
+        : "você joga de Branco · recebe komi " + komiAtual;
+    el.innerHTML = "Seu lance — " + (jogadorCor === 1 ? "Preto" : "Branco") + "<small>" + nota + "</small>";
+  }
+}
+function atualizarKpis(){
+  document.getElementById("capP").textContent = jogo.capturadasPorCor[1];
+  document.getElementById("capB").textContent = jogo.capturadasPorCor[2];
+  document.getElementById("lanceNum").textContent = jogo.hist.length;
+  const t = totalTerritorio(emContagem ? stSemMortas() : jogo.st, jogo.n);
+  const diff = t.preto - t.branco - komiAtual; // positivo = preto à frente
+  const el = document.getElementById("lider");
+  el.textContent = diff > 0.5 ? "B +" + diff.toFixed(1) : diff < -0.5 ? "W +" + (-diff).toFixed(1) : "Empate técnico";
+}
+function atualizarLista(){
+  const box = document.getElementById("movelist");
+  const temHandicap = handicap > 0;
+  if(!jogo.hist.length && !temHandicap){
+    box.innerHTML = '<span style="color:var(--texto-sec);font-style:italic">Os lances aparecem aqui…</span>';
+    return;
+  }
+  let html = "";
+  if(temHandicap){ // pedras de handicap como posição inicial (clique leva ao revMove -1 no review)
+    const coords = posicoesHandicap(jogo.n, handicap).map(p => coordHandicap(p[0], p[1])).join(", ");
+    const cls = modoRev && revMove === -1 ? " ativo" : "";
+    html += '<span class="mv handicap' + cls + '" title="Pedras de handicap — posição inicial" onclick="irParaMove(-1)">H' + handicap + ": ⚫ " + coords + "</span>";
+  }
+  html += jogo.hist.map((h, i) => {
+    const num = i + 1;
+    const coord = h.pass ? "pass" : coordenada(h.x, h.y, jogo.n);
+    const cls = modoRev && revMove === i ? "ativo" : "";
+    const key = modoRev && revChaves.some(k => k.i === i) ? " key" : "";
+    return '<span class="mv' + cls + key + '" onclick="irParaMove(' + i + ')">' + num + (h.cor === 1 ? "⚫" : "⚪") + coord + "</span>";
+  }).join("");
+  box.innerHTML = html;
+}
+function atualizarHeatmap(){
+  heatAlvo = heatmapOn ? 0.55 : 0;
+}
+function mostrarIntento(txt, coord){
+  const el = document.getElementById("intento");
+  el.classList.remove("vazio");
+  el.innerHTML = coord ? "⚪ <span class='coord'>" + coord + "</span> — " + txt : txt;
+}
+
+/* lance do jogador */
+function lanceJogador(x, y){
+  if(vezIA || pensando || fimDoJogo || modoRev) return;
+  Som.init(); Som.resume();
+  const legal = jogadaLegal(jogo, x, y, jogadorCor);
+  if(!legal.ok){
+    mostrarIntento(legal.motivo === "ko" ? "Ko — lance ilegal (recriaria a posição anterior)" : legal.motivo === "suicídio" ? "Suicídio — lance ilegal" : "Ponto ocupado", null);
+    return;
+  }
+  const r = jogar(jogo, x, y, jogadorCor);
+  ultimoLance = { x, y, cor: jogadorCor };
+  animacoes.push({ idx: px(x, y, jogo.n), x, y, cor: jogadorCor, t0: performance.now(), dur: 340 });
+  setTimeout(() => { if(!Som.ligado) return; Som.pedra(); }, 130);
+  vezIA = true; // fecha a janela de lance duplo imediatamente
+  atualizarKpis(); atualizarLista(); atualizarHeatmap();
+  atualizarStatus();
+  const e = epoch;
+  setTimeout(() => { if(e === epoch) vezDaIA(); }, 430);
+}
+function vezDaIA(){
+  vezIA = true; pensando = true;
+  atualizarStatus();
+  const th = document.getElementById("thinking");
+  th.classList.add("visivel");
+  const delay = nivel === 1 ? 450 : nivel === 2 ? 850 : 1500;
+  const e = epoch; // partida em que este cálculo foi agendado
+  setTimeout(() => {
+    if(e !== epoch || fimDoJogo || emContagem){ // partida reiniciada/encerrada — ignora E limpa o estado
+      th.classList.remove("visivel"); pensando = false; vezIA = false; atualizarStatus(); return;
+    }      const corIA = 3 - jogadorCor;
+      const mv = moverIA(jogo, nivel, corIA);
+    th.classList.remove("visivel");
+    pensando = false;
+    if(mv.passe){
+      mostrarIntento("A IA passou — sem lances promissores", null);
+      passarLance(jogo, corIA);
+      ultimoLance = null;
+      vezIA = false;
+      atualizarKpis(); atualizarLista(); atualizarStatus();
+      verificarFim();
+      return;
+    }      const r = jogar(jogo, mv.x, mv.y, corIA);
+      if(!r.ok){ // plano B: primeiro lance legal
+        const legais = jogadasLegais(jogo, corIA);
+        if(legais.length){ const [lx, ly] = legais[0]; jogar(jogo, lx, ly, corIA); mv.x = lx; mv.y = ly; }
+      else { passarLance(jogo); verificarFim(); return; }
+    }      ultimoLance = { x: mv.x, y: mv.y, cor: corIA };
+      animacoes.push({ idx: px(mv.x, mv.y, jogo.n), x: mv.x, y: mv.y, cor: corIA, t0: performance.now(), dur: 340 });
+    setTimeout(() => { if(Som.ligado) Som.pedra(); }, 130);
+    mostrarIntento(mv.intento || "Equilibrando o tabuleiro", coordenada(mv.x, mv.y, jogo.n));
+    atualizarKpis(); atualizarLista(); atualizarHeatmap();
+    vezIA = false;
+    atualizarStatus();
+    verificarFim();
+  }, delay);
+}
+function verificarFim(){
+  // fim de jogo: dois passes consecutivos → fase de contagem (grupos mortos)
+  const h = jogo.hist;
+  if(h.length >= 2 && h[h.length - 1].pass && h[h.length - 2].pass) iniciarContagem();
+}
+function terminarPartida(){
+  fimDoJogo = true;
+  pensando = false;
+  document.getElementById("thinking").classList.remove("visivel");
+  Som.gongo();
+  // remove as mortas para a contagem por área
+  const stFinal = stSemMortas();
+  let deadP = 0, deadB = 0;
+  for(const p of mortas){ if(jogo.st[p] === 1) deadP++; else if(jogo.st[p] === 2) deadB++; }
+  const c = contarTabuleiro(stFinal, jogo.n, komiAtual);
+  const margem = Math.abs(c.preto - c.branco);
+  const vencedor = c.preto > c.branco ? "Preto" : "Branco";
+  const sig = c.preto > c.branco ? "B+" : "W+";
+  document.getElementById("fimResultado").textContent = vencedor + " vence — " + sig + margem.toFixed(1);
+  let mortasTxt = "";
+  if(deadP || deadB) mortasTxt = "<br><small style='color:var(--texto-sec)'>🪦 Removidas: " + deadP + " pretas + " + deadB + " brancas</small>";
+  document.getElementById("fimDetalhe").innerHTML =
+    "Preto: " + c.tP + " território + " + c.pedP + " pedras = " + c.preto + "<br>" +
+    "Branco: " + c.tB + " território + " + c.pedB + " pedras + komi " + c.komi + " = " + c.branco + mortasTxt;
+  revChaves = analisarPartida(jogo);
+  document.getElementById("contagemCard").style.display = "none";
+  registrarResultado(sig + margem.toFixed(1), (deadP || deadB) ? ("Removidas: " + deadP + " pretas + " + deadB + " brancas") : "");
+  const e = epoch;
+  setTimeout(() => { if(e === epoch) document.getElementById("fim").classList.add("visivel"); }, 700);
+  atualizarStatus(); atualizarKpis();
+}
+/* ── fase de contagem (grupos mortos) ─────────────────── */
+function stSemMortas(){
+  if(!mortas.size) return jogo.st;
+  const st = jogo.st.slice();
+  for(const p of mortas) st[p] = 0;
+  return st;
+}
+function iniciarContagem(){
+  fimDoJogo = true;
+  emContagem = true;
+  pensando = false;
+  document.getElementById("thinking").classList.remove("visivel");
+  // auto-sugestão heurística de grupos mortos
+  mortas = new Set();
+  for(const grp of detectarGruposMortos(jogo)) for(const p of grp.pedras) mortas.add(p);
+  atualizarContagemUI();
+  document.getElementById("contagemCard").style.display = "";
+  mostrarIntento("🪦 Clique nos grupos mortos para marcar/desmarcar e confirme abaixo", null);
+  atualizarStatus(); atualizarKpis();
+}
+function atualizarContagemUI(){
+  let p = 0, b = 0;
+  for(const i of mortas){ if(jogo.st[i] === 1) p++; else if(jogo.st[i] === 2) b++; }
+  document.getElementById("mortasP").textContent = p;
+  document.getElementById("mortasB").textContent = b;
+}
+function toggleMorta(x, y){
+  if(!emContagem) return;
+  const i = px(x, y, jogo.n);
+  if(!jogo.st[i]) return;
+  const grp = grupoDe(jogo.st, jogo.n, x, y);
+  const algumMorto = grp.pedras.some(p => mortas.has(p));
+  for(const p of grp.pedras){ if(algumMorto) mortas.delete(p); else mortas.add(p); }
+  atualizarContagemUI();
+}
+function limparMortas(){
+  mortas = new Set();
+  atualizarContagemUI();
+}
+function confirmarContagem(){
+  if(!emContagem) return;
+  emContagem = false;
+  terminarPartida();
+}
+
+/* ── botões ────────────────────────────────────────────── */
+/* lance no modo PvP: alterna entre os dois jogadores manualmente */
+function lancePvp(x, y){
+  if(fimDoJogo || modoRev) return;
+  Som.init(); Som.resume();
+  const cor = turnoAtual;
+  const legal = jogadaLegal(jogo, x, y, cor);
+  if(!legal.ok){
+    mostrarIntento(legal.motivo === "ko" ? "Ko — lance ilegal (recriaria a posição anterior)" : legal.motivo === "suicídio" ? "Suicídio — lance ilegal" : "Ponto ocupado", null);
+    return;
+  }
+  const r = jogar(jogo, x, y, cor);
+  ultimoLance = { x, y, cor };
+  animacoes.push({ idx: px(x, y, jogo.n), x, y, cor, t0: performance.now(), dur: 340 });
+  setTimeout(() => { if(Som.ligado) Som.pedra(); }, 130);
+  mostrarIntento("Lance de " + (cor === 1 ? "Preto" : "Branco"), coordenada(x, y, jogo.n));
+  turnoAtual = 3 - cor; // troca de turno manual
+  atualizarKpis(); atualizarLista(); atualizarHeatmap();
+  atualizarStatus();
+}
+function passar(){
+  if(vezIA || pensando || fimDoJogo || modoRev) return;
+  Som.init(); Som.resume(); Som.passe();
+  passarLance(jogo, modoPvp ? turnoAtual : jogadorCor);
+  ultimoLance = null;
+  atualizarKpis(); atualizarLista();
+  if(modoPvp){
+    const quem = turnoAtual === 1 ? "Preto" : "Branco";
+    turnoAtual = 3 - turnoAtual;
+    verificarFim();
+    atualizarStatus();
+    mostrarIntento(
+      fimDoJogo ? "✋ Dois passes — fim da partida"
+                : "✋ " + quem + " passou — vez do " + (turnoAtual === 1 ? "Preto" : "Branco"),
+      null);
+    return;
+  }
+  verificarFim();
+  if(!fimDoJogo){
+    const e = epoch;
+    setTimeout(() => { if(e === epoch) vezDaIA(); }, 350);
+  }
+}
+function desistir(){
+  if(fimDoJogo) return;
+  epoch++; // cancela cálculo pendente da IA
+  fimDoJogo = true;
+  document.getElementById("thinking").classList.remove("visivel");
+  if(modoPvp){
+    document.getElementById("fimResultado").textContent =
+      (turnoAtual === 1 ? "Branco" : "Preto") + " vence por desistência";
+    document.getElementById("fimDetalhe").textContent = "O jogador (preto) abandonou a partida.";
+  } else {
+    document.getElementById("fimResultado").textContent =
+      (jogadorCor === 1 ? "Branco" : "Preto") + " (IA) vence por desistência";
+    document.getElementById("fimDetalhe").textContent =
+      "O jogador (" + (jogadorCor === 1 ? "preto" : "branco") + ") abandonou a partida.";
+  }
+  revChaves = analisarPartida(jogo);
+  registrarResultado(modoPvp ? (turnoAtual === 1 ? "W+R" : "B+R") : (jogadorCor === 1 ? "W+R" : "B+R"));
+  setTimeout(() => document.getElementById("fim").classList.add("visivel"), 400);
+  atualizarStatus();
+}
+function reiniciar(){
+  epoch++; // cancela cálculo pendente da IA
+  const n = parseInt(document.getElementById("tamanhoSel").value, 10);
+  jogo = novoTabuleiro(n);
+  nivel = parseInt(localStorage.getItem("go_ia_nivel") || "2", 10);
+  vezIA = pensando = fimDoJogo = modoRev = false;
+  turnoAtual = 1;
+  emContagem = false; mortas = new Set();
+  hover = null; animacoes = []; ultimoLance = null;
+  revMove = 0; revChaves = [];
+  resultadoAtual = "";
+  // cor do jogador + handicap (controles só existem no modo vs IA)
+  if(modoPvp){
+    jogadorCor = 1; handicap = 0;
+    document.getElementById("linhaCor").style.display = "none";
+    document.getElementById("linhaHandicap").style.display = "none";
+    document.getElementById("komiSel").disabled = false;
+  } else {
+    document.getElementById("linhaCor").style.display = "";
+    document.getElementById("linhaHandicap").style.display = "";
+    const corPref = parseInt(localStorage.getItem("go_ia_cor") || "1", 10) || 1; // preferência persistida
+    handicap = parseInt(document.getElementById("handicapSel").value, 10) || 0;
+    jogadorCor = handicap > 0 ? 1 : corPref; // handicap é sempre de preto (você) — preserva a preferência
+    localStorage.setItem("go_ia_cor", String(corPref));
+    localStorage.setItem("go_ia_handicap", String(handicap));
+    document.getElementById("corPreta").classList.toggle("ativo", jogadorCor === 1);
+    document.getElementById("corBranca").classList.toggle("ativo", jogadorCor === 2 && handicap === 0);
+    document.getElementById("corBranca").disabled = handicap > 0;
+    document.getElementById("komiSel").disabled = handicap > 0;
+  }
+  // komi: personalizado (0/0.5/2.5/5.5/6.5/7.5) sem handicap; forçado a 0 no handicap
+  const komiRaw = parseFloat(document.getElementById("komiSel").value) || 0;
+  komiAtual = handicap > 0 ? 0 : komiRaw;
+  localStorage.setItem("go_ia_komi", String(komiRaw));
+  // coloca as pedras de handicap (diretamente no tabuleiro, sem entrar no histórico)
+  if(!modoPvp && handicap > 0){
+    for(const [x, y] of posicoesHandicap(n, handicap)) jogo.st[px(x, y, n)] = 1;
+  }
+  jogo.inicial = jogo.st.slice(); // posição inicial (exibida no review em revMove = -1)
+  document.getElementById("contagemCard").style.display = "none";
+  document.getElementById("thinking").classList.remove("visivel");
+  document.getElementById("fim").classList.remove("visivel");
+  document.getElementById("review").classList.remove("visivel");
+  document.getElementById("intento").classList.add("vazio");
+  document.getElementById("intento").textContent = "A IA explicará cada lance aqui…";
+  atualizarLista(); // já exibe a linha de handicap (H4: ⚫ …) quando houver pedras iniciais
+  atualizarStatus(); atualizarKpis(); atualizarHeatmap();
+  redimensionar();
+  // a IA joga primeiro: quando você é o Branco (sem komi a mais) ou há handicap
+  if(!modoPvp && (jogadorCor === 2 || handicap > 0)){
+    vezIA = true; pensando = true;
+    document.getElementById("thinking").classList.add("visivel"); // overlay imediato na abertura da IA
+    atualizarStatus();
+    const e = epoch;
+    setTimeout(() => { if(e === epoch) vezDaIA(); }, 400);
+  }
+}
+function definirCor(c){
+  if(modoPvp) return;
+  localStorage.setItem("go_ia_cor", String(c)); // persiste a preferência
+  if(c === 2 && handicap > 0){ // jogar de Branco exige tirar o handicap
+    handicap = 0;
+    document.getElementById("handicapSel").value = "0";
+  }
+  jogadorCor = c;
+  reiniciar();
+}
+function definirNivel(nv){
+  nivel = nv;
+  localStorage.setItem("go_ia_nivel", String(nv));
+  for(let i = 1; i <= 3; i++) document.getElementById("nivel" + i).classList.toggle("ativo", i === nv);
+}
+function alternarHeatmap(){
+  heatmapOn = !heatmapOn;
+  document.getElementById("btnHeat").classList.toggle("ativo", heatmapOn);
+  atualizarHeatmap();
+}
+function alternarSom(){
+  const ligado = Som.alternar();
+  document.getElementById("btnSom").textContent = ligado ? "🔊 Som" : "🔇 Som";
+}
+
+/* ── histórico + exportação SGF ────────────────────────── */
+function novoId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function carregarHistorico(){
+  try { historico = JSON.parse(localStorage.getItem("taikyoku_historico") || "[]"); }
+  catch(e){ historico = []; }
+  if(!Array.isArray(historico)) historico = [];
+}
+function salvarHistorico(){ localStorage.setItem("taikyoku_historico", JSON.stringify(historico)); }
+function registrarPartida(rec){
+  historico.unshift(rec);
+  if(historico.length > 40) historico.length = 40;
+  salvarHistorico();
+  atualizarHistoricoUI();
+}
+function nomesSGF(){
+  return modoPvp
+    ? { pb: "Jogador 1", pw: "Jogador 2" }
+    : { pb: jogadorCor === 1 ? "Você" : "IA", pw: jogadorCor === 2 ? "Você" : "IA" };
+}
+function registrarResultado(resultado, comentario){
+  resultadoAtual = resultado;
+  const nomes = nomesSGF();
+  registrarPartida({
+    id: novoId(), data: new Date().toISOString(), n: jogo.n,
+    modo: modoPvp ? "PvP" : "IA", corJogador: modoPvp ? null : jogadorCor, handicap,
+    resultado,
+    sgf: gerarSGF(jogo, { komi: komiAtual, handicap, pb: nomes.pb, pw: nomes.pw, resultado, comentario })
+  });
+}
+function atualizarHistoricoUI(){
+  const box = document.getElementById("histList");
+  if(!box) return;
+  if(!historico.length){
+    box.innerHTML = '<span style="color:var(--texto-sec);font-style:italic">Nenhuma partida registrada…</span>';
+    return;
+  }
+  box.innerHTML = historico.map(rec => {
+    const d = new Date(rec.data);
+    const dataTxt = isNaN(d.getTime()) ? "" : d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+    const modo = rec.modo === "PvP" ? "👥 PvP" : ((rec.corJogador === 2 ? "🤍 Branco" : "🖤 Preto") + (rec.handicap ? " · H" + rec.handicap : ""));
+    return '<div class="hist-item"><div class="hi-info"><b>' + rec.resultado + '</b> · ' + rec.n + '×' + rec.n + ' · ' + modo +
+      '<br><small style="color:var(--texto-sec)">' + dataTxt + '</small></div>' +
+      '<div class="linhas" style="margin:0"><button class="btn mini" onclick="exportarSGFId(\'' + rec.id + '\')">⬇ SGF</button>' +
+      '<button class="btn mini" onclick="removerPartida(\'' + rec.id + '\')">🗑</button></div></div>';
+  }).join("");
+}
+function removerPartida(id){
+  historico = historico.filter(r => r.id !== id);
+  salvarHistorico();
+  atualizarHistoricoUI();
+}
+function limparHistorico(){
+  if(!historico.length) return;
+  if(typeof confirm !== "function" || confirm("Apagar todo o histórico de partidas?")){
+    historico = [];
+    salvarHistorico();
+    atualizarHistoricoUI();
+  }
+}
+function baixarTexto(nome, texto, mime){
+  const blob = new Blob([texto], { type: mime || "text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = nome;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); if(a.remove) a.remove(); }, 300);
+}
+function exportarSGF(){
+  const nomes = nomesSGF();
+  const sgf = gerarSGF(jogo, { komi: komiAtual, handicap, pb: nomes.pb, pw: nomes.pw, resultado: resultadoAtual });
+  baixarTexto("taikyoku_" + Date.now().toString(36) + ".sgf", sgf, "application/x-go-sgf");
+}
+function exportarSGFId(id){
+  const rec = historico.find(r => r.id === id);
+  if(rec) baixarTexto("taikyoku_" + rec.id + ".sgf", rec.sgf, "application/x-go-sgf");
+}
+
+/* ── review / replay ───────────────────────────────────── */
+function fecharFim(){ document.getElementById("fim").classList.remove("visivel"); }
+function ativarReview(){
+  if(!jogo.hist.length) return;
+  modoRev = true;
+  revMove = jogo.hist.length - 1;
+  document.getElementById("review").classList.add("visivel");
+  const sl = document.getElementById("revSlider");
+  sl.min = -1; // posição inicial (pedras de handicap)
+  sl.max = Math.max(0, jogo.hist.length - 1);
+  sl.value = revMove;
+  const tickH = handicap > 0 ? '<span class="t hoshi" title="posição inicial (handicap)">H</span>' : "";
+  document.getElementById("ticks").innerHTML = tickH + jogo.hist.map((h, i) =>
+    '<span class="t' + (revChaves.some(k => k.i === i) ? " key" : "") + '" title="' + (i + 1) + '">' + (i + 1) + "</span>"
+  ).join("");
+  atualizarStatus();
+  irParaMove(revMove, true);
+}
+function rev(dir){
+  const max = jogo.hist.length - 1;
+  irParaMove(Math.max(-1, Math.min(max, revMove + dir)));
+}
+function revKey(dir){
+  if(!revChaves.length) return;
+  const idxs = revChaves.map(k => k.i);
+  let alvo = null;
+  if(dir < 0){ for(const i of idxs) if(i < revMove) alvo = i; }
+  else { for(const i of idxs) if(i > revMove){ alvo = i; break; } }
+  if(alvo === null) alvo = dir < 0 ? idxs[idxs.length - 1] : idxs[0];
+  irParaMove(alvo);
+}
+let ultimoSomRev = 0;
+function irParaMove(i, silencioso){
+  const mudou = i !== revMove;
+  revMove = i;
+  const sl = document.getElementById("revSlider");
+  if(sl) sl.value = i;
+  const coment = revChaves.find(k => k.i === i);
+  document.getElementById("revComent").textContent = coment
+    ? "🎯 " + coment.comentario
+    : i === -1
+      ? "Posição inicial — pedras de handicap (H" + handicap + ")"
+      : (jogo.hist[i] && jogo.hist[i].pass ? "Passou neste lance." : "Movimento " + (i + 1) + " — lance de rotina.");
+  atualizarLista();
+  // som com throttle: só quando muda e no máximo a cada 150ms (evita rajada no slider)
+  if(!silencioso && mudou && i >= 0 && i < jogo.hist.length){
+    const agora = performance.now();
+    const h = jogo.hist[i];
+    if(!h.pass && agora - ultimoSomRev > 150){ Som.init(); Som.resume(); Som.pedra(); ultimoSomRev = agora; }
+  }
+}
+
+/* ── interação ─────────────────────────────────────────── */
+canvas.addEventListener("mousemove", ev => {
+  const r = canvas.getBoundingClientRect();
+  const p = tabPonto(ev.clientX - r.left, ev.clientY - r.top);
+  hover = p;
+});
+canvas.addEventListener("mouseleave", () => hover = null);
+canvas.addEventListener("click", ev => {
+  const r = canvas.getBoundingClientRect();
+  const p = tabPonto(ev.clientX - r.left, ev.clientY - r.top);
+  if(!p) return;
+  if(modoRev){ irParaMove(Math.min(revMove + 1, jogo.hist.length - 1)); return; }
+  if(emContagem){ toggleMorta(p.x, p.y); return; }
+  if(modoPvp){ lancePvp(p.x, p.y); return; }
+  lanceJogador(p.x, p.y);
+});
+
+/* ═══════════════════════════════════════════════════════════
+   MODO DE JOGO — vs IA / PvP
+   ═══════════════════════════════════════════════════════════ */
+function definirModo(pvp){
+  modoPvp = !!pvp;
+  turnoAtual = 1;
+  document.getElementById("modoAI").classList.toggle("ativo", !modoPvp);
+  document.getElementById("modoPvp").classList.toggle("ativo", modoPvp);
+  document.getElementById("badgesAI").style.display = modoPvp ? "none" : "";
+  document.getElementById("intentoTitulo").textContent = modoPvp ? "Último lance" : "Intenção da IA";
+  reiniciar();
+}
+
+/* ── init ──────────────────────────────────────────────── */
+// restaura as preferências persistidas (cor + handicap + komi) antes do primeiro tabuleiro
+const _hc = parseInt(localStorage.getItem("go_ia_handicap") || "0", 10);
+document.getElementById("handicapSel").value = String(_hc >= 2 && _hc <= 9 ? _hc : 0);
+const _komi = localStorage.getItem("go_ia_komi");
+document.getElementById("komiSel").value = ["0", "0.5", "2.5", "5.5", "6.5", "7.5"].includes(_komi) ? _komi : "7.5";
+definirModo(false); // já reinicia o tabuleiro, dimensiona e inicia o loop de desenho
+carregarHistorico();
+atualizarHistoricoUI();
+</script>
+</body>
+</html>

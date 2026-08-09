@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feudalismo — Compreensão Leitora · 7º Ano</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   PALETA — pergaminho medieval
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --tinta:#3b2f2a;
+  --marrom:#6d4c41;
+  --marrom-claro:#a1887f;
+  --pergaminho:#f6ecd8;
+  --pergaminho-2:#eadfc4;
+  --pergaminho-3:#e2d3b0;
+  --vermelho:#b71c1c;
+  --vermelho-escuro:#7f1d1d;
+  --verde:#2e7d32;
+  --verde-claro:#e8f5e9;
+  --azul:#1a237e;
+  --azul-claro:#e8eaf6;
+  --ouro:#caa14b;
+  --ouro-claro:#ffd54f;
+  --texto:#3b2f2a;
+  --borda:#b8a88a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'EB Garamond',Georgia,'Times New Roman',serif;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(202,161,75,.10) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(140,90,60,.12) 0%, transparent 50%),
+    linear-gradient(180deg,#efe6d0 0%,#e7dbc0 100%);
+  color:var(--texto);
+  line-height:1.65;
+  padding:24px 16px 60px;
+  font-size:18px;
+}
+.wrap{max-width:860px;margin:0 auto}
+
+/* ── Cabeçalho ─────────────────────────────────────────── */
+header.hero{
+  text-align:center;
+  padding:44px 28px 34px;
+  margin-bottom:34px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0) 65%),
+    var(--pergaminho);
+  border:2px solid var(--borda);
+  border-radius:10px;
+  position:relative;
+  box-shadow:0 4px 22px rgba(90,60,30,.18);
+}
+header.hero::before,header.hero::after{
+  content:"⚜";
+  position:absolute;top:10px;color:var(--ouro);
+  font-size:22px;
+}
+header.hero::before{left:18px}
+header.hero::after{right:18px}
+.hero-emoji{font-size:52px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))}
+h1{
+  font-family:'Cinzel',Georgia,serif;
+  font-weight:900;
+  font-size:clamp(26px,4.5vw,38px);
+  letter-spacing:.5px;
+  color:var(--vermelho-escuro);
+  margin:10px 0 4px;
+  text-transform:uppercase;
+}
+.hero-sub{
+  font-style:italic;color:var(--marrom);
+  font-size:clamp(17px,2.5vw,21px);
+  margin-bottom:16px;
+}
+.meta-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{
+  font-size:14.5px;
+  padding:6px 14px;
+  border-radius:999px;
+  border:1.5px solid var(--borda);
+  background:rgba(255,255,255,.6);
+  font-weight:600;
+  letter-spacing:.3px;
+}
+.chip b{color:var(--vermelho-escuro);font-weight:700}
+.hero-actions{
+  margin-top:18px;
+  display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+}
+.btn{
+  font-family:'Cinzel',Georgia,serif;
+  font-size:15px;font-weight:700;letter-spacing:.5px;
+  padding:10px 20px;
+  border-radius:8px;
+  border:2px solid var(--borda);
+  cursor:pointer;
+  background:linear-gradient(180deg,#fff8e8,#e9dcc0);
+  color:var(--tinta);
+  transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+  box-shadow:0 2px 6px rgba(90,60,30,.15);
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(90,60,30,.22)}
+.btn:active{transform:translateY(0)}
+.btn-primary{
+  background:linear-gradient(180deg,var(--vermelho),var(--vermelho-escuro));
+  border-color:var(--vermelho-escuro);
+  color:#fff8e8;
+}
+.btn-ghost{background:transparent;box-shadow:none}
+.btn-ghost:hover{background:rgba(255,255,255,.45)}
+
+/* ── Cards de texto ─────────────────────────────────────── */
+section.texto{
+  background:var(--pergaminho);
+  border:2px solid var(--borda);
+  border-radius:10px;
+  margin-bottom:30px;
+  padding:0;
+  box-shadow:0 3px 14px rgba(90,60,30,.14);
+  overflow:hidden;
+  position:relative;
+  page-break-inside:avoid;
+}
+.texto-num{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 26px;
+  background:linear-gradient(180deg,var(--pergaminho-2),var(--pergaminho-3));
+  border-bottom:2px solid var(--borda);
+}
+.texto-num .num{
+  font-family:'Cinzel',Georgia,serif;
+  font-size:20px;font-weight:900;
+  color:#fff8e8;
+  background:linear-gradient(180deg,var(--vermelho),var(--vermelho-escuro));
+  width:46px;height:46px;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  box-shadow:inset 0 -2px 4px rgba(0,0,0,.25), 0 2px 4px rgba(0,0,0,.2);
+  border:2px solid var(--ouro);
+}
+.texto-num h2{
+  font-family:'Cinzel',Georgia,serif;
+  font-weight:700;
+  font-size:clamp(19px,3vw,24px);
+  color:var(--vermelho-escuro);
+}
+.texto-body{padding:22px 28px 10px}
+.texto-body p{
+  text-indent:1.6em;
+  margin-bottom:14px;
+  text-align:justify;
+}
+.texto-body p:first-of-type::first-letter{
+  font-family:'Cinzel',Georgia,serif;
+  font-size:2.6em;font-weight:900;
+  color:var(--vermelho);
+  float:left;
+  line-height:.85;
+  padding:2px 8px 0 0;
+}
+.vocab{
+  margin:6px 0 16px;
+  padding:12px 16px;
+  background:var(--azul-claro);
+  border-left:5px solid var(--azul);
+  border-radius:0 8px 8px 0;
+  font-size:16.5px;
+}
+.vocab b{color:var(--azul)}
+.vocab em{font-style:italic;color:var(--marrom)}
+
+/* ── Questões ───────────────────────────────────────────── */
+h3.questoes-titulo{
+  font-family:'Cinzel',Georgia,serif;
+  font-size:17px;font-weight:700;
+  color:var(--azul);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin:6px 0 14px;
+  display:flex;align-items:center;gap:10px;
+}
+h3.questoes-titulo::after{
+  content:"";flex:1;height:1px;
+  background:linear-gradient(90deg,var(--borda),transparent);
+}
+ol.questoes{list-style:none;counter-reset:q}
+ol.questoes>li{
+  counter-increment:q;
+  margin-bottom:16px;
+  padding:14px 16px 12px 52px;
+  position:relative;
+  background:rgba(255,255,255,.45);
+  border:1px solid rgba(184,168,138,.55);
+  border-radius:8px;
+}
+ol.questoes>li::before{
+  content:counter(q);
+  position:absolute;left:14px;top:13px;
+  width:26px;height:26px;
+  border-radius:50%;
+  background:var(--pergaminho-3);
+  border:1.5px solid var(--borda);
+  font-weight:700;color:var(--marrom);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;
+}
+.q-enunciado{font-weight:600;margin-bottom:8px}
+.q-enunciado .tag{
+  display:inline-block;font-size:12.5px;font-weight:700;
+  padding:2px 9px;border-radius:999px;margin-right:8px;
+  vertical-align:1px;
+}
+.tag-mc{background:var(--azul-claro);color:var(--azul);border:1px solid var(--azul)}
+.tag-diss{background:var(--verde-claro);color:var(--verde);border:1px solid var(--verde)}
+
+/* MC */
+.mc-opts{display:flex;flex-direction:column;gap:7px;margin-top:6px}
+.mc-opt{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:9px 12px;
+  border:1.5px solid var(--borda);
+  border-radius:8px;
+  background:rgba(255,255,255,.7);
+  cursor:pointer;
+  transition:background .12s ease,border-color .12s ease,transform .12s ease;
+}
+.mc-opt:hover{background:#fff;transform:translateX(3px)}
+.mc-opt .letra{
+  font-family:'Cinzel',Georgia,serif;
+  font-weight:700;color:var(--marrom);
+  flex-shrink:0;
+}
+.mc-opt .txt{line-height:1.5}
+.mc-opt.certo{
+  background:var(--verde-claro);
+  border-color:var(--verde);
+}
+.mc-opt.certo .letra{color:var(--verde)}
+.mc-opt.errado{
+  background:#ffebee;
+  border-color:var(--vermelho);
+}
+.mc-opt.errado .letra{color:var(--vermelho)}
+.feedback{
+  display:none;
+  margin-top:8px;font-size:15.5px;
+  font-style:italic;
+}
+.mc-opt.certo ~ .feedback.mc-certo{display:block;color:var(--verde)}
+.mc-opt.errado ~ .feedback.mc-erro{display:block;color:var(--vermelho)}
+/* dissertativa */
+.diss-linhas{
+  margin-top:8px;
+  border-bottom:1px dashed var(--borda);
+  height:44px;
+}
+
+/* ── Gabarito ───────────────────────────────────────────── */
+.gabarito-wrap{margin:26px 0 30px}
+.gabarito{
+  display:none;
+  background:var(--pergaminho);
+  border:2px dashed var(--ouro);
+  border-radius:10px;
+  padding:22px 28px;
+  box-shadow:inset 0 0 30px rgba(202,161,75,.12);
+}
+.gabarito.visivel{display:block}
+.gabarito h3{
+  font-family:'Cinzel',Georgia,serif;
+  color:var(--vermelho-escuro);
+  font-size:22px;margin-bottom:14px;
+  text-align:center;
+}
+.gabarito table{width:100%;border-collapse:collapse;font-size:16.5px}
+.gabarito th{
+  background:var(--pergaminho-3);
+  font-family:'Cinzel',Georgia,serif;
+  font-size:14.5px;letter-spacing:1px;text-transform:uppercase;
+  padding:9px 10px;text-align:left;
+  border:1px solid var(--borda);
+}
+.gabarito td{
+  border:1px solid var(--borda);
+  padding:9px 12px;
+  vertical-align:top;
+}
+.gabarito td:first-child{white-space:nowrap;font-weight:700;color:var(--marrom)}
+.gabarito .resp-mc{font-weight:700;color:var(--verde)}
+
+/* ── Rodapé ─────────────────────────────────────────────── */
+footer{
+  margin-top:34px;text-align:center;
+  color:var(--marrom);font-style:italic;font-size:15.5px;
+  border-top:2px solid var(--borda);
+  padding-top:18px;
+}
+
+/* ── Impressão ──────────────────────────────────────────── */
+@media print{
+  body{background:#fff;padding:0;font-size:13.5px}
+  .wrap{max-width:100%}
+  .hero-actions,.btn{display:none}
+  header.hero{box-shadow:none;padding:20px 10px 14px;margin-bottom:16px}
+  .texto{box-shadow:none;margin-bottom:16px;break-inside:avoid}
+  .texto-body{padding:14px 18px 6px}
+  ol.questoes>li{break-inside:avoid}
+  .mc-opt{cursor:default;background:#fff}
+  .mc-opt.certo,.mc-opt.errado{background:#fff;border-color:var(--borda)}
+  .feedback{display:none!important}
+  .gabarito{box-shadow:none}
+}
+@page{margin:1.4cm}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="hero-emoji">🏰</div>
+    <h1>Feudalismo</h1>
+    <p class="hero-sub">Compreensão Leitora · 5 textos com questões</p>
+    <div class="meta-chips">
+      <span class="chip">📅 <b>Ano:</b> 7º</span>
+      <span class="chip">📖 <b>Disciplina:</b> História</span>
+      <span class="chip">⚔️ <b>Tema:</b> Feudalismo</span>
+      <span class="chip">🟢 <b>Nível:</b> Básico</span>
+      <span class="chip">🎯 <b>Objetivo:</b> Compreensão leitora</span>
+    </div>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="btn" id="gabBtn" onclick="toggleGabarito()">👁️ Mostrar gabarito</button>
+      <label class="btn btn-ghost" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="gabPrint" style="width:17px;height:17px;accent-color:var(--vermelho)">
+        Incluir gabarito na impressão
+      </label>
+    </div>
+  </header>
+
+  <!-- ═══════════ TEXTO 1 ═══════════ -->
+  <section class="texto">
+    <div class="texto-num"><div class="num">1</div><h2>O que é o feudalismo?</h2></div>
+    <div class="texto-body">
+      <p>O feudalismo foi um sistema de organização da sociedade e da economia que se desenvolveu na Europa durante a Idade Média, entre os séculos V e XV. Ele surgiu depois da queda do Império Romano, em um período de muitas guerras e invasões. Como a vida era muito perigosa, as pessoas procuravam a proteção de homens poderosos que possuíam terras.</p>
+      <p>A terra, chamada de <strong>feudo</strong>, era a maior riqueza da época. Quem tinha terra tinha poder. No feudalismo, quase tudo o que as pessoas precisavam — comida, roupa e moradia — era produzido dentro do próprio feudo. Por isso, o comércio entre as regiões era muito pequeno.</p>
+      <div class="vocab"><b>Glossário:</b> <em>feudo</em> — grande propriedade de terra que pertencia a um senhor feudal.</div>
+      <h3 class="questoes-titulo">Questões</h3>
+      <ol class="questoes">
+        <li>
+          <div class="q-enunciado"><span class="tag tag-mc">MÚLTIPLA ESCOLHA</span>Quando o feudalismo se desenvolveu na Europa?</div>
+          <div class="mc-opts">
+            <div class="mc-opt" data-certo onclick="mc(this)"><span class="letra">a)</span><span class="txt">Durante a Idade Média, entre os séculos V e XV</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">b)</span><span class="txt">Durante a Idade Moderna, no século XVI</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">c)</span><span class="txt">Antes da queda do Império Romano</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">d)</span><span class="txt">No século XX, depois das guerras mundiais</span></div>
+            <div class="feedback mc-certo">✅ Correto! O texto diz que o feudalismo se desenvolveu na Europa durante a Idade Média, entre os séculos V e XV.</div>
+            <div class="feedback mc-erro">❌ Não é essa. Releia o início do texto.</div>
+          </div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-diss">DISSERTATIVA</span>Por que as pessoas procuravam a proteção de homens poderosos?</div>
+          <div class="diss-linhas"></div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-diss">DISSERTATIVA</span>O que era o feudo? Por que ele era tão importante?</div>
+          <div class="diss-linhas"></div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-mc">MÚLTIPLA ESCOLHA</span>Por que o comércio entre as regiões era muito pequeno no feudalismo?</div>
+          <div class="mc-opts">
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">a)</span><span class="txt">Porque as estradas eram de pedra e muito caras</span></div>
+            <div class="mc-opt" data-certo onclick="mc(this)"><span class="letra">b)</span><span class="txt">Porque quase tudo o que as pessoas precisavam era produzido dentro do próprio feudo</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">c)</span><span class="txt">Porque os comerciantes eram proibidos por lei de viajar</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">d)</span><span class="txt">Porque a Europa não tinha produtos para vender</span></div>
+            <div class="feedback mc-certo">✅ Correto! Como quase tudo era produzido dentro do feudo, havia pouco comércio entre as regiões.</div>
+            <div class="feedback mc-erro">❌ Não é essa. Pense em o que cada feudo produzia sozinho.</div>
+          </div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-mc">MÚLTIPLA ESCOLHA</span>Marque a frase <strong>verdadeira</strong> de acordo com o texto:</div>
+          <div class="mc-opts">
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">a)</span><span class="txt">No feudalismo, o comércio era a maior riqueza da época</span></div>
+            <div class="mc-opt" data-certo onclick="mc(this)"><span class="letra">b)</span><span class="txt">A terra era a maior riqueza da época: quem tinha terra tinha poder</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">c)</span><span class="txt">O feudalismo começou depois das guerras mundiais</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">d)</span><span class="txt">No feudalismo, as pessoas compravam tudo no comércio local</span></div>
+            <div class="feedback mc-certo">✅ Correto! O texto afirma que a terra era a maior riqueza da época.</div>
+            <div class="feedback mc-erro">❌ Releia o segundo parágrafo do texto.</div>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ═══════════ TEXTO 2 ═══════════ -->
+  <section class="texto">
+    <div class="texto-num"><div class="num">2</div><h2>A sociedade feudal: quem reza, quem luta, quem trabalha</h2></div>
+    <div class="texto-body">
+      <p>A sociedade feudal era dividida em três grupos. O primeiro grupo era o <strong>clero</strong>: bispos, padres e monges, que rezavam e cuidavam da religião. O segundo grupo era a <strong>nobreza</strong>: reis, duques, condes e cavaleiros, que lutavam nas guerras e defendiam as pessoas. O terceiro grupo era o dos <strong>camponeses</strong>, também chamados de servos, que trabalhavam na terra e produziam os alimentos de todos.</p>
+      <p>As pessoas da época diziam que Deus havia dividido a sociedade assim: <em>"uns rezam, outros lutam, outros trabalham"</em>. O rei estava no topo da sociedade, mas o poder era dividido entre os grandes senhores. A mobilidade social quase não existia: as pessoas geralmente nasciam e morriam dentro do mesmo grupo.</p>
+      <div class="vocab"><b>Glossário:</b> <em>mobilidade social</em> — a possibilidade de uma pessoa mudar de grupo social (por exemplo, deixar de ser camponês e virar nobre).</div>
+      <h3 class="questoes-titulo">Questões</h3>
+      <ol class="questoes">
+        <li>
+          <div class="q-enunciado"><span class="tag tag-mc">MÚLTIPLA ESCOLHA</span>Quais eram os três grupos da sociedade feudal?</div>
+          <div class="mc-opts">
+            <div class="mc-opt" data-certo onclick="mc(this)"><span class="letra">a)</span><span class="txt">Clero (rezava), nobreza (lutava) e camponeses (trabalhavam)</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">b)</span><span class="txt">Reis, comerciantes e escravos</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">c)</span><span class="txt">Soldados, padres e juízes</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">d)</span><span class="txt">Nobres, camponeses e mercadores estrangeiros</span></div>
+            <div class="feedback mc-certo">✅ Correto! Eram o clero, a nobreza e os camponeses.</div>
+            <div class="feedback mc-erro">❌ Releia o primeiro parágrafo do texto.</div>
+          </div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-diss">DISSERTATIVA</span>O que fazia cada grupo da sociedade feudal?</div>
+          <div class="diss-linhas"></div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-diss">DISSERTATIVA</span>Explique com suas palavras o que significa a frase: <em>"a mobilidade social quase não existia"</em>.</div>
+          <div class="diss-linhas"></div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-mc">MÚLTIPLA ESCOLHA</span>Quem estava no topo da sociedade feudal?</div>
+          <div class="mc-opts">
+            <div class="mc-opt" data-certo onclick="mc(this)"><span class="letra">a)</span><span class="txt">O rei</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">b)</span><span class="txt">O servo mais velho do feudo</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">c)</span><span class="txt">O papa, sempre</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">d)</span><span class="txt">Os comerciantes</span></div>
+            <div class="feedback mc-certo">✅ Correto! O rei estava no topo — mas o texto lembra que o poder era dividido entre os grandes senhores.</div>
+            <div class="feedback mc-erro">❌ Releia o segundo parágrafo.</div>
+          </div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-mc">MÚLTIPLA ESCOLHA</span>O ditado <em>"uns rezam, outros lutam, outros trabalham"</em> mostra que a sociedade feudal era:</div>
+          <div class="mc-opts">
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">a)</span><span class="txt">Igualitária, todos viviam do mesmo jeito</span></div>
+            <div class="mc-opt" data-certo onclick="mc(this)"><span class="letra">b)</span><span class="txt">Dividida em grupos com funções diferentes e desiguais</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">c)</span><span class="txt">Organizada em torno do comércio</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">d)</span><span class="txt">Sem religião nem igreja</span></div>
+            <div class="feedback mc-certo">✅ Correto! Cada grupo tinha uma função e os grupos não eram iguais.</div>
+            <div class="feedback mc-erro">❌ Pense no que cada grupo fazia de diferente.</div>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ═══════════ TEXTO 3 ═══════════ -->
+  <section class="texto">
+    <div class="texto-num"><div class="num">3</div><h2>Senhores e servos: as obrigações no feudo</h2></div>
+    <div class="texto-body">
+      <p>O feudo era a terra do senhor feudal. Viviam nela os servos, que trabalhavam e tinham muitas obrigações com o senhor. A <strong>corveia</strong> era o trabalho gratuito que o servo fazia na terra do senhor alguns dias por semana. A <strong>talha</strong> era a parte da produção — por exemplo, uma parte do trigo colhido — que o servo entregava ao senhor.</p>
+      <p>Além disso, existiam as <strong>banalidades</strong>: taxas pagas pelo uso do moinho, do forno e da prensa de uvas do senhor. Havia também a <strong>mão morta</strong>: a taxa que a família pagava para continuar morando na terra quando o servo morria. Apesar de tantas obrigações, o servo não era escravo: ele não podia ser vendido, mas também não podia sair do feudo sem a permissão do senhor.</p>
+      <div class="vocab"><b>Glossário:</b> <em>corveia</em>, <em>talha</em>, <em>banalidades</em> e <em>mão morta</em> — obrigações e taxas que os servos deviam ao senhor feudal.</div>
+      <h3 class="questoes-titulo">Questões</h3>
+      <ol class="questoes">
+        <li>
+          <div class="q-enunciado"><span class="tag tag-diss">DISSERTATIVA</span>O que era a corveia?</div>
+          <div class="diss-linhas"></div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-diss">DISSERTATIVA</span>O que era a talha? Dê um exemplo citado no texto.</div>
+          <div class="diss-linhas"></div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-mc">MÚLTIPLA ESCOLHA</span>O que eram as banalidades?</div>
+          <div class="mc-opts">
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">a)</span><span class="txt">Festas que o senhor oferecia aos servos</span></div>
+            <div class="mc-opt" data-certo onclick="mc(this)"><span class="letra">b)</span><span class="txt">Taxas pagas pelo uso do moinho, do forno e da prensa de uvas do senhor</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">c)</span><span class="txt">Dias de folga dos servos</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">d)</span><span class="txt">Impostos pagos ao rei da região</span></div>
+            <div class="feedback mc-certo">✅ Correto! Banalidades eram as taxas pelo uso do moinho, forno e prensa do senhor.</div>
+            <div class="feedback mc-erro">❌ Releia o segundo parágrafo do texto.</div>
+          </div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-mc">MÚLTIPLA ESCOLHA</span>De acordo com o texto, em que o servo se diferenciava do escravo?</div>
+          <div class="mc-opts">
+            <div class="mc-opt" data-certo onclick="mc(this)"><span class="letra">a)</span><span class="txt">O servo não podia ser vendido</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">b)</span><span class="txt">O servo recebia salário todo mês</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">c)</span><span class="txt">O servo podia sair do feudo quando quisesse</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">d)</span><span class="txt">O servo não tinha obrigações com o senhor</span></div>
+            <div class="feedback mc-certo">✅ Correto! O servo não podia ser vendido — mas também não podia sair do feudo sem permissão.</div>
+            <div class="feedback mc-erro">❌ Releia a última parte do texto.</div>
+          </div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-diss">DISSERTATIVA</span>O que era a mão morta?</div>
+          <div class="diss-linhas"></div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ═══════════ TEXTO 4 ═══════════ -->
+  <section class="texto">
+    <div class="texto-num"><div class="num">4</div><h2>Suserano e vassalo: uma relação de proteção</h2></div>
+    <div class="texto-body">
+      <p>Além da relação entre senhores e servos, havia uma relação muito importante entre os próprios senhores: a <strong>suserania e a vassalagem</strong>. Um senhor mais poderoso, chamado <strong>suserano</strong>, protegia outro homem, chamado <strong>vassalo</strong>, e lhe dava um feudo para governar. Em troca, o vassalo prometia lealdade e ajuda militar ao suserano.</p>
+      <p>Essa relação era marcada por uma cerimônia chamada <strong>homenagem</strong>: o vassalo ajoelhava-se diante do suserano, colocava as mãos entre as mãos dele e jurava fidelidade. A Igreja participava da cerimônia para torná-la sagrada. Se o vassalo não cumprisse o juramento, cometia <strong>traição</strong> — um dos piores crimes da época.</p>
+      <div class="vocab"><b>Glossário:</b> <em>suserano</em> — senhor que dá o feudo e protege. <em>Vassalo</em> — homem que recebe o feudo e jura lealdade.</div>
+      <h3 class="questoes-titulo">Questões</h3>
+      <ol class="questoes">
+        <li>
+          <div class="q-enunciado"><span class="tag tag-diss">DISSERTATIVA</span>Quem era o suserano e quem era o vassalo?</div>
+          <div class="diss-linhas"></div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-diss">DISSERTATIVA</span>O que o suserano dava ao vassalo? E o que o vassalo prometia em troca?</div>
+          <div class="diss-linhas"></div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-mc">MÚLTIPLA ESCOLHA</span>Como acontecia a cerimônia de homenagem?</div>
+          <div class="mc-opts">
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">a)</span><span class="txt">O suserano ajoelhava-se diante do vassalo e pedia perdão</span></div>
+            <div class="mc-opt" data-certo onclick="mc(this)"><span class="letra">b)</span><span class="txt">O vassalo ajoelhava-se, colocava as mãos entre as mãos do suserano e jurava fidelidade</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">c)</span><span class="txt">Os dois senhores trocavam presentes e encerravam a amizade</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">d)</span><span class="txt">O vassalo entregava suas terras ao rei e fugia</span></div>
+            <div class="feedback mc-certo">✅ Correto! Na homenagem, o vassalo ajoelhava-se e colocava as mãos entre as do suserano, jurando fidelidade.</div>
+            <div class="feedback mc-erro">❌ Releia o segundo parágrafo.</div>
+          </div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-diss">DISSERTATIVA</span>Por que a Igreja participava da cerimônia de homenagem?</div>
+          <div class="diss-linhas"></div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-mc">MÚLTIPLA ESCOLHA</span>O que acontecia com o vassalo que não cumprisse o juramento?</div>
+          <div class="mc-opts">
+            <div class="mc-opt" data-certo onclick="mc(this)"><span class="letra">a)</span><span class="txt">Ele cometia traição, um dos piores crimes da época</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">b)</span><span class="txt">Ele recebia outro feudo maior</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">c)</span><span class="txt">Ele virava servo do próprio suserano</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">d)</span><span class="txt">Nada acontecia, o juramento não tinha valor</span></div>
+            <div class="feedback mc-certo">✅ Correto! Quebrar o juramento era traição, um dos piores crimes da época.</div>
+            <div class="feedback mc-erro">❌ Releia a última frase do texto.</div>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ═══════════ TEXTO 5 ═══════════ -->
+  <section class="texto">
+    <div class="texto-num"><div class="num">5</div><h2>O castelo e a vida no feudo</h2></div>
+    <div class="texto-body">
+      <p>O castelo era o símbolo do poder do senhor feudal. Construído em lugares altos, com muralhas grossas e torres, servia para proteger o senhor, sua família e os camponeses em caso de ataque. Dentro dos muros ficavam o poço, os celeiros, a capela e as casas dos servos.</p>
+      <p>A vida no feudo girava em torno da agricultura: plantava-se trigo, cevada e outros alimentos. O dia dos camponeses começava ao amanhecer e terminava ao anoitecer. A Igreja marcava o tempo: os sinos anunciavam as horas de rezar, de comer e de dormir. As festas religiosas eram os momentos de alegria e de descanso durante o ano.</p>
+      <div class="vocab"><b>Glossário:</b> <em>celeiro</em> — depósito onde se guardavam os grãos e alimentos.</div>
+      <h3 class="questoes-titulo">Questões</h3>
+      <ol class="questoes">
+        <li>
+          <div class="q-enunciado"><span class="tag tag-mc">MÚLTIPLA ESCOLHA</span>Para que servia o castelo, de acordo com o texto?</div>
+          <div class="mc-opts">
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">a)</span><span class="txt">Para guardar o ouro dos camponeses</span></div>
+            <div class="mc-opt" data-certo onclick="mc(this)"><span class="letra">b)</span><span class="txt">Para proteger o senhor, sua família e os camponeses em caso de ataque</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">c)</span><span class="txt">Para servir de mercado onde se vendiam alimentos</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">d)</span><span class="txt">Para moradia dos servos apenas</span></div>
+            <div class="feedback mc-certo">✅ Correto! O castelo protegia o senhor, a família e os camponeses em caso de ataque.</div>
+            <div class="feedback mc-erro">❌ Releia o primeiro parágrafo.</div>
+          </div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-diss">DISSERTATIVA</span>Cite três coisas que ficavam dentro dos muros do castelo.</div>
+          <div class="diss-linhas"></div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-mc">MÚLTIPLA ESCOLHA</span>Em torno do que girava a vida no feudo?</div>
+          <div class="mc-opts">
+            <div class="mc-opt" data-certo onclick="mc(this)"><span class="letra">a)</span><span class="txt">Da agricultura</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">b)</span><span class="txt">Do comércio com outras regiões</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">c)</span><span class="txt">Da pesca no mar</span></div>
+            <div class="mc-opt" onclick="mc(this)"><span class="letra">d)</span><span class="txt">Da indústria das cidades</span></div>
+            <div class="feedback mc-certo">✅ Correto! A vida no feudo girava em torno da agricultura.</div>
+            <div class="feedback mc-erro">❌ Releia o segundo parágrafo.</div>
+          </div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-diss">DISSERTATIVA</span>Como a Igreja marcava o tempo no feudo?</div>
+          <div class="diss-linhas"></div>
+        </li>
+        <li>
+          <div class="q-enunciado"><span class="tag tag-diss">DISSERTATIVA</span>Quais eram os momentos de alegria e de descanso durante o ano no feudo?</div>
+          <div class="diss-linhas"></div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ═══════════ GABARITO ═══════════ -->
+  <div class="gabarito-wrap">
+    <div class="gabarito" id="gabarito">
+      <h3>⚜️ Gabarito do Professor</h3>
+      <table>
+        <tr><th style="width:120px">Questão</th><th>Resposta esperada</th></tr>
+        <tr><td>Texto 1 — Q1</td><td><span class="resp-mc">a)</span> Durante a Idade Média, entre os séculos V e XV.</td></tr>
+        <tr><td>Texto 1 — Q2</td><td>Porque a vida era muito perigosa (guerras e invasões) e as pessoas buscavam a proteção de homens poderosos que possuíam terras.</td></tr>
+        <tr><td>Texto 1 — Q3</td><td>O feudo era a terra do senhor feudal, a maior riqueza da época — quem tinha terra tinha poder.</td></tr>
+        <tr><td>Texto 1 — Q4</td><td><span class="resp-mc">b)</span> Porque quase tudo o que as pessoas precisavam era produzido dentro do próprio feudo.</td></tr>
+        <tr><td>Texto 1 — Q5</td><td><span class="resp-mc">b)</span> A terra era a maior riqueza da época: quem tinha terra tinha poder.</td></tr>
+        <tr><td>Texto 2 — Q1</td><td><span class="resp-mc">a)</span> Clero (rezava), nobreza (lutava) e camponeses (trabalhavam).</td></tr>
+        <tr><td>Texto 2 — Q2</td><td>O clero rezava e cuidava da religião; a nobreza lutava nas guerras e defendia as pessoas; os camponeses trabalhavam na terra e produziam os alimentos.</td></tr>
+        <tr><td>Texto 2 — Q3</td><td>Significa que quase não havia como mudar de grupo social: as pessoas geralmente nasciam e morriam no mesmo grupo.</td></tr>
+        <tr><td>Texto 2 — Q4</td><td><span class="resp-mc">a)</span> O rei estava no topo, mas o poder era dividido entre os grandes senhores.</td></tr>
+        <tr><td>Texto 2 — Q5</td><td><span class="resp-mc">b)</span> Dividida em grupos com funções diferentes e desiguais.</td></tr>
+        <tr><td>Texto 3 — Q1</td><td>Corveia era o trabalho gratuito que o servo fazia na terra do senhor alguns dias por semana.</td></tr>
+        <tr><td>Texto 3 — Q2</td><td>Talha era a parte da produção (ex.: uma parte do trigo colhido) que o servo entregava ao senhor.</td></tr>
+        <tr><td>Texto 3 — Q3</td><td><span class="resp-mc">b)</span> Taxas pagas pelo uso do moinho, do forno e da prensa de uvas do senhor.</td></tr>
+        <tr><td>Texto 3 — Q4</td><td><span class="resp-mc">a)</span> O servo não podia ser vendido — mas não podia sair do feudo sem permissão do senhor.</td></tr>
+        <tr><td>Texto 3 — Q5</td><td>Mão morta era a taxa que a família pagava para continuar morando na terra quando o servo morria.</td></tr>
+        <tr><td>Texto 4 — Q1</td><td>Suserano era o senhor mais poderoso que protegia e dava o feudo; vassalo era o homem que recebia o feudo e jurava lealdade.</td></tr>
+        <tr><td>Texto 4 — Q2</td><td>O suserano dava um feudo para governar; o vassalo prometia lealdade e ajuda militar.</td></tr>
+        <tr><td>Texto 4 — Q3</td><td><span class="resp-mc">b)</span> O vassalo ajoelhava-se, colocava as mãos entre as mãos do suserano e jurava fidelidade.</td></tr>
+        <tr><td>Texto 4 — Q4</td><td>Para tornar a relação sagrada (o juramento ganhava um valor religioso).</td></tr>
+        <tr><td>Texto 4 — Q5</td><td><span class="resp-mc">a)</span> Cometia traição, um dos piores crimes da época.</td></tr>
+        <tr><td>Texto 5 — Q1</td><td><span class="resp-mc">b)</span> Proteger o senhor, sua família e os camponeses em caso de ataque.</td></tr>
+        <tr><td>Texto 5 — Q2</td><td>Dentro dos muros ficavam o poço, os celeiros, a capela e as casas dos servos (qualquer três).</td></tr>
+        <tr><td>Texto 5 — Q3</td><td><span class="resp-mc">a)</span> Da agricultura.</td></tr>
+        <tr><td>Texto 5 — Q4</td><td>Os sinos da igreja anunciavam as horas de rezar, de comer e de dormir.</td></tr>
+        <tr><td>Texto 5 — Q5</td><td>As festas religiosas.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    ProfHistória IA · Material de Compreensão Leitora · Feudalismo — 7º Ano · Nível Básico<br>
+    Textos adaptados para fins didáticos · Pode ser reproduzido em sala de aula
+  </footer>
+
+</div>
+
+<script>
+// ── Múltipla escolha: feedback interativo ───────────────────
+function mc(opt){
+  var grupo = opt.parentElement;
+  var jaRespondida = grupo.querySelector('.mc-opt.certo, .mc-opt.errado');
+  if (jaRespondida) return; // bloqueia após responder
+  if (opt.hasAttribute('data-certo')) {
+    opt.classList.add('certo');
+  } else {
+    opt.classList.add('errado');
+    var certa = grupo.querySelector('.mc-opt[data-certo]');
+    if (certa) certa.classList.add('certo');
+  }
+}
+
+// ── Gabarito ────────────────────────────────────────────────
+function toggleGabarito(){
+  var g = document.getElementById('gabarito');
+  var btn = document.getElementById('gabBtn');
+  g.classList.toggle('visivel');
+  btn.textContent = g.classList.contains('visivel') ? '🙈 Ocultar gabarito' : '👁️ Mostrar gabarito';
+}
+
+// ── Incluir gabarito na impressão ───────────────────────────
+document.getElementById('gabPrint').addEventListener('change', function(){
+  var g = document.getElementById('gabarito');
+  if (this.checked) g.classList.add('visivel');
+  else if (!document.getElementById('gabBtn').textContent.includes('Ocultar')) g.classList.remove('visivel');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cobalt Area — Baixador de vídeo e áudio</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⬡</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   ÁREA COBALT — tema escuro com o gradiente característico ⬡
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --bg:#0b0b14;
+  --bg-2:#12121f;
+  --card:#171728;
+  --card-2:#1d1d33;
+  --line:rgba(255,255,255,.09);
+  --line-2:rgba(255,255,255,.16);
+  --texto:#ecebf6;
+  --texto-2:#a5a3c0;
+  --texto-3:#6f6d8c;
+  --violeta:#7c5cff;
+  --violeta-2:#9b7bff;
+  --azul:#3a86ff;
+  --rosa:#ff4d8d;
+  --verde:#2dd4a7;
+  --verde-escuro:#0d2a24;
+  --amarelo:#ffc24d;
+  --vermelho:#ff5d6c;
+  --grad:linear-gradient(100deg,#7c5cff 0%,#3a86ff 45%,#ff4d8d 100%);
+  --grad-suave:linear-gradient(100deg,rgba(124,92,255,.16),rgba(58,134,255,.14) 45%,rgba(255,77,141,.16));
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  background:
+    radial-gradient(900px 480px at 15% -5%, rgba(124,92,255,.16) 0%, transparent 60%),
+    radial-gradient(800px 460px at 90% 0%, rgba(255,77,141,.12) 0%, transparent 60%),
+    radial-gradient(900px 600px at 50% 115%, rgba(58,134,255,.10) 0%, transparent 60%),
+    var(--bg);
+  color:var(--texto);
+  line-height:1.6;
+  min-height:100vh;
+  padding:28px 16px 70px;
+}
+.wrap{max-width:780px;margin:0 auto}
+
+/* ── Cabeçalho ─────────────────────────────────────────── */
+header.hero{
+  text-align:center;
+  padding:46px 26px 38px;
+  margin-bottom:30px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,0) 70%),var(--card);
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 10px 40px rgba(0,0,0,.45);
+}
+header.hero::before{
+  content:"";
+  position:absolute;inset:0;
+  background:var(--grad);
+  opacity:.06;
+  pointer-events:none;
+}
+.logo-hex{
+  width:74px;height:74px;
+  margin:0 auto 16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:44px;font-weight:900;
+  color:#fff;
+  background:var(--grad);
+  border-radius:18px;
+  transform:rotate(0deg);
+  box-shadow:0 8px 30px rgba(124,92,255,.45), inset 0 -4px 10px rgba(0,0,0,.28);
+  animation:flutuar 4s ease-in-out infinite;
+  transition:transform .3s ease;
+}
+.logo-hex:hover{transform:scale(1.06) rotate(8deg)}
+@keyframes flutuar{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+h1{
+  font-size:clamp(28px,5vw,42px);
+  font-weight:900;
+  letter-spacing:-.5px;
+  background:var(--grad);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  color:transparent;
+}
+.hero-sub{color:var(--texto-2);font-size:clamp(15px,2.4vw,17.5px);margin-top:6px}
+.hero-sub b{color:var(--texto)}
+.meta-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:20px}
+.chip{
+  font-size:12.5px;font-weight:600;
+  padding:5px 12px;
+  border-radius:999px;
+  border:1px solid var(--line-2);
+  background:rgba(255,255,255,.045);
+  color:var(--texto-2);
+  letter-spacing:.3px;
+}
+.chip b{color:var(--texto)}
+
+/* ── Card principal ────────────────────────────────────── */
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:24px;
+  margin-bottom:22px;
+  box-shadow:0 6px 28px rgba(0,0,0,.35);
+}
+.card h2{
+  font-size:14px;font-weight:700;
+  letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--texto-2);
+  margin-bottom:14px;
+  display:flex;align-items:center;gap:9px;
+}
+.card h2::before{content:"";width:5px;height:16px;border-radius:3px;background:var(--grad);display:inline-block}
+.card h2 .h2-extra{margin-left:auto;font-weight:600;letter-spacing:0;text-transform:none;font-size:12.5px;color:var(--texto-3)}
+
+/* URL input */
+.url-row{display:flex;gap:10px}
+.url-input{
+  flex:1;
+  background:var(--bg-2);
+  border:1.5px solid var(--line-2);
+  border-radius:12px;
+  color:var(--texto);
+  font-family:'JetBrains Mono',monospace;
+  font-size:14.5px;
+  padding:13px 16px;
+  outline:none;
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+.url-input::placeholder{color:var(--texto-3)}
+.url-input:focus{border-color:var(--violeta);box-shadow:0 0 0 3px rgba(124,92,255,.22)}
+.btn{
+  font-family:'Inter',sans-serif;
+  font-weight:700;
+  font-size:14.5px;
+  padding:12px 20px;
+  border-radius:12px;
+  border:1.5px solid var(--line-2);
+  background:var(--card-2);
+  color:var(--texto);
+  cursor:pointer;
+  transition:transform .14s ease, box-shadow .14s ease, background .14s ease, border-color .14s ease;
+  display:inline-flex;align-items:center;gap:8px;
+  white-space:nowrap;
+}
+.btn:hover{transform:translateY(-1px);border-color:var(--violeta);box-shadow:0 4px 14px rgba(124,92,255,.25)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-primary{
+  background:var(--grad);
+  border:none;
+  color:#fff;
+  font-size:15px;
+  padding:13px 26px;
+  box-shadow:0 6px 22px rgba(124,92,255,.4);
+}
+.btn-primary:hover{border:none;box-shadow:0 8px 28px rgba(124,92,255,.55)}
+.btn-ghost{background:transparent}
+.svc-detected{
+  margin-top:10px;
+  display:flex;align-items:center;gap:8px;
+  min-height:26px;
+  font-size:13px;color:var(--texto-3);
+}
+.svc-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  font-weight:700;font-size:12.5px;
+  padding:4px 11px;border-radius:999px;
+  border:1px solid var(--line-2);
+  background:var(--grad-suave);
+  color:var(--texto);
+}
+.svc-tag.hidden{display:none}
+.hint-ex{color:var(--texto-3);font-size:12.5px}
+.hint-ex a{color:var(--violeta-2);text-decoration:none}
+.hint-ex a:hover{text-decoration:underline}
+
+/* Opções */
+.opts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:18px}
+.field label{
+  display:block;font-size:11.5px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;
+  color:var(--texto-3);margin-bottom:6px;
+}
+.field select,.field input[type=text]{
+  width:100%;
+  background:var(--bg-2);
+  border:1.5px solid var(--line-2);
+  border-radius:10px;
+  color:var(--texto);
+  font-size:14px;
+  padding:10px 12px;
+  outline:none;
+  cursor:pointer;
+  transition:border-color .15s ease;
+}
+.field select:focus,.field input[type=text]:focus{border-color:var(--violeta)}
+.field select option{background:var(--card-2)}
+.field.hidden{display:none}
+.badge-instancia{
+  display:inline-block;
+  font-size:11.5px;font-weight:700;
+  padding:3px 10px;border-radius:999px;
+  margin-left:8px;vertical-align:2px;
+  border:1px solid var(--line-2);
+  color:var(--texto-2);
+}
+.badge-instancia.ok{border-color:rgba(45,212,167,.5);color:var(--verde);background:rgba(45,212,167,.1)}
+.badge-instancia.erro{border-color:rgba(255,93,108,.5);color:var(--vermelho);background:rgba(255,93,108,.1)}
+.badge-instancia.testando{color:var(--amarelo);border-color:rgba(255,194,77,.5);background:rgba(255,194,77,.08)}
+
+/* Aviso de formato */
+.note{
+  margin-top:16px;
+  padding:11px 14px;
+  border-radius:10px;
+  font-size:12.8px;
+  background:rgba(255,194,77,.07);
+  border:1px solid rgba(255,194,77,.3);
+  color:var(--amarelo);
+  display:none;
+}
+.note.visivel{display:block}
+
+/* ── Progresso ─────────────────────────────────────────── */
+.progress{display:none;margin-top:20px}
+.progress.visivel{display:block}
+.barra-track{height:10px;border-radius:999px;background:var(--bg-2);overflow:hidden;border:1px solid var(--line)}
+.barra-fill{
+  height:100%;width:8%;
+  background:var(--grad);
+  border-radius:999px;
+  animation:carregar 1.6s ease-in-out infinite;
+  transition:width .3s ease;
+}
+@keyframes carregar{0%{width:8%}50%{width:82%}100%{width:8%}}
+.progress-status{
+  margin-top:10px;font-size:13.5px;color:var(--texto-2);
+  display:flex;align-items:center;gap:8px;
+}
+.spinner{
+  width:15px;height:15px;border-radius:50%;
+  border:2.5px solid var(--line-2);border-top-color:var(--violeta);
+  animation:girar .7s linear infinite;flex-shrink:0;
+}
+@keyframes girar{to{transform:rotate(360deg)}}
+
+/* ── Resultado ─────────────────────────────────────────── */
+.result{display:none;margin-top:20px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--bg-2)}
+.result.visivel{display:block}
+.res-head{
+  display:flex;align-items:center;gap:12px;
+  padding:15px 18px;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(255,255,255,.03),transparent);
+}
+.res-head .ico{
+  width:40px;height:40px;border-radius:11px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.res-head .ico.video{background:var(--grad)}
+.res-head .ico.audio{background:linear-gradient(100deg,#2dd4a7,#3a86ff)}
+.res-head .ico.erro{background:linear-gradient(100deg,#ff5d6c,#ff4d8d)}
+.res-head .ico.picker{background:linear-gradient(100deg,#ffc24d,#ff4d8d)}
+.res-titulo{font-weight:700;font-size:15px;word-break:break-all;line-height:1.35}
+.res-meta{font-size:12.5px;color:var(--texto-3);margin-top:2px}
+.res-body{padding:16px 18px;font-size:14px;color:var(--texto-2)}
+.res-body .linha{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.res-actions{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap}
+
+/* Picker */
+.picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:6px}
+.picker-item{
+  border:1px solid var(--line-2);border-radius:12px;overflow:hidden;
+  background:var(--card);position:relative;
+}
+.picker-item img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;background:var(--card-2)}
+.picker-item .p-label{
+  position:absolute;top:8px;left:8px;
+  font-size:11px;font-weight:700;
+  background:rgba(11,11,20,.8);color:#fff;
+  padding:3px 9px;border-radius:999px;border:1px solid var(--line-2);
+}
+.picker-item button{
+  width:100%;border:none;cursor:pointer;
+  background:var(--card-2);color:var(--texto);
+  font-family:'Inter',sans-serif;font-weight:700;font-size:12.5px;
+  padding:9px;
+  transition:background .14s ease;
+}
+.picker-item button:hover{background:var(--grad);color:#fff}
+.picker-item.loading button{opacity:.5;pointer-events:none}
+
+/* Erro */
+.erro-codigo{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12.5px;
+  background:var(--bg);border:1px solid var(--line);
+  border-radius:8px;padding:8px 12px;
+  margin-top:10px;display:inline-block;
+  color:var(--vermelho);
+}
+
+/* ── Ajuda / instâncias ────────────────────────────────── */
+details.help{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:14px;margin-bottom:22px;overflow:hidden;
+}
+details.help summary{
+  cursor:pointer;
+  padding:16px 22px;
+  font-weight:700;font-size:14.5px;
+  color:var(--texto);
+  display:flex;align-items:center;gap:10px;
+  user-select:none;
+  transition:background .15s ease;
+}
+details.help summary:hover{background:rgba(255,255,255,.03)}
+details.help summary::marker{color:var(--violeta)}
+details.help .help-body{padding:4px 22px 20px;font-size:13.8px;color:var(--texto-2)}
+details.help code{
+  font-family:'JetBrains Mono',monospace;font-size:12.5px;
+  background:var(--bg-2);border:1px solid var(--line);
+  border-radius:6px;padding:2px 7px;color:var(--violeta-2);
+}
+details.help pre{
+  background:var(--bg-2);border:1px solid var(--line);
+  border-radius:10px;padding:13px 15px;margin:10px 0;
+  overflow-x:auto;font-size:12.5px;line-height:1.55;
+}
+details.help pre code{background:none;border:none;padding:0;color:var(--texto-2)}
+details.help ul{margin:8px 0 0 20px}
+details.help li{margin-bottom:6px}
+
+/* ── Histórico ─────────────────────────────────────────── */
+.hist{width:100%;border-collapse:collapse;font-size:13px}
+.hist th{
+  text-align:left;font-size:11px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--texto-3);padding:8px 10px;border-bottom:1px solid var(--line);
+  white-space:nowrap;
+}
+.hist td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.hist tr:last-child td{border-bottom:none}
+.hist tr:hover td{background:rgba(255,255,255,.025)}
+.hist .h-nome{font-weight:600;color:var(--texto);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist .h-svc{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--grad-suave);border:1px solid var(--line-2);white-space:nowrap}
+.hist .h-inst{color:var(--texto-3);font-size:11.5px;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.hist button{background:none;border:1px solid var(--line-2);color:var(--violeta-2);border-radius:8px;font-size:11.5px;font-weight:700;padding:4px 9px;cursor:pointer;transition:all .13s ease}
+.hist button:hover{background:var(--violeta);border-color:var(--violeta);color:#fff}
+.hist-vazio{color:var(--texto-3);font-size:13.5px;text-align:center;padding:18px 0}
+
+/* Serviços suportados */
+.svcs{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+.svc{
+  font-size:12px;font-weight:600;
+  padding:4px 10px;border-radius:8px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.03);
+  color:var(--texto-2);
+}
+
+/* Rodapé */
+footer{
+  margin-top:34px;text-align:center;
+  color:var(--texto-3);font-size:12.8px;
+  border-top:1px solid var(--line);padding-top:18px;
+}
+footer a{color:var(--violeta-2);text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+/* Toast */
+#toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+  background:var(--card-2);color:var(--texto);
+  border:1px solid var(--line-2);border-radius:12px;
+  padding:12px 20px;font-size:13.5px;font-weight:600;
+  box-shadow:0 10px 34px rgba(0,0,0,.5);
+  opacity:0;pointer-events:none;
+  transition:opacity .25s ease, transform .25s ease;
+  z-index:99;max-width:90vw;
+}
+#toast.visivel{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.ok{border-color:rgba(45,212,167,.5);color:var(--verde)}
+#toast.erro{border-color:rgba(255,93,108,.5);color:var(--vermelho)}
+
+@media(max-width:560px){
+  .url-row{flex-direction:column}
+  .btn-primary{width:100%;justify-content:center}
+  .card{padding:18px}
+  .hero{padding:34px 18px 30px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="logo-hex">⬡</div>
+    <h1>Cobalt Area</h1>
+    <p class="hero-sub">Baixe vídeo e áudio de <b>YouTube, TikTok, X, Instagram, Reddit</b> e mais — sem anúncios, sem conta.</p>
+    <div class="meta-chips">
+      <span class="chip">🎯 <b>Backend:</b> instâncias públicas do cobalt</span>
+      <span class="chip">🔒 <b>Privacidade:</b> processado no servidor</span>
+      <span class="chip">⚡ <b>Qualidade:</b> até 4K</span>
+    </div>
+  </header>
+
+  <div class="card">
+    <h2>Baixar mídia <span class="h2-extra">cole o link do vídeo 👇</span></h2>
+    <div class="url-row">
+      <input type="text" id="url" class="url-input" placeholder="https://www.youtube.com/watch?v=...  (Enter para baixar)"
+             autocomplete="off" spellcheck="false">
+      <button class="btn btn-primary" id="btnDownload" onclick="doDownload()">
+        <span id="btnIco">⬇</span><span id="btnTxt">Baixar</span>
+      </button>
+    </div>
+    <div class="svc-detected">
+      <span class="svc-tag hidden" id="svcTag"></span>
+      <span class="hint-ex">Ex.: <a href="javascript:void 0" onclick="exemplo('youtube')">YouTube</a> ·
+        <a href="javascript:void 0" onclick="exemplo('tiktok')">TikTok</a> ·
+        <a href="javascript:void 0" onclick="exemplo('x')">X/Twitter</a></span>
+    </div>
+
+    <div class="opts-grid">
+      <div class="field">
+        <label for="qualidade">Qualidade de vídeo</label>
+        <select id="qualidade">
+          <option value="max">Máxima (max)</option>
+          <option value="2160">4K (2160)</option>
+          <option value="1440">2K (1440)</option>
+          <option value="1080" selected>Full HD (1080)</option>
+          <option value="720">HD (720)</option>
+          <option value="480">480p</option>
+          <option value="360">360p</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="audioFormat">Formato de áudio</label>
+        <select id="audioFormat">
+          <option value="best" selected>Melhor (best)</option>
+          <option value="mp3">MP3</option>
+          <option value="ogg">OGG</option>
+          <option value="wav">WAV</option>
+          <option value="opus">Opus</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="modo">Modo</label>
+        <select id="modo">
+          <option value="auto" selected>Auto (vídeo+áudio)</option>
+          <option value="audio">Só áudio</option>
+          <option value="mute">Vídeo sem som</option>
+        </select>
+      </div>
+      <div class="field hidden" id="fieldBitrate">
+        <label for="bitrate">Bitrate (MP3)</label>
+        <select id="bitrate">
+          <option value="320" selected>320 kbps</option>
+          <option value="256">256</option>
+          <option value="128">128</option>
+          <option value="96">96</option>
+          <option value="64">64</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fileStyle">Nome do arquivo</label>
+        <select id="fileStyle">
+          <option value="basic" selected>Básico (basic)</option>
+          <option value="classic">Clássico (classic)</option>
+          <option value="pretty">Bonito (pretty)</option>
+          <option value="nerdy">Técnico (nerdy)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="opts-grid" style="grid-template-columns:1fr auto;align-items:end">
+      <div class="field">
+        <label for="instancia">Instância API <span class="badge-instancia" id="instBadge">—</span></label>
+        <select id="instancia">
+          <option value="auto" selected>🤖 Auto — testa em ordem</option>
+          <option value="http://localhost:9000">🏠 Instância própria (localhost:9000 · docker)</option>
+          <option value="proxy">💻 Proxy local (localhost:8099)</option>
+          <option value="custom">🔧 Customizada…</option>
+        </select>
+      </div>
+      <button class="btn btn-ghost" id="btnTestar" onclick="testarInstancia()" style="margin-bottom:1px">🩺 Testar instância</button>
+    </div>
+    <div class="field hidden" id="fieldCustom" style="margin-top:12px">
+      <label for="customUrl">URL da instância (ex.: https://api.exemplo.com)</label>
+      <input type="text" id="customUrl" placeholder="https://…" value="https://cobalt-api.kwiatekmiki.com">
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label for="apikey">Chave de API (opcional — só se a instância pedir)</label>
+      <input type="text" id="apikey" placeholder="Authorization: Api-Key aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee" autocomplete="off">
+    </div>
+
+    <div class="note" id="notaFormato"></div>
+
+    <div class="progress" id="progress">
+      <div class="barra-track"><div class="barra-fill"></div></div>
+      <div class="progress-status"><span class="spinner"></span><span id="progressTxt">Consultando a instância…</span></div>
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <details class="help">
+    <summary>❓ Como funciona &amp; solução do bloqueio (CORS)</summary>
+    <div class="help-body">
+      <p style="margin-bottom:10px">Este tool usa a <b>API do cobalt</b> (o motor do <a href="https://cobalt.tools" target="_blank" rel="noopener" style="color:var(--violeta-2)">cobalt.tools</a>) — um projeto open-source que baixa mídia direto do serviço de origem, sem anúncios nem rastreio.</p>
+      <p style="margin-bottom:10px"><b>✅ Sua instância própria</b> está rodando em <code>http://localhost:9000</code> (Docker, imagem oficial) — é a primeira opção do modo <b>Auto</b> e funciona 100% local, sem CORS nem anti-bot. Para iniciá-la no boot / reiniciar:</p>
+      <pre><code>cd ~/cobalt && docker compose up -d   # inicia (restart automático: unless-stopped)
+docker compose down                  # para
+docker compose logs -f               # acompanhar</code></pre>
+      <p style="margin-bottom:10px"><b>Por que às vezes falha direto do navegador?</b> A instância oficial <code>api.cobalt.tools</code> tem proteção anti-bot (Turnstile) e não libera CORS para páginas de terceiros. As instâncias comunitárias geralmente liberam, mas podem cair. Por isso o modo <b>Auto</b> testa a local primeiro e depois as demais.</p>
+      <p><b>Alternativa — proxy local</b> (faz a ponte para qualquer upstream, incluindo instância com chave de API):</p>
+      <pre><code>cd ~/OpenManus
+python3 cobalt_proxy.py
+# → Proxy em http://localhost:8099  (use a instância "Proxy local")</code></pre>
+      <p style="margin-top:4px">Para apontar o proxy a uma instância específica:</p>
+      <pre><code>COBALT_API=https://cobalt-api.kwiatekmiki.com python3 cobalt_proxy.py</code></pre>
+      <ul>
+        <li><b>Auto:</b> tenta as instâncias conhecidas em sequência até uma responder.</li>
+        <li><b>Customizada:</b> adicione sua própria instância (há listas em <code>instances.cobalt.best</code> e <code>cobalt.directory</code>).</li>
+        <li>Se uma instância pedir <b>chave de API</b>, use uma instância aberta ou a sua própria (self-host).</li>
+      </ul>
+    </div>
+  </details>
+
+  <div class="card">
+    <h2>Histórico <span class="h2-extra"><a href="javascript:void 0" onclick="limparHistorico()" style="color:var(--vermelho);text-decoration:none">🗑 limpar</a></span></h2>
+    <div id="histBox"></div>
+  </div>
+
+  <div class="card">
+    <h2>Serviços suportados</h2>
+    <div class="svcs" id="svcsList"></div>
+  </div>
+
+  <footer>
+    Área Cobalt · interface do <a href="https://cobalt.tools" target="_blank" rel="noopener">cobalt.tools</a> (API aberta, AGPL) ·
+    baixe apenas conteúdo que você tem o direito de salvar 🌐
+  </footer>
+
+</div>
+<div id="toast"></div>
+
+<script>
+/* ═══════════ Configuração ═══════════ */
+// Instâncias conhecidas (a maioria cai com o tempo — o modo Auto
+// testa em ordem e o "Testar instância" mostra as vivas).
+const INSTANCIAS_AUTO = [
+  "http://localhost:9000",           // instância própria (docker) — mais confiável
+  "https://cobalt-api.kwiatekmiki.com",
+  "https://cobalt.qip.cam",
+  "https://cobalt.aeong.one"
+];
+const PROXY_BASE = "http://localhost:8099";
+const PROXY = PROXY_BASE + "/api";
+
+const SERVICOS = [
+  {nome:"YouTube", icone:"▶️", re:/youtu\.?be|youtube\.com/},
+  {nome:"TikTok", icone:"🎵", re:/tiktok\.com/},
+  {nome:"X / Twitter", icone:"🐦", re:/(^|\.)x\.com|twitter\.com/},
+  {nome:"Instagram", icone:"📸", re:/instagram\.com/},
+  {nome:"Reddit", icone:"👽", re:/reddit\.com/},
+  {nome:"Vimeo", icone:"🎬", re:/vimeo\.com/},
+  {nome:"Twitch", icone:"🎮", re:/twitch\.tv/},
+  {nome:"SoundCloud", icone:"🎧", re:/soundcloud\.com/},
+  {nome:"Pinterest", icone:"📌", re:/pinterest\.[a-z]+/},
+  {nome:"Facebook", icone:"📘", re:/facebook\.com/},
+  {nome:"Bluesky", icone:"🦋", re:/bsky\.app/},
+  {nome:"VK", icone:"🔷", re:/vk\.com/},
+  {nome:"Dailymotion", icone:"📺", re:/dailymotion\.com/},
+  {nome:"Bilibili", icone:"🐍", re:/bilibili\.com/},
+  {nome:"Rumble", icone:"🥊", re:/rumble\.com/}
+];
+
+const ERROS = {
+  "api.auth.missing":"Esta instância exige autenticação. Escolha outra instância ou use o proxy local.",
+  "api.auth.key.invalid":"Chave de API inválida nesta instância. Tente outra.",
+  "api.auth.key.missing":"Esta instância exige chave de API. Tente outra instância.",
+  "api.auth.key.rate":"Limite de uso da chave atingido. Tente outra instância.",
+  "api.rate.limited":"Limite de requisições atingido nesta instância. Aguarde um pouco ou troque de instância.",
+  "api.rate.retry":"Muitas requisições. Aguarde e tente de novo.",
+  "api.invalid.url":"A URL informada é inválida. Verifique o link.",
+  "api.service.unsupported":"Este serviço não é suportado pelo cobalt.",
+  "api.service.no.video":"Não foi possível encontrar vídeo neste link.",
+  "api.stream.unavailable":"O vídeo/áudio não está disponível (pode ser privado, regional ou removido).",
+  "api.content.video.invalid":"Conteúdo inválido para download.",
+  "api.download.tunnel":"Falha no túnel de download. Tente de novo.",
+  "api.picker.processing":"Falha ao processar a seleção múltipla.",
+  "api.error.tunnel":"Erro no túnel de download.",
+  "api.error.internal":"Erro interno da instância. Tente outra."
+};
+
+/* ═══════════ Elementos ═══════════ */
+const $ = id => document.getElementById(id);
+const urlInput = $("url"), btnDownload = $("btnDownload"), btnTxt = $("btnTxt"), btnIco = $("btnIco");
+let instanciaAtual = "";
+
+/* ═══════════ Detecção de serviço ═══════════ */
+urlInput.addEventListener("input", detectarServico);
+function detectarServico(){
+  const u = urlInput.value.trim();
+  const tag = $("svcTag");
+  if(!u){ tag.classList.add("hidden"); return; }
+  const svc = SERVICOS.find(s => s.re.test(u));
+  if(svc){ tag.classList.remove("hidden"); tag.textContent = svc.icone + " " + svc.nome; }
+  else tag.classList.add("hidden");
+}
+function exemplo(tipo){
+  const ex = {
+    youtube:"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    tiktok:"https://www.tiktok.com/@cobalt.official/video/1",
+    x:"https://x.com/cobalt_official/status/1"
+  };
+  urlInput.value = ex[tipo];
+  detectarServico();
+  urlInput.focus();
+}
+
+/* ═══════════ Formato → nota ═══════════ */
+const qualSel = $("qualidade"), audSel = $("audioFormat"), modoSel = $("modo");
+function atualizarNota(){
+  const nota = $("notaFormato");
+  const modo = modoSel.value;
+  if(modo === "audio"){ nota.classList.add("visivel"); nota.textContent = "🎧 Modo áudio: o vídeo será baixado apenas em formato de áudio."; }
+  else if(modo === "mute"){ nota.classList.add("visivel"); nota.textContent = "🔇 Modo mudo: será baixado o vídeo sem faixa de áudio."; }
+  else nota.classList.remove("visivel");
+  $("fieldBitrate").classList.toggle("hidden", !(audSel.value === "mp3" && modo !== "audio" && false));
+  $("fieldBitrate").classList.toggle("hidden", audSel.value !== "mp3");
+}
+["change"].forEach(ev => { qualSel.addEventListener(ev, atualizarNota); audSel.addEventListener(ev, atualizarNota); modoSel.addEventListener(ev, atualizarNota); });
+atualizarNota();
+
+/* ═══════════ Instância ═══════════ */
+const instSel = $("instancia");
+instSel.addEventListener("change", () => {
+  $("fieldCustom").classList.toggle("hidden", instSel.value !== "custom");
+  $("instBadge").textContent = "—";
+  $("instBadge").className = "badge-instancia";
+});
+function instanciasAlvo(){
+  const v = instSel.value;
+  if(v === "auto") return [...INSTANCIAS_AUTO];
+  if(v === "proxy") return [PROXY];
+  if(v === "custom"){ const c = $("customUrl").value.trim().replace(/\/+$/,""); return c ? [c] : []; }
+  return [v.replace(/\/+$/,"")];
+}
+
+/* ═══════════ Fluxo principal ═══════════ */
+async function doDownload(urlForcado){
+  const url = (urlForcado || urlInput.value).trim();
+  if(!url){ toast("Cole a URL do vídeo primeiro", "erro"); urlInput.focus(); return; }
+  const body = {
+    url,
+    videoQuality: qualSel.value,
+    audioFormat: audSel.value,
+    downloadMode: modoSel.value,
+    filenameStyle: $("fileStyle").value
+  };
+  if(audSel.value === "mp3") body.audioBitrate = $("bitrate").value;
+  const apiKey = $("apikey").value.trim();
+
+  const alvos = instanciasAlvo();
+  if(!alvos.length){ toast("Configure uma instância (ou escolha Auto)", "erro"); return; }
+
+  setLoading(true, "Consultando a instância…");
+  const resEl = $("result");
+  resEl.classList.remove("visivel"); resEl.innerHTML = "";
+
+  let ultimoErro = "";
+  const cab = {"Accept":"application/json","Content-Type":"application/json"};
+  if(apiKey) cab["Authorization"] = apiKey.startsWith("Api-Key") || apiKey.startsWith("Bearer") ? apiKey : "Api-Key " + apiKey;
+  for(const base of alvos){
+    try{
+      $("progressTxt").textContent = "Tentando " + limparNome(base) + "…";
+      const r = await fetch(base, {
+        method:"POST",
+        headers: cab,
+        body: JSON.stringify(body)
+      });
+      let data;
+      try{ data = await r.json(); }catch(e){ throw new Error("Resposta inválida (HTTP " + r.status + ")"); }
+      if(data.status === "error"){
+        const code = data.error && data.error.code ? data.error.code : "api.error.internal";
+        ultimoErro = code;
+        if(alvos.length > 1 && alvos.indexOf(base) < alvos.length - 1) continue; // tenta próxima
+        return setLoading(false, ""), mostrarErro(code);
+      }
+      instanciaAtual = base;
+      renderizarResultado(data, base);
+      registrarHistorico(url, data);
+      return setLoading(false, ""), btnVoltarNormal();
+    }catch(err){
+      ultimoErro = err.message || String(err);
+    }
+  }
+  setLoading(false, "");
+  mostrarErro("network", ultimoErro);
+}
+
+/* ═══════════ Renderização do resultado ═══════════ */
+function renderizarResultado(data, base){
+  const resEl = $("result");
+  resEl.classList.add("visivel");
+  const tipo = data.status;
+  let html = "";
+
+  if(tipo === "tunnel" || tipo === "redirect"){
+    const fname = (data.filename || "cobalt_download").replace(/[\\/:*?"<>|]/g,"_");
+    html = `
+      <div class="res-head">
+        <div class="ico ${tipo === "redirect" ? "video" : "video"}">⬇</div>
+        <div>
+          <div class="res-titulo">${esc(fname)}</div>
+          <div class="res-meta">pronto para baixar · via ${esc(limparNome(base))}</div>
+        </div>
+      </div>
+      <div class="res-body">
+        <div class="linha">✅ Mídia processada. Clique para salvar no seu computador.</div>
+        <div class="res-actions">
+          <button class="btn btn-primary" onclick="baixarArquivo('${escAttr(data.url)}', '${escAttr(fname)}')">💾 Salvar arquivo</button>
+          <button class="btn" onclick="abrirAba('${escAttr(data.url)}')">🔗 Abrir no navegador</button>
+          <button class="btn btn-ghost" onclick="copiarLink('${escAttr(data.url)}')">📋 Copiar link</button>
+        </div>
+      </div>`;
+  }
+  else if(tipo === "picker"){
+    const itens = (data.picker || []).map((p,i) => `
+      <div class="picker-item" id="picker${i}">
+        ${p.thumb ? `<img src="${escAttr(p.thumb)}" alt="item ${i+1}" loading="lazy">` : `<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='200'%3E%3Crect width='100%25' height='100%25' fill='%231d1d33'/%3E%3C/svg%3E" alt="">`}
+        <span class="p-label">${p.type || "item " + (i+1)}</span>
+        <button onclick="baixarPicker(${i}, '${escAttr(p.url)}')">⬇ Baixar ${i+1}</button>
+      </div>`).join("");
+    html = `
+      <div class="res-head">
+        <div class="ico picker">🗂</div>
+        <div>
+          <div class="res-titulo">Post com múltiplos itens</div>
+          <div class="res-meta">escolha o que quer baixar</div>
+        </div>
+      </div>
+      <div class="res-body"><div class="picker-grid">${itens}</div></div>`;
+  }
+  else if(tipo === "local-processing"){
+    // Esquema real: tunnel é um array de URLs + objeto output {type, filename}
+    const tunnels = Array.isArray(data.tunnel) ? data.tunnel : [];
+    const nomeOut = data.output && data.output.filename ? data.output.filename : "video";
+    const temAudio = !!data.audio;
+    if(data.type === "merge" && temAudio && tunnels.length >= 2){
+      html = `
+        <div class="res-head"><div class="ico audio">🧩</div><div>
+          <div class="res-titulo">Vídeo + áudio separados</div>
+          <div class="res-meta">baixe as duas partes e junte (VLC · ffmpeg · Kdenlive)</div></div></div>
+        <div class="res-body">
+          <div class="linha">🧩 O cobalt entregou vídeo e áudio separados — baixe ambos e una com:<br>
+            <code style="font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--bg);padding:2px 7px;border-radius:6px;border:1px solid var(--line)">ffmpeg -i video.mp4 -i audio.m4a -c copy final.mp4</code></div>
+          <div class="res-actions">
+            <button class="btn" onclick="baixarArquivo('${escAttr(tunnels[0])}', '${escAttr(nomeOut)}')">🎞 Baixar vídeo</button>
+            <button class="btn" onclick="baixarArquivo('${escAttr(tunnels[1])}', 'audio.m4a')">🔊 Baixar áudio</button>
+          </div>
+        </div>`;
+    } else {
+      const botoes = tunnels.map((u,i) => `<button class="btn" onclick="baixarArquivo('${escAttr(u)}', '${escAttr(nomeOut + "_part" + (i+1))}')">⬇ Parte ${i+1}</button>`).join("");
+      html = `<div class="res-head"><div class="ico audio">🧩</div><div><div class="res-titulo">Processamento local necessário</div>
+        <div class="res-meta">${esc(data.type || "")} · ${tunnels.length} parte(s)</div></div></div>
+        <div class="res-body"><div class="res-actions">${botoes || "<span style='color:var(--texto-3)'>sem URLs no resultado</span>"}</div></div>`;
+    }
+  }
+  else {
+    html = `<div class="res-head"><div class="ico video">⬇</div><div><div class="res-titulo">Pronto</div><div class="res-meta">status: ${esc(tipo)}</div></div></div>
+      <div class="res-body"><div class="linha">Baixe diretamente:</div>
+      <div class="res-actions"><button class="btn btn-primary" onclick="baixarArquivo('${escAttr(data.url)}', 'cobalt_download')">💾 Salvar</button></div></div>`;
+  }
+  resEl.innerHTML = html;
+}
+
+function mostrarErro(code, extra){
+  const resEl = $("result");
+  resEl.classList.add("visivel");
+  const msg = ERROS[code] || (extra && /fetch|network|CORS|Failed/i.test(extra) ? "Não foi possível conectar à instância (bloqueio de CORS ou instância fora do ar). Rode o proxy local: <code>python3 ~/OpenManus/cobalt_proxy.py</code>" : "Erro da instância.");
+  resEl.innerHTML = `
+    <div class="res-head"><div class="ico erro">⚠️</div><div>
+      <div class="res-titulo">Não foi possível baixar</div>
+      <div class="res-meta">${esc(extra || "")}</div></div></div>
+    <div class="res-body">
+      <div class="linha">${msg}</div>
+      <div class="erro-codigo">${esc(code)}</div>
+      <div class="res-actions">
+        <button class="btn" onclick="doDownload()">🔄 Tentar de novo</button>
+        <button class="btn btn-ghost" onclick="proxRapido()">💻 Rodar proxy local</button>
+      </div>
+    </div>`;
+}
+
+/* ═══════════ Download de arquivo ═══════════ */
+async function baixarArquivo(u, fname){
+  try{
+    toast("Baixando arquivo…", "ok");
+    const r = await fetch(u, {headers:{"Accept":"*/*"}});
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    const blob = await r.blob();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fname || "cobalt_download";
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+    toast("💾 Download iniciado: " + (fname || "arquivo"), "ok");
+  }catch(e){
+    // Fallback: tenta via proxy local
+    try{
+      const r = await fetch(PROXY.replace("/api","/tunnel?url=" + encodeURIComponent(u)), {headers:{"Accept":"*/*"}});
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      const blob = await r.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = fname || "cobalt_download";
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+      toast("💾 Download via proxy iniciado", "ok");
+    }catch(e2){
+      toast("Falha no download direto (CORS?). Rode o proxy local e tente de novo.", "erro");
+    }
+  }
+}
+function abrirAba(u){ window.open(u, "_blank"); }
+function copiarLink(u){
+  navigator.clipboard.writeText(u).then(() => toast("Link copiado 📋", "ok"), () => toast("Não foi possível copiar", "erro"));
+}
+async function baixarPicker(i, u){
+  const el = $("picker" + i); if(!el) return;
+  el.classList.add("loading");
+  await baixarArquivo(u, "item_" + (i+1));
+  el.classList.remove("loading");
+}
+
+/* ═══════════ Estado do botão ═══════════ */
+function setLoading(on, txt){
+  btnDownload.disabled = on;
+  btnIco.textContent = on ? "⏳" : "⬇";
+  btnTxt.textContent = on ? "Baixando…" : "Baixar";
+  $("progress").classList.toggle("visivel", on);
+  if(txt) $("progressTxt").textContent = txt;
+}
+function btnVoltarNormal(){ setLoading(false); }
+
+/* ═══════════ Teste de instância ═══════════ */
+async function testarInstancia(){
+  const alvos = instanciasAlvo();
+  if(!alvos.length){ toast("Configure uma instância primeiro", "erro"); return; }
+  const badge = $("instBadge");
+  badge.textContent = "testando…"; badge.className = "badge-instancia testando";
+  for(const base of alvos){
+    try{
+      // GET / devolve {cobalt:{version, services}} — prova que é uma instância real
+      const r = await fetch(base.replace(/\/api$/, ""), {
+        headers:{"Accept":"application/json"}
+      });
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      const d = await r.json().catch(() => null);
+      if(d && d.cobalt && d.cobalt.version){
+        badge.textContent = "✓ v" + d.cobalt.version + " · " + (d.cobalt.services || []).length + " serviços";
+        badge.className = "badge-instancia ok";
+        toast("Instância " + limparNome(base) + " online (cobalt v" + d.cobalt.version + ")", "ok");
+        return;
+      }
+      throw new Error("não é uma API cobalt");
+    }catch(e){ /* tenta próxima */ }
+  }
+  badge.textContent = "offline / CORS"; badge.className = "badge-instancia erro";
+  toast("Nenhuma instância respondeu. Suba a sua (docker) ou use o proxy local.", "erro");
+}
+
+/* ═══════════ Histórico (localStorage) ═══════════ */
+const HIST_KEY = "cobalt_area_history";
+function registrarHistorico(url, data){
+  let h = [];
+  try{ h = JSON.parse(localStorage.getItem(HIST_KEY) || "[]"); }catch(e){}
+  const svc = SERVICOS.find(s => s.re.test(url));
+  h.unshift({
+    t: Date.now(),
+    nome: (data.filename || url).slice(0, 90),
+    url,
+    svc: svc ? svc.nome : "link",
+    inst: limparNome(instanciaAtual || "?")
+  });
+  h = h.slice(0, 30);
+  localStorage.setItem(HIST_KEY, JSON.stringify(h));
+  renderHistorico();
+}
+function renderHistorico(){
+  const box = $("histBox");
+  let h = [];
+  try{ h = JSON.parse(localStorage.getItem(HIST_KEY) || "[]"); }catch(e){}
+  if(!h.length){ box.innerHTML = '<div class="hist-vazio">Nenhum download ainda — cole um link acima ⬆️</div>'; return; }
+  box.innerHTML = `
+    <table class="hist">
+      <tr><th>Arquivo</th><th>Serviço</th><th>Instância</th><th></th></tr>
+      ${h.map(x => `
+        <tr>
+          <td class="h-nome" title="${esc(x.nome)}">${esc(x.nome)}</td>
+          <td><span class="h-svc">${esc(x.svc)}</span></td>
+          <td class="h-inst">${esc(x.inst)}</td>
+          <td style="text-align:right"><button onclick="redo('${escAttr(x.url)}')">⬇ de novo</button></td>
+        </tr>`).join("")}
+    </table>`;
+}
+function redo(u){ urlInput.value = u; detectarServico(); doDownload(); }
+function limparHistorico(){ localStorage.removeItem(HIST_KEY); renderHistorico(); toast("Histórico limpo 🗑", "ok"); }
+
+/* ═══════════ Ações rápidas ═══════════ */
+function proxRapido(){
+  toast("Rode: python3 ~/OpenManus/cobalt_proxy.py  (depois escolha 'Proxy local')", "ok");
+}
+function limparNome(u){ try{ return new URL(u).hostname; }catch(e){ return u; } }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function escAttr(s){ return esc(s).replace(/"/g,"&quot;"); }
+
+/* ═══════════ Toast ═══════════ */
+let toastTimer;
+function toast(msg, tipo){
+  const t = $("toast");
+  t.innerHTML = msg;
+  t.className = tipo ? "visivel " + tipo : "visivel";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = "", 3800);
+}
+
+/* ═══════════ Init ═══════════ */
+document.addEventListener("keydown", e => { if(e.key === "Enter" && document.activeElement === urlInput) doDownload(); });
+renderHistorico();
+$("svcsList").innerHTML = SERVICOS.map(s => `<span class="svc">${s.icone} ${esc(s.nome)}</span>`).join("");
+urlInput.focus();
+</script>
+</body>
+</html>

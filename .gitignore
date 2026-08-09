@@ -211,6 +211,11 @@ config.toml.backup-*
 *.bak
 # Binário vazio de diagnóstico de câmera (não é código)
 v4l2-ctl
+# Bancos SQLite de desenvolvimento/dados em runtime (não são código fonte)
+*.db
+*.db-wal
+*.db-shm
 # Relatório de estado gerado localmente (relatorio.txt)
 relatorio.txt
 ### Game Hub ###
+.aider*
