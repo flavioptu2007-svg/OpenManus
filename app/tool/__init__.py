@@ -14,8 +14,8 @@ from app.tool.web_search import WebSearch
 __all__ = [
     "AvaliacaoProvas",
     "BaseTool",
-    "Bash",
     "BrowserUseTool",
+    "Bash",
     "Terminate",
     "StrReplaceEditor",
     "WebSearch",
