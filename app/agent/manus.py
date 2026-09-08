@@ -205,6 +205,9 @@ class Manus(ToolCallAgent):
 
     async def cleanup(self):
         """Clean up Manus agent resources."""
+        # Fecha o browser (BrowserUseTool stack do fork) se o helper existir
+        if self.browser_context_helper:
+            await self.browser_context_helper.cleanup_browser()
         # Disconnect from all MCP servers only if we were initialized
         if self._initialized:
             await self.disconnect_mcp_server()
