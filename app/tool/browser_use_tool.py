@@ -556,7 +556,12 @@ Page content:
 
     def __del__(self):
         """Ensure cleanup when object is destroyed."""
-        if self.browser is not None or self.context is not None:
+        # getattr: __del__ also runs on partially-initialised instances
+        # (e.g. validation failed in __init__), where fields don't exist yet.
+        if (
+            getattr(self, "browser", None) is not None
+            or getattr(self, "context", None) is not None
+        ):
             try:
                 asyncio.run(self.cleanup())
             except RuntimeError:
